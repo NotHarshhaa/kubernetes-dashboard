@@ -1,56 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>KUBERNETES DASHBOARD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Dashboard</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 </head>
 <body>
-    <h1>KUBERNETES DASHBOARD</h1>
-    <div class="dashboard">
-        <div class="top-section">
-            <div class="storage-used">
-                <span class="percentage"></span><br>
-                Storage Used
+
+    <header>
+        <h1>Kubernetes Dashboard</h1>
+    </header>
+
+    <main class="dashboard">
+        <!-- System Metrics Section -->
+        <section class="top-section">
+            <div class="metric storage-used">
+                <span class="percentage"></span>
+                <p>Storage Used</p>
             </div>
-            <div class="memory-utilization">
-                <span class="percentage"></span><br>
-                Memory Used
+            <div class="metric memory-utilization">
+                <span class="percentage"></span>
+                <p>Memory Used</p>
             </div>
-            <div class="cpu-utilization">
-                <span class="percentage"></span><br>
-                CPU Used
+            <div class="metric cpu-utilization">
+                <span class="percentage"></span>
+                <p>CPU Used</p>
             </div>
-        </div>
+        </section>
+
         <hr>
-        <div class="bottom-section">
+
+        <!-- Kubernetes Details & Scanning Section -->
+        <section class="bottom-section">
+            <!-- Image Scan Form -->
             <form id="scanForm">
-                <label for="imageInput">Image Name:</label>
-                <input type="text" id="imageInput" name="imageInput">
+                <label for="imageInput">Docker Image Name:</label>
+                <input type="text" id="imageInput" name="imageInput" placeholder="Enter image name">
                 <button type="submit">Scan Image</button>
             </form>
-            <button id="healthCheckButton">Health Check</button>
-            <div id="healthCheckResult"></div> <!-- Display health check result here -->
-            
+
+            <!-- Health Check Button -->
+            <button id="healthCheckButton">Run Health Check</button>
+            <div id="healthCheckResult"></div> 
+
+            <!-- Namespace Selector -->
             <div class="namespace-selector">
                 <label for="namespace-dropdown">Select Namespace:</label>
                 <select id="namespace-dropdown"></select>
             </div>
-            <div class="deployments">
-                <span class="count"></span><br>
-                Number of Deployments
+
+            <!-- Kubernetes Resources Info -->
+            <div class="resource-info">
+                <div class="deployments">
+                    <span class="count"></span>
+                    <p>Number of Deployments</p>
+                </div>
+                <div class="pods-running">
+                    <span class="count"></span>
+                    <p>Number of Pods Running</p>
+                </div>
+                <div class="services-running">
+                    <span class="count"></span>
+                    <p>Number of Services Running</p>
+                </div>
             </div>
-            <div class="pods-running">
-                <span class="count"></span><br>
-                Number Of Pods Running
-            </div>
-            <div class="services-running">
-                <span class="count"></span><br>
-                Number of Services Running
-            </div>
+
+            <!-- Scan Results -->
             <pre id="scanResults"></pre>
-        </div>
-    </div>
-   
+        </section>
+    </main>
+
 </body>
 </html>

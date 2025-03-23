@@ -1,80 +1,131 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-image: url("kuber.jpg"); /* Replace "background.jpg" with the actual filename of your image */
+    background-image: url("kuber.jpg"); /* Replace with the actual image filename */
     background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
+    color: #fff; /* Improved text visibility */
 }
 
+/* Dashboard Layout */
 .dashboard {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    padding: 20px;
 }
 
+/* Top Section - System Info */
 .top-section {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
-    flex: 1;
-    border-bottom: 1px solid #ccc;
     padding: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+    border-radius: 10px;
 }
 
+/* Bottom Section - Kubernetes Info & Forms */
 .bottom-section {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    flex: 1;
-    flex-direction: column; /* Add this line to align items in column */
     padding: 20px;
+    gap: 15px; /* Adds spacing between elements */
 }
 
+/* Namespace Selector */
 .namespace-selector {
-    /* Add styles to position the namespace selector at the top right within the bottom section */
-    align-self: flex-end; /* This positions the element at the top right */
+    align-self: flex-end;
 }
 
+/* Info Cards */
 .storage-used,
 .memory-utilization,
 .cpu-utilization,
 .deployments,
 .pods-running,
 .services-running {
-    flex: 1;
     text-align: center;
-}
-
-.percentage {
-    font-size: 24px;
+    flex: 1;
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 5px;
     font-weight: bold;
 }
 
-.count {
+/* Percentages & Counts */
+.percentage, .count {
     font-size: 24px;
     font-weight: bold;
+    display: block;
 }
 
+/* Headings */
 h1 {
     text-align: center;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
 }
 
-/* Style the health check button */
-#healthCheckButton {
+/* Buttons */
+button {
     background-color: #007bff;
-    color: #fff;
+    color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 16px;
     cursor: pointer;
-    margin-right: 1500px; /*
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
 }
 
-/* Style the health check result */
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Health Check Button */
+#healthCheckButton {
+    margin-top: 10px;
+}
+
+/* Health Check Result */
 #healthCheckResult {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
-    font-size: 16px;
-    margin-top: 5000px;
-   
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Form Styling */
+#scanForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#imageInput {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Scan Results */
+#scanResults {
+    white-space: pre-wrap;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    border-radius: 5px;
+    width: 90%;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
 }
