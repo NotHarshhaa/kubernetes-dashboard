@@ -1,52 +1,219 @@
-# Kubernetes-Dashboard
+# 🚀 **Kubernetes Dashboard – Advanced Kubernetes Monitoring & Security**  
 
-![Kubernetes](https://imgur.com/yCAVAsK.png)
+![kubedash](https://imgur.com/xF4zrEI.png)
 
-### A kubernetes dashboard integrated with health checks, trivy scanning and health checks for pods
+**A feature-rich Kubernetes Dashboard with live system monitoring, health checks, and container security scanning using Trivy.**  
+Empower your DevOps workflow with **real-time cluster insights, security vulnerability detection, and an intuitive UI** for Kubernetes resource management.  
 
+![Kubernetes Dashboard](https://imgur.com/yCAVAsK.png)
 
-Kubernetes Dashboard Web Application
-Welcome to the Kubernetes Dashboard Web Application repository! This web application is designed to provide users with insights and information about their Kubernetes clusters, along with the ability to scan Docker images using Trivy.
+---
 
-### **Overview** :-
+## 📌 **Table of Contents**  
 
-The Kubernetes Dashboard Web Application is built with a combination of HTML, CSS, JavaScript, and Python. It offers a user-friendly interface to monitor system metrics, Kubernetes resources, and perform image scans.
+- [🌟 Overview](#-overview)  
+- [✨ Features](#-features)  
+- [🛠 Prerequisites](#-prerequisites)  
+- [⚙️ Installation & Setup](#️-installation--setup)  
+- [🔍 How It Works](#-how-it-works)  
+- [🛡 Security & Vulnerability Scanning](#-security--vulnerability-scanning)  
+- [⚙️ Technology Stack](#️-technology-stack)  
+- [🚀 Deployment Options](#-deployment-options)  
+- [📜 License](#-license)  
+- [🌟 Support & Contributions](#-support--contributions)  
 
-### **Features** :-
+---
 
-**System Metrics**: The upper section of the dashboard displays the current usage of storage, memory, and CPU resources, giving users a quick overview of the system's health.
+## 🌟 **Overview**  
 
-**Kubernetes Status**: In the lower section of the dashboard, users can select a Kubernetes namespace from a dropdown. The dashboard then provides information about the number of deployments, services, and pods within the selected namespace.
+The **Kubernetes Dashboard Web Application** is designed to simplify **Kubernetes cluster monitoring, pod health checks, and container security scanning**.  
 
-**Trivy Image Scanning**: The application also integrates the Trivy scanning feature. Users can input an image ID, initiate a scan, and view the generated scan report. This helps identify vulnerabilities and potential security risks in Docker images.
+🔹 **Real-time insights** – Track CPU, memory, and storage usage.  
+🔹 **Namespace-based monitoring** – Select a namespace to view Kubernetes resources.  
+🔹 **Security scanning with Trivy** – Detect vulnerabilities in container images.  
+🔹 **Modern & responsive UI** – Built with **HTML, CSS, JavaScript, and Flask**.  
+🔹 **Fast & lightweight** – Optimized for performance and scalability.  
 
-**How to Use
-Clone the Repository**: Start by cloning this repository to your local machine using the following command:
+This dashboard enables **DevOps engineers, SREs, and developers** to efficiently manage their **Kubernetes clusters** while ensuring security best practices.  
 
+---
+
+## ✨ **Features**  
+
+✅ **Live System Metrics** – View real-time **CPU, memory, and storage** consumption.  
+✅ **Kubernetes Resource Status** – Track **Deployments, Services, and Pods** by namespace.  
+✅ **Container Image Security Scanning** – Scan Docker images using **Trivy** for vulnerabilities.  
+✅ **Pod Health Checks** – Monitor pod status, restarts, and logs.  
+✅ **User-friendly Dashboard** – Simple, responsive, and easy-to-use UI.  
+✅ **Lightweight & Efficient** – Built for **high performance** and minimal resource usage.  
+
+---
+
+## 🛠 **Prerequisites**  
+
+Before installing the Kubernetes Dashboard, ensure you have the following dependencies installed:  
+
+🔹 **Python 3.8+** – Required for Flask backend.  
+🔹 **pip** – Python package manager.  
+🔹 **Docker & Kubernetes Cluster** – To monitor cluster resources.  
+🔹 **kubectl** – Kubernetes command-line tool.  
+🔹 **Trivy** – For container image vulnerability scanning.  
+
+Install **kubectl** and **Trivy** if not already installed:  
+
+```bash
+# Install kubectl (for Kubernetes resource monitoring)
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+# Install Trivy (for security scanning)
+brew install aquasecurity/trivy/trivy  # For macOS
+sudo apt install trivy  # For Ubuntu/Debian
 ```
+
+---
+
+## ⚙️ **Installation & Setup**  
+
+### 1️⃣ **Clone the Repository**  
+
+```bash
 git clone https://github.com/NotHarshhaa/kubernetes-dashboard.git
+cd kubernetes-dashboard
 ```
 
-**Frontend and Backend Setup**: The frontend of the application is built with HTML, CSS, and JavaScript, while the backend is developed using Flask (Python). Ensure that you have the required dependencies installed.
+### 2️⃣ **Install Python Dependencies**  
 
-**Running the Application**: Start the Flask server to serve the backend of the application. Access the dashboard through your browser by navigating to `http://localhost:5000` or the appropriate address based on your setup.
+```bash
+pip install -r requirements.txt
+```
 
-**Monitoring System Metrics**: The top section of the dashboard displays the current storage, memory, and CPU utilization. These metrics provide insights into the system's performance.
+### 3️⃣ **Start the Flask Application**  
 
-**Kubernetes Status**: Select a namespace from the dropdown in the lower section to view the number of deployments, services, and pods associated with that namespace.
+```bash
+python app.py
+```
 
-**Image Scanning with Trivy**: Use the image scanning feature to input an image ID and trigger a scan. The scan report will highlight vulnerabilities detected in the image.
+🚀 The dashboard is now accessible at **[http://localhost:5000](http://localhost:5000)**.  
 
-**Technologies Used Frontend**: HTML, CSS, JavaScript
+---
 
-**Backend**: Python Flask
+## 🔍 **How It Works**  
 
-**Kubernetes API**: Python Kubernetes Client
+### 📊 **Monitoring Kubernetes System Metrics**  
 
-**Security Scanning**: Trivy
+- The **top section** of the dashboard displays live **CPU, memory, and storage** metrics.  
+- These values provide **real-time cluster performance monitoring**.  
 
+### 🔄 **Kubernetes Namespace Selection**  
 
-# Hit the Star! ⭐
-***If you are planning to use this repo for learning, please hit the star. Thanks!***
+- Choose a **Kubernetes namespace** from the dropdown.  
+- The dashboard fetches **Deployments, Services, and Pods** specific to the selected namespace.  
 
-#### Author by [Harshhaa Reddy](https://github.com/NotHarshhaa)
+### 🛡 **Image Security Scanning with Trivy**  
+
+- Enter a **Docker image ID** (e.g., `nginx:latest`).  
+- Click **Scan** to initiate a **security vulnerability assessment**.  
+- The scan report provides details of any **critical, high, medium, or low-risk vulnerabilities**.  
+
+---
+
+## 🛡 **Security & Vulnerability Scanning**
+
+This dashboard integrates **Trivy** to perform real-time security assessments of **Docker images**.  
+
+### 🔥 **Why Use Trivy?**  
+
+✅ Detects **OS vulnerabilities** in container images.  
+✅ Identifies **known exploits and security risks**.  
+✅ Provides **CVE (Common Vulnerabilities and Exposures) reports**.  
+
+### 🔍 **Running a Manual Scan**  
+
+```bash
+trivy image nginx:latest
+```
+
+Output Example:  
+
+```plaintext
+nginx:latest (debian 11)
+=========================
+Total: 10 vulnerabilities
+Critical: 2 | High: 3 | Medium: 5 | Low: 0
+```
+
+---
+
+## ⚙️ **Technology Stack**  
+
+| **Component**        | **Technology**             |
+|----------------------|---------------------------|
+| **Frontend**        | HTML, CSS, JavaScript      |
+| **Backend**         | Python Flask               |
+| **Kubernetes API**  | Python Kubernetes Client   |
+| **Security Scanning** | Trivy                      |
+| **Deployment**      | Docker, Kubernetes         |
+
+---
+
+## 🚀 **Deployment Options**  
+
+You can deploy the Kubernetes Dashboard using **Docker, Kubernetes, or a cloud platform**.  
+
+### 🔹 **Run with Docker**  
+
+```bash
+docker build -t kubernetes-dashboard .
+docker run -p 5000:5000 kubernetes-dashboard
+```
+
+### 🔹 **Deploy on Kubernetes**  
+
+```bash
+kubectl apply -f k8s-manifest.yaml
+```
+
+### 🔹 **Deploy on Cloud (AWS/GCP/Azure)**  
+
+You can deploy the dashboard on a **Kubernetes cluster** running on AWS EKS, GCP GKE, or Azure AKS.  
+
+---
+
+## 📜 **License**  
+
+This project is licensed under the **MIT License** – free for personal and commercial use.  
+
+---
+
+## 🌟 **Support & Contributions**
+
+### 🤝 **Contributing**  
+
+Contributions are welcome! If you'd like to improve this project, feel free to submit a pull request.  
+
+---
+
+### **Hit the Star!** ⭐
+
+**If you find this repository helpful and plan to use it for learning, please give it a star. Your support is appreciated!**
+
+---
+
+### 🛠️ **Author & Community**  
+
+This project is crafted by **[Harshhaa](https://github.com/NotHarshhaa)** 💡.  
+I’d love to hear your feedback! Feel free to share your thoughts.  
+
+---
+
+### 📧 **Connect with me:**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/harshhaa-vardhan-reddy) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/NotHarshhaa)  [![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/prodevopsguy) [![Dev.to](https://img.shields.io/badge/Dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)](https://dev.to/notharshhaa) [![Hashnode](https://img.shields.io/badge/Hashnode-2962FF?style=for-the-badge&logo=hashnode&logoColor=white)](https://hashnode.com/@prodevopsguy)  
+
+---
+
+### 📢 **Stay Connected**  
+
+![Follow Me](https://imgur.com/2j7GSPs.png)
