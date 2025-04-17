@@ -1,76 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kubernetes Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <script src="app.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kubernetes Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main.dashboard {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+
+    .metric,
+    .resource-info > div {
+      display: inline-block;
+      width: 30%;
+      margin: 1%;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .percentage,
+    .count {
+      font-size: 1.8rem;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    form,
+    .namespace-selector,
+    #healthCheckButton {
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      width: 60%;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #healthCheckResult {
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+
+    #scanResults {
+      background: #1e1e1e;
+      color: #00ff90;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      max-height: 400px;
+    }
+
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+
+    .auto-refresh input {
+      transform: scale(1.2);
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Kubernetes Dashboard</h1>
-    </header>
+<header>
+  <h1>Kubernetes Dashboard</h1>
+</header>
 
-    <main class="dashboard">
-        <!-- System Metrics Section -->
-        <section class="top-section">
-            <div class="metric storage-used">
-                <span class="percentage"></span>
-                <p>Storage Used</p>
-            </div>
-            <div class="metric memory-utilization">
-                <span class="percentage"></span>
-                <p>Memory Used</p>
-            </div>
-            <div class="metric cpu-utilization">
-                <span class="percentage"></span>
-                <p>CPU Used</p>
-            </div>
-        </section>
+<main class="dashboard">
 
-        <hr>
+  <!-- System Metrics Section -->
+  <section class="top-section">
+    <h2>System Metrics</h2>
+    <div class="metric storage-used">
+      <span class="percentage">--%</span>
+      <p>Storage Used</p>
+    </div>
+    <div class="metric memory-utilization">
+      <span class="percentage">--%</span>
+      <p>Memory Used</p>
+    </div>
+    <div class="metric cpu-utilization">
+      <span class="percentage">--%</span>
+      <p>CPU Used</p>
+    </div>
+    <div class="auto-refresh">
+      <label for="autoRefresh">Auto-refresh every 10s:</label>
+      <input type="checkbox" id="autoRefresh">
+    </div>
+  </section>
 
-        <!-- Kubernetes Details & Scanning Section -->
-        <section class="bottom-section">
-            <!-- Image Scan Form -->
-            <form id="scanForm">
-                <label for="imageInput">Docker Image Name:</label>
-                <input type="text" id="imageInput" name="imageInput" placeholder="Enter image name">
-                <button type="submit">Scan Image</button>
-            </form>
+  <hr>
 
-            <!-- Health Check Button -->
-            <button id="healthCheckButton">Run Health Check</button>
-            <div id="healthCheckResult"></div> 
+  <!-- Kubernetes Operations Section -->
+  <section class="bottom-section">
+    <h2>Kubernetes Cluster Details</h2>
 
-            <!-- Namespace Selector -->
-            <div class="namespace-selector">
-                <label for="namespace-dropdown">Select Namespace:</label>
-                <select id="namespace-dropdown"></select>
-            </div>
+    <!-- Namespace Dropdown -->
+    <div class="namespace-selector">
+      <label for="namespace-dropdown">Select Namespace:</label>
+      <select id="namespace-dropdown"></select>
+    </div>
 
-            <!-- Kubernetes Resources Info -->
-            <div class="resource-info">
-                <div class="deployments">
-                    <span class="count"></span>
-                    <p>Number of Deployments</p>
-                </div>
-                <div class="pods-running">
-                    <span class="count"></span>
-                    <p>Number of Pods Running</p>
-                </div>
-                <div class="services-running">
-                    <span class="count"></span>
-                    <p>Number of Services Running</p>
-                </div>
-            </div>
+    <!-- Cluster Info -->
+    <div class="resource-info">
+      <div class="deployments">
+        <span class="count">--</span>
+        <p>Deployments</p>
+      </div>
+      <div class="pods-running">
+        <span class="count">--</span>
+        <p>Pods Running</p>
+      </div>
+      <div class="services-running">
+        <span class="count">--</span>
+        <p>Services</p>
+      </div>
+    </div>
 
-            <!-- Scan Results -->
-            <pre id="scanResults"></pre>
-        </section>
-    </main>
+    <!-- Health Check -->
+    <button id="healthCheckButton">Run Health Check</button>
+    <div id="healthCheckResult"></div>
+
+    <hr>
+
+    <!-- Image Scan Form -->
+    <form id="scanForm">
+      <label for="imageInput">Docker Image Name:</label><br/>
+      <input type="text" id="imageInput" name="imageInput" placeholder="e.g. nginx:latest">
+      <button type="submit">Scan Image</button>
+    </form>
+
+    <!-- Scan Results -->
+    <h3>Scan Results</h3>
+    <pre id="scanResults">{}</pre>
+  </section>
+
+</main>
 
 </body>
 </html>
