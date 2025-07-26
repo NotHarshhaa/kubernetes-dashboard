@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kubernetes Dashboard</title>
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="app.js" defer></script>
+        <script src="theme.js" defer></script>
+    </head>
+    <body class="light-theme">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="logo-container">
+                    <img
+                        src="kubernetes-logo.png"
+                        alt="Kubernetes Logo"
+                        class="logo"
+                    />
+                    <h1>Kubernetes<br />Dashboard</h1>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li class="active">
+                            <a href="#"
+                                ><i class="fas fa-tachometer-alt"></i>
+                                Dashboard</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-cube"></i> Pods</a>
+                        </li>
+                        <li>
+                            <a href="#"
+                                ><i class="fas fa-server"></i> Deployments</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#"
+                                ><i class="fas fa-network-wired"></i>
+                                Services</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#"
+                                ><i class="fas fa-shield-alt"></i> Security</a
+                            >
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-file-alt"></i> Logs</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button id="themeToggle" class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                        <span>Dark Mode</span>
+                    </button>
+                    <div class="version">v2.0.0</div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="header">
+                    <div class="namespace-selector">
+                        <label for="namespace-dropdown">Namespace:</label>
+                        <select id="namespace-dropdown"></select>
+                    </div>
+
+                    <div class="header-actions">
+                        <div class="auto-refresh-toggle">
+                            <label for="autoRefreshToggle">Auto-refresh:</label>
+                            <input type="checkbox" id="autoRefreshToggle" />
+                            <span class="refresh-interval">10s</span>
+                        </div>
+
+                        <button id="refreshButton" class="refresh-button">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+
+                        <button
+                            id="healthCheckButton"
+                            class="health-check-button"
+                        >
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Health Check</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Dashboard Content -->
+                <div class="dashboard-content">
+                    <!-- System Metrics Cards -->
+                    <section class="metrics-section">
+                        <h2>System Metrics</h2>
+                        <div class="metrics-grid">
+                            <!-- CPU Card -->
+                            <div class="metric-card cpu-utilization">
+                                <div class="metric-header">
+                                    <h3>
+                                        <i class="fas fa-microchip"></i> CPU
+                                        Usage
+                                    </h3>
+                                </div>
+                                <div class="metric-body">
+                                    <div class="chart-container">
+                                        <canvas id="cpuChart"></canvas>
+                                    </div>
+                                    <div class="metric-value">
+                                        <span class="percentage">--%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Memory Card -->
+                            <div class="metric-card memory-utilization">
+                                <div class="metric-header">
+                                    <h3>
+                                        <i class="fas fa-memory"></i> Memory
+                                        Usage
+                                    </h3>
+                                </div>
+                                <div class="metric-body">
+                                    <div class="chart-container">
+                                        <canvas id="memoryChart"></canvas>
+                                    </div>
+                                    <div class="metric-value">
+                                        <span class="percentage">--%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Storage Card -->
+                            <div class="metric-card storage-used">
+                                <div class="metric-header">
+                                    <h3>
+                                        <i class="fas fa-hdd"></i> Storage Usage
+                                    </h3>
+                                </div>
+                                <div class="metric-body">
+                                    <div class="chart-container">
+                                        <canvas id="storageChart"></canvas>
+                                    </div>
+                                    <div class="metric-value">
+                                        <span class="percentage">--%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Kubernetes Resources -->
+                    <section class="k8s-resources-section">
+                        <h2>Cluster Resources</h2>
+                        <div class="resources-grid">
+                            <!-- Deployments Card -->
+                            <div class="resource-card deployments">
+                                <div class="resource-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="resource-details">
+                                    <h3>Deployments</h3>
+                                    <span class="count">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Pods Card -->
+                            <div class="resource-card pods-running">
+                                <div class="resource-icon">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                                <div class="resource-details">
+                                    <h3>Pods Running</h3>
+                                    <span class="count">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Services Card -->
+                            <div class="resource-card services-running">
+                                <div class="resource-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <div class="resource-details">
+                                    <h3>Services</h3>
+                                    <span class="count">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Health Status -->
+                    <section class="health-status-section">
+                        <h2>Cluster Health</h2>
+                        <div class="health-status-container">
+                            <div
+                                id="healthCheckResult"
+                                class="health-status-indicator"
+                            >
+                                <span class="status-text">Not Checked</span>
+                            </div>
+                            <div class="health-details">
+                                <div class="health-metrics">
+                                    <div class="health-metric">
+                                        <span class="metric-label"
+                                            >API Server:</span
+                                        >
+                                        <span
+                                            class="metric-value"
+                                            id="apiServerStatus"
+                                            >--</span
+                                        >
+                                    </div>
+                                    <div class="health-metric">
+                                        <span class="metric-label"
+                                            >Scheduler:</span
+                                        >
+                                        <span
+                                            class="metric-value"
+                                            id="schedulerStatus"
+                                            >--</span
+                                        >
+                                    </div>
+                                    <div class="health-metric">
+                                        <span class="metric-label"
+                                            >Controller Manager:</span
+                                        >
+                                        <span
+                                            class="metric-value"
+                                            id="controllerStatus"
+                                            >--</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Pod Visualization -->
+                    <section class="pod-visualization-section">
+                        <h2>Pod Status</h2>
+                        <div class="pod-visualization-container">
+                            <div class="pod-status-summary">
+                                <div class="status-item running">
+                                    <span
+                                        class="status-count"
+                                        id="podsRunningCount"
+                                        >--</span
+                                    >
+                                    <span class="status-label">Running</span>
+                                </div>
+                                <div class="status-item pending">
+                                    <span
+                                        class="status-count"
+                                        id="podsPendingCount"
+                                        >--</span
+                                    >
+                                    <span class="status-label">Pending</span>
+                                </div>
+                                <div class="status-item failed">
+                                    <span
+                                        class="status-count"
+                                        id="podsFailedCount"
+                                        >--</span
+                                    >
+                                    <span class="status-label">Failed</span>
+                                </div>
+                            </div>
+                            <div class="pod-status-chart-container">
+                                <canvas id="podStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Security Scanner -->
+                    <section class="security-section">
+                        <h2>Container Security Scanner</h2>
+                        <div class="security-scanner-container">
+                            <form id="scanForm" class="scan-form">
+                                <div class="form-group">
+                                    <label for="imageInput"
+                                        >Docker Image:</label
+                                    >
+                                    <div class="input-with-button">
+                                        <input
+                                            type="text"
+                                            id="imageInput"
+                                            name="imageInput"
+                                            placeholder="e.g. nginx:latest"
+                                        />
+                                        <button
+                                            type="submit"
+                                            class="scan-button"
+                                        >
+                                            <i class="fas fa-search"></i> Scan
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div class="scan-results-container">
+                                <div class="scan-summary" id="scanSummary">
+                                    <div class="vulnerability-counts">
+                                        <div class="vuln-count critical">
+                                            <span class="count">-</span>
+                                            <span class="label">Critical</span>
+                                        </div>
+                                        <div class="vuln-count high">
+                                            <span class="count">-</span>
+                                            <span class="label">High</span>
+                                        </div>
+                                        <div class="vuln-count medium">
+                                            <span class="count">-</span>
+                                            <span class="label">Medium</span>
+                                        </div>
+                                        <div class="vuln-count low">
+                                            <span class="count">-</span>
+                                            <span class="label">Low</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="scan-details">
+                                    <div class="scan-details-header">
+                                        <h3>Scan Details</h3>
+                                        <button
+                                            id="exportScanResults"
+                                            class="export-button"
+                                        >
+                                            <i class="fas fa-download"></i>
+                                            Export
+                                        </button>
+                                    </div>
+                                    <pre
+                                        id="scanResults"
+                                        class="scan-results-output"
+                                    >
+{}</pre
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Log Viewer -->
+                    <section class="logs-section">
+                        <h2>Pod Logs</h2>
+                        <div class="logs-container">
+                            <div class="logs-header">
+                                <div class="pod-selector">
+                                    <label for="podSelector">Select Pod:</label>
+                                    <select id="podSelector">
+                                        <option value="">
+                                            -- Select Pod --
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="logs-actions">
+                                    <button
+                                        id="refreshLogs"
+                                        class="refresh-logs-button"
+                                    >
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                    <div class="logs-filter">
+                                        <input
+                                            type="text"
+                                            id="logsFilter"
+                                            placeholder="Filter logs..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logs-output-container">
+                                <pre id="logsOutput" class="logs-output">
+Select a pod to view logs</pre
+                                >
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+
+        <!-- Notification System -->
+        <div id="notifications" class="notifications-container"></div>
+    </body>
+</html>

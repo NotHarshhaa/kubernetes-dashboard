@@ -1,11 +1,10 @@
-# 🚀 **Kubernetes Dashboard – Advanced Kubernetes Monitoring & Security**  
+# 🚀 **Kubernetes Dashboard – Enhanced Kubernetes Monitoring & Security**  
 
 ![kubedash](https://imgur.com/xF4zrEI.png)
 
-**A feature-rich Kubernetes Dashboard with live system monitoring, health checks, and container security scanning using Trivy.**  
-Empower your DevOps workflow with **real-time cluster insights, security vulnerability detection, and an intuitive UI** for Kubernetes resource management.  
+**A comprehensive Kubernetes Dashboard with real-time system monitoring, interactive visualizations, health checks, container security scanning, and dark/light theme support.**
 
-![Kubernetes Dashboard](https://imgur.com/yCAVAsK.png)
+Empower your DevOps workflow with **advanced cluster insights, security vulnerability detection, and an intuitive UI** for Kubernetes resource management.  
 
 ---
 
@@ -26,26 +25,46 @@ Empower your DevOps workflow with **real-time cluster insights, security vulnera
 
 ## 🌟 **Overview**  
 
-The **Kubernetes Dashboard Web Application** is designed to simplify **Kubernetes cluster monitoring, pod health checks, and container security scanning**.  
+The **Enhanced Kubernetes Dashboard** provides a modern, feature-rich interface for **monitoring, managing, and securing your Kubernetes clusters**.
 
-🔹 **Real-time insights** – Track CPU, memory, and storage usage.  
-🔹 **Namespace-based monitoring** – Select a namespace to view Kubernetes resources.  
-🔹 **Security scanning with Trivy** – Detect vulnerabilities in container images.  
-🔹 **Modern & responsive UI** – Built with **HTML, CSS, JavaScript, and Flask**.  
-🔹 **Fast & lightweight** – Optimized for performance and scalability.  
+🔹 **Real-time visualizations** – Interactive charts for CPU, memory, and storage metrics  
+🔹 **Comprehensive cluster view** – Monitor deployments, pods, services, and more  
+🔹 **Dark/Light theme support** – Comfortable viewing in any environment  
+🔹 **Security scanning with Trivy** – Detect vulnerabilities in container images  
+🔹 **Pod logs viewer** – Easily access and filter container logs  
+🔹 **Modern responsive UI** – Optimized for desktop and mobile devices  
+🔹 **Health status monitoring** – Track cluster component health  
 
 This dashboard enables **DevOps engineers, SREs, and developers** to efficiently manage their **Kubernetes clusters** while ensuring security best practices.  
 
 ---
 
-## ✨ **Features**  
+## ✨ **New Features & Enhancements**
 
-✅ **Live System Metrics** – View real-time **CPU, memory, and storage** consumption.  
-✅ **Kubernetes Resource Status** – Track **Deployments, Services, and Pods** by namespace.  
-✅ **Container Image Security Scanning** – Scan Docker images using **Trivy** for vulnerabilities.  
-✅ **Pod Health Checks** – Monitor pod status, restarts, and logs.  
-✅ **User-friendly Dashboard** – Simple, responsive, and easy-to-use UI.  
-✅ **Lightweight & Efficient** – Built for **high performance** and minimal resource usage.  
+### 🎨 **UI Improvements**
+- **Modern dashboard layout** with sidebar navigation
+- **Dark/light theme support** with system preference detection
+- **Responsive design** for all device sizes
+- **Interactive charts** for system metrics
+- **Improved notifications system**
+
+### 📊 **Visualization Enhancements**
+- **Real-time metric charts** for CPU, memory, and storage
+- **Pod status visualization** with color-coded status indicators
+- **Vulnerability summary charts** for security scans
+- **Historical metrics** for trend analysis
+
+### 🔧 **Functional Improvements**
+- **Enhanced pod management** with detailed status information
+- **Advanced log viewer** with filtering capabilities
+- **Improved security scanner** with vulnerability classification
+- **Health status indicators** for cluster components
+- **Streamlined namespace management**
+
+### 🔒 **Security Features**
+- **Detailed vulnerability reports** with severity classification
+- **Export functionality** for scan results
+- **Component-level health monitoring**
 
 ---
 
@@ -92,7 +111,7 @@ pip install -r requirements.txt
 ### 3️⃣ **Start the Flask Application**  
 
 ```bash
-python app.py
+python systeminfo.py
 ```
 
 🚀 The dashboard is now accessible at **[http://localhost:5000](http://localhost:5000)**.  
@@ -101,21 +120,29 @@ python app.py
 
 ## 🔍 **How It Works**  
 
-### 📊 **Monitoring Kubernetes System Metrics**  
+### 📊 **Real-time System Monitoring**  
 
-- The **top section** of the dashboard displays live **CPU, memory, and storage** metrics.  
-- These values provide **real-time cluster performance monitoring**.  
+- **Interactive charts** display live CPU, memory, and storage metrics
+- **Historical data tracking** shows performance trends over time
+- **Auto-refresh functionality** keeps data current
 
-### 🔄 **Kubernetes Namespace Selection**  
+### 🔄 **Kubernetes Resource Management**  
 
-- Choose a **Kubernetes namespace** from the dropdown.  
-- The dashboard fetches **Deployments, Services, and Pods** specific to the selected namespace.  
+- **Choose a namespace** from the dropdown to filter resources
+- **View deployments, pods, and services** specific to the selected namespace
+- **Pod status visualization** shows running, pending, and failed pods
 
-### 🛡 **Image Security Scanning with Trivy**  
+### 🛡 **Image Security Scanning**  
 
-- Enter a **Docker image ID** (e.g., `nginx:latest`).  
-- Click **Scan** to initiate a **security vulnerability assessment**.  
-- The scan report provides details of any **critical, high, medium, or low-risk vulnerabilities**.  
+- Enter a **Docker image name** (e.g., `nginx:latest`)
+- Get a **comprehensive vulnerability report** with severity classifications
+- **Export scan results** for documentation and compliance
+
+### 📋 **Pod Logs Viewer**
+
+- **Select a pod** to view its logs
+- **Filter log content** to find specific information
+- **Real-time log updates** for active monitoring
 
 ---
 
@@ -123,26 +150,19 @@ python app.py
 
 This dashboard integrates **Trivy** to perform real-time security assessments of **Docker images**.  
 
-### 🔥 **Why Use Trivy?**  
+### 🔥 **Enhanced Security Features**  
 
-✅ Detects **OS vulnerabilities** in container images.  
-✅ Identifies **known exploits and security risks**.  
-✅ Provides **CVE (Common Vulnerabilities and Exposures) reports**.  
+✅ **Vulnerability summary** with severity counts (Critical, High, Medium, Low)  
+✅ **Detailed vulnerability reports** with CVE information  
+✅ **Export functionality** for documentation and compliance  
+✅ **Visual indicators** for security status  
 
-### 🔍 **Running a Manual Scan**  
+### 🔍 **Running a Scan**  
 
-```bash
-trivy image nginx:latest
-```
-
-Output Example:  
-
-```plaintext
-nginx:latest (debian 11)
-=========================
-Total: 10 vulnerabilities
-Critical: 2 | High: 3 | Medium: 5 | Low: 0
-```
+1. Enter the Docker image name in the scan form
+2. Click the Scan button
+3. View the vulnerability summary and detailed report
+4. Export results if needed
 
 ---
 
@@ -150,11 +170,13 @@ Critical: 2 | High: 3 | Medium: 5 | Low: 0
 
 | **Component**        | **Technology**             |
 |----------------------|---------------------------|
-| **Frontend**        | HTML, CSS, JavaScript      |
-| **Backend**         | Python Flask               |
-| **Kubernetes API**  | Python Kubernetes Client   |
-| **Security Scanning** | Trivy                      |
-| **Deployment**      | Docker, Kubernetes         |
+| **Frontend**         | HTML5, CSS3, JavaScript ES6 |
+| **UI Framework**     | Custom CSS with Flexbox/Grid |
+| **Charts**           | Chart.js                  |
+| **Backend**          | Python Flask              |
+| **Kubernetes API**   | Python Kubernetes Client  |
+| **Security Scanning**| Trivy                     |
+| **Deployment**       | Docker, Kubernetes        |
 
 ---
 
@@ -204,7 +226,7 @@ Contributions are welcome! If you'd like to improve this project, feel free to s
 ### 🛠️ **Author & Community**  
 
 This project is crafted by **[Harshhaa](https://github.com/NotHarshhaa)** 💡.  
-I’d love to hear your feedback! Feel free to share your thoughts.  
+I'd love to hear your feedback! Feel free to share your thoughts.  
 
 ---
 
