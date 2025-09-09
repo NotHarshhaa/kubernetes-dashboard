@@ -77,39 +77,57 @@ def health_check():
 
 # System Information
 @app.route('/system_info', methods=['GET'])
+@limiter.limit("30/minute")  # Add rate limiting
 def get_system_info():
     try:
-        mem = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        # Validate request parameters
+        try:
+            mem = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+        except (OSError, PermissionError) as e:
+            logger.error(f"❌ System access error: {str(e)}")
+            return jsonify({'error': 'System access denied'}), 403
 
         # Get CPU info with per-core details
-        cpu_percent = psutil.cpu_percent(interval=1)
-        cpu_count = psutil.cpu_count()
-        cpu_freq = psutil.cpu_freq()
-        cpu_per_core = psutil.cpu_percent(interval=0.5, percpu=True)
+        try:
+            cpu_percent = psutil.cpu_percent(interval=0.5)  # Reduced interval for better performance
+            cpu_count = psutil.cpu_count()
+            cpu_freq = psutil.cpu_freq()
+            cpu_per_core = psutil.cpu_percent(interval=0.1, percpu=True)
+        except Exception as e:
+            logger.error(f"❌ CPU info error: {str(e)}")
+            cpu_percent = 0
+            cpu_count = 1
+            cpu_freq = None
+            cpu_per_core = [0]
+
+        # Validate data ranges
+        cpu_percent = max(0, min(100, cpu_percent)) if cpu_percent is not None else 0
+        mem_percent = max(0, min(100, mem.percent)) if mem.percent is not None else 0
+        disk_percent = max(0, min(100, disk.percent)) if disk.percent is not None else 0
 
         data = {
-            'cpu_percent': cpu_percent,
+            'cpu_percent': round(cpu_percent, 2),
             'cpu_details': {
                 'count': cpu_count,
                 'frequency': {
-                    'current': cpu_freq.current if cpu_freq else None,
-                    'min': cpu_freq.min if cpu_freq and hasattr(cpu_freq, 'min') else None,
-                    'max': cpu_freq.max if cpu_freq and hasattr(cpu_freq, 'max') else None
+                    'current': round(cpu_freq.current, 2) if cpu_freq and cpu_freq.current else None,
+                    'min': round(cpu_freq.min, 2) if cpu_freq and hasattr(cpu_freq, 'min') and cpu_freq.min else None,
+                    'max': round(cpu_freq.max, 2) if cpu_freq and hasattr(cpu_freq, 'max') and cpu_freq.max else None
                 },
-                'per_core': cpu_per_core
+                'per_core': [round(core, 2) for core in cpu_per_core] if cpu_per_core else []
             },
             'memory_usage': {
                 'total': mem.total,
                 'available': mem.available,
                 'used': mem.used,
-                'percent': mem.percent
+                'percent': round(mem_percent, 2)
             },
             'disk_usage': {
                 'total': disk.total,
                 'used': disk.used,
                 'free': disk.free,
-                'percent': disk.percent
+                'percent': round(disk_percent, 2)
             },
             'boot_time': psutil.boot_time(),
             'timestamp': datetime.now().isoformat()
@@ -117,8 +135,8 @@ def get_system_info():
 
         # Add to history (limit to 100 points)
         metrics_history["cpu"].append(cpu_percent)
-        metrics_history["memory"].append(mem.percent)
-        metrics_history["disk"].append(disk.percent)
+        metrics_history["memory"].append(mem_percent)
+        metrics_history["disk"].append(disk_percent)
         metrics_history["timestamp"].append(datetime.now().isoformat())
 
         # Keep only the last 100 data points
@@ -131,7 +149,7 @@ def get_system_info():
         return jsonify(data)
     except Exception as e:
         logger.error(f"❌ Error fetching system info: {str(e)}")
-        return jsonify({'error': 'Failed to fetch system information'}), 500
+        return jsonify({'error': 'Failed to fetch system information', 'details': str(e)}), 500
 
 # Historical metrics for charts
 @app.route('/metrics_history', methods=['GET'])

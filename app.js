@@ -30,6 +30,31 @@ document.addEventListener("DOMContentLoaded", () => {
   let retryAttempts = 0;
   const MAX_RETRY_ATTEMPTS = 3;
   const RETRY_DELAY = 1000; // 1 second
+  
+  // Cache for API responses
+  const cache = {
+    systemInfo: { data: null, timestamp: 0, ttl: 5000 }, // 5 seconds
+    namespaces: { data: null, timestamp: 0, ttl: 30000 }, // 30 seconds
+    kubernetesInfo: { data: null, timestamp: 0, ttl: 10000 }, // 10 seconds
+    podStatuses: { data: null, timestamp: 0, ttl: 10000 }, // 10 seconds
+  };
+  
+  // Cache utility functions
+  function getCachedData(key) {
+    const cached = cache[key];
+    if (cached && Date.now() - cached.timestamp < cached.ttl) {
+      return cached.data;
+    }
+    return null;
+  }
+  
+  function setCachedData(key, data) {
+    cache[key] = {
+      data: data,
+      timestamp: Date.now(),
+      ttl: cache[key].ttl
+    };
+  }
 
   // Cleanup function for intervals and timeouts
   function cleanup() {
@@ -46,23 +71,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add cleanup on page unload
   window.addEventListener('beforeunload', cleanup);
 
-  // Error handling utility
+  // Enhanced error handling utility
   async function fetchWithRetry(url, options = {}, retries = MAX_RETRY_ATTEMPTS) {
     try {
       const response = await fetch(url, options);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       retryAttempts = 0; // Reset on successful request
       return await response.json();
     } catch (error) {
       if (retries > 0) {
         retryAttempts++;
+        console.warn(`Request failed, retrying in ${RETRY_DELAY * retryAttempts}ms... (${retries} attempts left)`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * retryAttempts));
         return fetchWithRetry(url, options, retries - 1);
       }
+      console.error(`Request failed after ${MAX_RETRY_ATTEMPTS} attempts:`, error);
       throw new Error(`Failed after ${MAX_RETRY_ATTEMPTS} attempts: ${error.message}`);
     }
+  }
+
+  // Enhanced error display utility
+  function displayError(error, context = '') {
+    console.error(`Error ${context}:`, error);
+    const errorMessage = error.message || 'An unexpected error occurred';
+    showNotification(`${context ? context + ': ' : ''}${errorMessage}`, 'error');
   }
 
   // Chart objects container
@@ -103,8 +138,70 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize charts
     initializeCharts();
 
+    // Add keyboard navigation
+    initializeKeyboardNavigation();
+
     // First update
     updateDashboard();
+  }
+
+  // Keyboard navigation support
+  function initializeKeyboardNavigation() {
+    // Add keyboard event listeners
+    document.addEventListener('keydown', handleKeyboardNavigation);
+    
+    // Make focusable elements more visible
+    const focusableElements = document.querySelectorAll('button, input, select, a');
+    focusableElements.forEach(element => {
+      element.addEventListener('focus', () => {
+        element.style.outline = '2px solid var(--light-accent)';
+        element.style.outlineOffset = '2px';
+      });
+      element.addEventListener('blur', () => {
+        element.style.outline = 'none';
+      });
+    });
+  }
+
+  function handleKeyboardNavigation(event) {
+    // Handle Escape key to close modals/notifications
+    if (event.key === 'Escape') {
+      const notifications = document.querySelectorAll('.notification');
+      notifications.forEach(notification => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      });
+    }
+    
+    // Handle Enter key on buttons
+    if (event.key === 'Enter' && event.target.tagName === 'BUTTON') {
+      event.target.click();
+    }
+    
+    // Handle Space key on buttons
+    if (event.key === ' ' && event.target.tagName === 'BUTTON') {
+      event.preventDefault();
+      event.target.click();
+    }
+    
+    // Handle Tab navigation improvements
+    if (event.key === 'Tab') {
+      const focusableElements = document.querySelectorAll(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
   }
 
   // ========== Chart Initialization ==========
@@ -229,6 +326,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
       scales: {
         y: {
           beginAtZero: true,
@@ -266,10 +367,25 @@ document.addEventListener("DOMContentLoaded", () => {
           displayColors: false,
           callbacks: {
             label: function (context) {
-              return context.raw + "%";
+              return `${title}: ${context.raw}%`;
             },
+            afterLabel: function(context) {
+              const value = context.raw;
+              if (value > 80) return "⚠️ High usage";
+              if (value > 60) return "⚡ Moderate usage";
+              return "✅ Normal usage";
+            }
           },
         },
+      },
+      elements: {
+        point: {
+          radius: 4,
+          hoverRadius: 8,
+        },
+        line: {
+          borderWidth: 2,
+        }
       },
     };
   }
@@ -278,12 +394,28 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleImageScan(event) {
     event.preventDefault();
     const imageName = imageInput.value.trim();
+    
+    // Input validation and sanitization
     if (!imageName) {
       showNotification("Please enter a Docker image name", "error");
       return;
     }
+    
+    // Validate image name format (basic validation)
+    const imageNamePattern = /^[a-zA-Z0-9._/-]+(:[a-zA-Z0-9._-]+)?$/;
+    if (!imageNamePattern.test(imageName)) {
+      showNotification("Invalid image name format. Use format: repository/image:tag", "error");
+      return;
+    }
+    
+    // Sanitize input to prevent XSS
+    const sanitizedImageName = imageName.replace(/[<>\"']/g, '');
+    if (sanitizedImageName !== imageName) {
+      showNotification("Invalid characters detected in image name", "error");
+      return;
+    }
 
-    showNotification(`Scanning image: ${imageName}`, "info");
+    showNotification(`Scanning image: ${sanitizedImageName}`, "info");
     scanResults.textContent = "Scanning...";
 
     // Reset vulnerability counts
@@ -291,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = "-";
     });
 
-    scanImage(imageName);
+    scanImage(sanitizedImageName);
   }
 
   function handleHealthCheck() {
@@ -461,37 +593,99 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========== Dashboard Updates ==========
   async function updateDashboard() {
     try {
+      // Show loading states
+      setLoadingState(true);
+      
       await Promise.all([
         fetchSystemInfo(),
         fetchNamespaces(),
         fetchPodStatuses(defaultNamespace)
       ]);
+      
+      // Hide loading states
+      setLoadingState(false);
     } catch (error) {
       console.error("Dashboard update failed:", error);
-      showNotification("Failed to update dashboard. Retrying...", "error");
+      displayError(error, "Dashboard update failed");
+      setLoadingState(false);
+    }
+  }
+
+  // Loading state management
+  function setLoadingState(isLoading) {
+    const loadingElements = document.querySelectorAll('.loading-skeleton');
+    const metricCards = document.querySelectorAll('.metric-card');
+    const resourceCards = document.querySelectorAll('.resource-card');
+    
+    if (isLoading) {
+      // Add loading class to elements
+      metricCards.forEach(card => card.classList.add('loading'));
+      resourceCards.forEach(card => card.classList.add('loading'));
+      
+      // Show skeleton loaders
+      loadingElements.forEach(element => element.style.display = 'block');
+    } else {
+      // Remove loading class
+      metricCards.forEach(card => card.classList.remove('loading'));
+      resourceCards.forEach(card => card.classList.remove('loading'));
+      
+      // Hide skeleton loaders
+      loadingElements.forEach(element => element.style.display = 'none');
     }
   }
 
   async function fetchSystemInfo() {
     try {
+      // Check cache first
+      const cachedData = getCachedData('systemInfo');
+      if (cachedData) {
+        updateSystemInfoUI(cachedData);
+        return;
+      }
+      
       const data = await fetchWithRetry("http://127.0.0.1:5000/system_info");
       
-      // Update metric cards
-      document.querySelector(".memory-utilization .percentage").textContent =
-        `${data.memory_usage.percent}%`;
-      document.querySelector(".cpu-utilization .percentage").textContent =
-        `${data.cpu_percent}%`;
-      document.querySelector(".storage-used .percentage").textContent =
-        `${data.disk_usage.percent}%`;
-
-      // Update charts
-      updateChart(window.charts.cpu, data.cpu_percent);
-      updateChart(window.charts.memory, data.memory_usage.percent);
-      updateChart(window.charts.storage, data.disk_usage.percent);
+      // Validate data structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data received from server');
+      }
+      
+      // Cache the data
+      setCachedData('systemInfo', data);
+      
+      // Update UI
+      updateSystemInfoUI(data);
     } catch (error) {
-      console.error("❌ System info fetch failed:", error);
-      showNotification("Failed to fetch system metrics", "error");
+      displayError(error, "Failed to fetch system metrics");
       throw error; // Propagate for retry logic
+    }
+  }
+  
+  function updateSystemInfoUI(data) {
+    // Update metric cards with validation
+    const memoryElement = document.querySelector(".memory-utilization .percentage");
+    const cpuElement = document.querySelector(".cpu-utilization .percentage");
+    const storageElement = document.querySelector(".storage-used .percentage");
+    
+    if (memoryElement && data.memory_usage?.percent !== undefined) {
+      memoryElement.textContent = `${Math.round(data.memory_usage.percent)}%`;
+    }
+    if (cpuElement && data.cpu_percent !== undefined) {
+      cpuElement.textContent = `${Math.round(data.cpu_percent)}%`;
+    }
+    if (storageElement && data.disk_usage?.percent !== undefined) {
+      storageElement.textContent = `${Math.round(data.disk_usage.percent)}%`;
+    }
+
+    // Update charts with validation
+    if (window.charts.cpu && typeof data.cpu_percent === 'number') {
+      updateChart(window.charts.cpu, data.cpu_percent);
+    }
+    if (window.charts.memory && typeof data.memory_usage?.percent === 'number') {
+      updateChart(window.charts.memory, data.memory_usage.percent);
+    }
+    if (window.charts.storage && typeof data.disk_usage?.percent === 'number') {
+      updateChart(window.charts.storage, data.disk_usage.percent);
     }
   }
 
@@ -666,6 +860,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function scanImage(imageName) {
+    // Show progress indicator
+    const scanButton = document.querySelector('.scan-button');
+    const originalButtonText = scanButton.innerHTML;
+    scanButton.disabled = true;
+    scanButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+    
+    // Add progress bar
+    const progressBar = document.createElement('div');
+    progressBar.className = 'scan-progress';
+    progressBar.innerHTML = `
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="progress-text">Scanning image...</div>
+    `;
+    scanResults.parentNode.insertBefore(progressBar, scanResults);
+    
     fetch("http://127.0.0.1:5000/scan_image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -673,6 +884,15 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then((res) => res.json())
       .then((data) => {
+        // Remove progress indicator
+        if (progressBar.parentNode) {
+          progressBar.parentNode.removeChild(progressBar);
+        }
+        
+        // Restore button
+        scanButton.disabled = false;
+        scanButton.innerHTML = originalButtonText;
+        
         if (data.error) {
           scanResults.textContent = `Error: ${data.error}`;
           showNotification(`Scan error: ${data.error}`, "error");
@@ -684,6 +904,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       })
       .catch((err) => {
+        // Remove progress indicator
+        if (progressBar.parentNode) {
+          progressBar.parentNode.removeChild(progressBar);
+        }
+        
+        // Restore button
+        scanButton.disabled = false;
+        scanButton.innerHTML = originalButtonText;
+        
         console.error("❌ Scan failed:", err);
         scanResults.textContent =
           "Scan failed. Please make sure Trivy is installed and the backend server is running.";

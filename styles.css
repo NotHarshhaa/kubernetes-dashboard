@@ -713,6 +713,13 @@ section h2 {
     font-weight: 500;
 }
 
+.form-help {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+    display: block;
+}
+
 .input-with-button {
     display: flex;
     gap: 0.5rem;
@@ -987,6 +994,112 @@ section h2 {
     color: var(--dark-text);
 }
 
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--light-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.dark-theme .loading::after {
+    border-top-color: var(--dark-accent);
+}
+
+.loading-skeleton {
+    display: none;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+    height: 20px;
+    margin: 0.5rem 0;
+}
+
+.dark-theme .loading-skeleton {
+    background: linear-gradient(90deg, #3d4352 25%, #323845 50%, #3d4352 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Progress Indicators */
+.scan-progress {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: var(--light-hover);
+}
+
+.dark-theme .scan-progress {
+    background-color: var(--dark-hover);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--light-border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.dark-theme .progress-bar {
+    background-color: var(--dark-border);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--light-accent), var(--light-accent-hover));
+    border-radius: 4px;
+    animation: progress-animation 2s ease-in-out infinite;
+}
+
+.dark-theme .progress-fill {
+    background: linear-gradient(90deg, var(--dark-accent), var(--dark-accent-hover));
+}
+
+@keyframes progress-animation {
+    0% {
+        width: 0%;
+        transform: translateX(-100%);
+    }
+    50% {
+        width: 100%;
+        transform: translateX(0%);
+    }
+    100% {
+        width: 100%;
+        transform: translateX(100%);
+    }
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
 /* Notifications */
 .notifications-container {
     position: fixed;
@@ -1070,6 +1183,10 @@ section h2 {
     }
 
     .health-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .vulnerability-counts {
         grid-template-columns: repeat(2, 1fr);
     }
 }

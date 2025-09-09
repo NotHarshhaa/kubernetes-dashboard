@@ -80,19 +80,20 @@
                     <div class="header-actions">
                         <div class="auto-refresh-toggle">
                             <label for="autoRefreshToggle">Auto-refresh:</label>
-                            <input type="checkbox" id="autoRefreshToggle" />
-                            <span class="refresh-interval">10s</span>
+                            <input type="checkbox" id="autoRefreshToggle" aria-describedby="refresh-interval" />
+                            <span id="refresh-interval" class="refresh-interval">10s</span>
                         </div>
 
-                        <button id="refreshButton" class="refresh-button">
-                            <i class="fas fa-sync-alt"></i>
+                        <button id="refreshButton" class="refresh-button" aria-label="Refresh dashboard data">
+                            <i class="fas fa-sync-alt" aria-hidden="true"></i>
                         </button>
 
                         <button
                             id="healthCheckButton"
                             class="health-check-button"
+                            aria-label="Perform cluster health check"
                         >
-                            <i class="fas fa-heartbeat"></i>
+                            <i class="fas fa-heartbeat" aria-hidden="true"></i>
                             <span>Health Check</span>
                         </button>
                     </div>
@@ -296,14 +297,18 @@
                                             id="imageInput"
                                             name="imageInput"
                                             placeholder="e.g. nginx:latest"
+                                            aria-describedby="image-help"
+                                            required
                                         />
                                         <button
                                             type="submit"
                                             class="scan-button"
+                                            aria-label="Scan Docker image for vulnerabilities"
                                         >
-                                            <i class="fas fa-search"></i> Scan
+                                            <i class="fas fa-search" aria-hidden="true"></i> Scan
                                         </button>
                                     </div>
+                                    <small id="image-help" class="form-help">Enter a valid Docker image name (e.g., nginx:latest, ubuntu:20.04)</small>
                                 </div>
                             </form>
 
