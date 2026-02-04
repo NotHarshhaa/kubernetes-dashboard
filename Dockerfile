@@ -19,12 +19,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Trivy for security scanning
-RUN apt-get update && apt-get install -y wget gnupg lsb-release \
-    && wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor -o /usr/share/keyrings/trivy.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list \
-    && apt-get update \
-    && apt-get install -y trivy \
-    && rm -rf /var/lib/apt/lists/*
+RUN wget -qO - https://github.com/aquasecurity/trivy/releases/latest/download/trivy_linux_amd64.tar.gz | tar -xzv \
+    && mv trivy /usr/local/bin/trivy \
+    && chmod +x /usr/local/bin/trivy
 
 # Copy requirements first for better caching
 COPY requirements.txt .
