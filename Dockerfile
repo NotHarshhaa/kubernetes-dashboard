@@ -18,14 +18,6 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Trivy for security scanning
-RUN TRIVY_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep '"tag_name":' | cut -d '"' -f 4) \
-    && wget -qO /tmp/trivy_${TRIVY_VERSION}_linux_amd64.tar.gz https://github.com/aquasecurity/trivy/releases/download/trivy_${TRIVY_VERSION}_linux_amd64.tar.gz \
-    && tar -xzf /tmp/trivy_${TRIVY_VERSION}_linux_amd64.tar.gz -C /tmp/ \
-    && mv /tmp/trivy /usr/local/bin/trivy \
-    && chmod +x /usr/local/bin/trivy \
-    && rm -f /tmp/trivy_${TRIVY_VERSION}_linux_amd64.tar.gz
-
 # Copy requirements first for better caching
 COPY requirements.txt .
 

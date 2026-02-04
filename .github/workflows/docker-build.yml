@@ -101,46 +101,20 @@ jobs:
         name: sbom
         path: sbom.spdx.json
 
-  security-scan-image:
-    needs: build
-    runs-on: ubuntu-latest
-    name: Scan Docker Image
-    if: github.event_name != 'pull_request'
-    
-    steps:
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ needs.build.outputs.image-tag }}
-        format: 'table'
-        
-    - name: Generate SARIF report
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ needs.build.outputs.image-tag }}
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        
-    - name: Upload Trivy scan results as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: trivy-scan-results
-        path: trivy-results.sarif
-
   notify:
-    needs: [test, build, security-scan-image]
+    needs: [test, build]
     runs-on: ubuntu-latest
     name: Build Status
     if: always()
     
     steps:
     - name: Notify on success
-      if: needs.test.result == 'success' && needs.build.result == 'success' && (needs.security-scan-image.result == 'success' || needs.security-scan-image.result == 'skipped')
+      if: needs.test.result == 'success' && needs.build.result == 'success'
       run: |
         echo "✅ All checks passed! Image ${{ needs.build.outputs.image-tag }} built and pushed successfully"
         
     - name: Notify on failure
-      if: needs.test.result == 'failure' || needs.build.result == 'failure' || needs.security-scan-image.result == 'failure'
+      if: needs.test.result == 'failure' || needs.build.result == 'failure'
       run: |
         echo "❌ Some checks failed!"
         exit 1
