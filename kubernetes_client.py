@@ -1,10 +1,12 @@
 import logging
 import time
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
-from dashboard_types import KubernetesInfo, PodStatus
+
 from config import KUBE_CONFIG_PATH
+from dashboard_types import KubernetesInfo, PodStatus
 
 logger = logging.getLogger("k8s-dashboard")
 

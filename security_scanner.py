@@ -1,13 +1,14 @@
-import subprocess
 import json
 import logging
+import subprocess
 import threading
 import time
 from datetime import datetime
-from typing import Dict, Any, Optional, List
-from config import TRIVY_PATH, SCAN_TIMEOUT
-from security import validate_image_name, sanitize_input
+from typing import Any, Dict, List, Optional
+
+from config import SCAN_TIMEOUT, TRIVY_PATH
 from dashboard_types import ScanResult, VulnerabilityCount
+from security import sanitize_input, validate_image_name
 
 logger = logging.getLogger("k8s-dashboard")
 

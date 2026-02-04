@@ -1,16 +1,18 @@
 # Unit Tests for Kubernetes Dashboard
 
-import pytest
 import json
 from unittest.mock import MagicMock, patch
+
+import pytest
 from flask import Flask
 
-# Import the modules to test
-from system_monitor import get_system_metrics, get_metrics_history, clear_metrics_cache
-from security_scanner import scan_image, get_scan_summary, clear_scan_cache
-from kubernetes_client import init_kubernetes, get_resource_counts
-from security import sanitize_input, validate_image_name
 from dashboard_types import KubernetesInfo, PodStatus
+from kubernetes_client import get_resource_counts, init_kubernetes
+from security import sanitize_input, validate_image_name
+from security_scanner import clear_scan_cache, get_scan_summary, scan_image
+# Import the modules to test
+from system_monitor import (clear_metrics_cache, get_metrics_history,
+                            get_system_metrics)
 
 
 class TestSystemMonitor:
@@ -25,33 +27,35 @@ class TestSystemMonitor:
                     return [25.0, 25.0, 25.0, 25.0]
                 else:
                     return 50.0
-            
+
             mock_psutil.cpu_percent.side_effect = cpu_percent_side_effect
             mock_psutil.cpu_count.return_value = 4
-            mock_psutil.cpu_freq.return_value = MagicMock(current=2000.0, min=1000.0, max=3000.0)
-            
+            mock_psutil.cpu_freq.return_value = MagicMock(
+                current=2000.0, min=1000.0, max=3000.0
+            )
+
             mock_memory = MagicMock()
             mock_memory.total = 8589934592  # 8GB
             mock_memory.available = 4294967296  # 4GB
             mock_memory.used = 4294967296  # 4GB
             mock_memory.percent = 50.0
             mock_psutil.virtual_memory.return_value = mock_memory
-            
+
             mock_disk = MagicMock()
             mock_disk.total = 107374182400  # 100GB
             mock_disk.used = 53687091200  # 50GB
             mock_disk.free = 53687091200  # 50GB
             mock_disk.percent = 50.0
             mock_psutil.disk_usage.return_value = mock_disk
-            
+
             mock_psutil.boot_time.return_value = 1640995200
-            
+
             mock_psutil.platform.platform.return_value = "Linux-5.15.0"
             mock_psutil.platform.architecture.return_value = ("x86_64", "")
             mock_psutil.platform.machine.return_value = "x86_64"
-            
+
             metrics = get_system_metrics()
-            
+
             assert metrics["cpu_percent"] == 50.0
             assert metrics["memory_usage"]["percent"] == 50.0
             assert metrics["disk_usage"]["percent"] == 50.0
@@ -81,29 +85,33 @@ class TestSystemMonitor:
 class TestSecurityScanner:
     """Test security scanning functionality."""
 
-    @patch('security_scanner.subprocess.run')
-    @patch('security_scanner.validate_image_name')
+    @patch("security_scanner.subprocess.run")
+    @patch("security_scanner.validate_image_name")
     def test_scan_image_success(self, mock_validate, mock_subprocess):
         """Test successful image scanning."""
         mock_validate.return_value = True
-        
+
         # Mock successful Trivy scan
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = json.dumps([{
-            "Vulnerabilities": [
-                {"Severity": "CRITICAL"},
-                {"Severity": "HIGH"},
-                {"Severity": "MEDIUM"}
+        mock_result.stdout = json.dumps(
+            [
+                {
+                    "Vulnerabilities": [
+                        {"Severity": "CRITICAL"},
+                        {"Severity": "HIGH"},
+                        {"Severity": "MEDIUM"},
+                    ]
+                }
             ]
-        }])
-        
+        )
+
         # Mock version check
         mock_version_check = MagicMock(returncode=0)
         mock_subprocess.side_effect = [mock_version_check, mock_result]
-        
+
         result = scan_image("nginx:latest")
-        
+
         assert result["image"] == "nginx:latest"
         assert result["vulnerabilities"]["critical"] == 1
         assert result["vulnerabilities"]["high"] == 1
@@ -117,20 +125,20 @@ class TestSecurityScanner:
 
     def test_get_scan_summary(self):
         """Test scan summary generation."""
-        with patch('security_scanner.scan_image') as mock_scan:
+        with patch("security_scanner.scan_image") as mock_scan:
             mock_scan.return_value = {
-                'image': 'nginx:latest',
-                'timestamp': '2023-01-01T00:00:00',
-                'vulnerabilities': {'critical': 1, 'high': 1, 'medium': 1, 'low': 0},
-                'total_vulnerabilities': 3
+                "image": "nginx:latest",
+                "timestamp": "2023-01-01T00:00:00",
+                "vulnerabilities": {"critical": 1, "high": 1, "medium": 1, "low": 0},
+                "total_vulnerabilities": 3,
             }
-            
-            summary = get_scan_summary('nginx:latest')
-            
-            assert summary['image'] == 'nginx:latest'
-            assert summary['total_vulnerabilities'] == 3
-            assert summary['has_critical'] == True
-            assert summary['has_high'] == True
+
+            summary = get_scan_summary("nginx:latest")
+
+            assert summary["image"] == "nginx:latest"
+            assert summary["total_vulnerabilities"] == 3
+            assert summary["has_critical"] == True
+            assert summary["has_high"] == True
 
 
 class TestSecurity:
@@ -179,21 +187,24 @@ class TestKubernetesClient:
         assert result == True
         mock_config.load_kube_config.assert_called_once()
 
-    @patch('kubernetes_client.config')
+    @patch("kubernetes_client.config")
     def test_init_kubernetes_failure(self, mock_config):
         """Test Kubernetes initialization failure."""
         # Reset global state
         import kubernetes_client
+
         kubernetes_client._k8s_available = False
         kubernetes_client._core_v1 = None
         kubernetes_client._apps_v1 = None
         kubernetes_client._last_init_attempt = 0
-        
+
         mock_config.load_kube_config.side_effect = Exception("Config not found")
-        mock_config.load_incluster_config.side_effect = Exception("In-cluster config not found")
-        
+        mock_config.load_incluster_config.side_effect = Exception(
+            "In-cluster config not found"
+        )
+
         result = init_kubernetes()
-        
+
         assert result == False
 
     @patch("kubernetes_client.get_k8s_clients")
@@ -201,8 +212,9 @@ class TestKubernetesClient:
         """Test resource count retrieval."""
         # Reset global state to make Kubernetes available
         import kubernetes_client
+
         kubernetes_client._k8s_available = True
-        
+
         mock_core_v1, mock_apps_v1 = MagicMock(), MagicMock()
         mock_clients.return_value = (mock_core_v1, mock_apps_v1)
 
@@ -210,12 +222,8 @@ class TestKubernetesClient:
         mock_apps_v1.list_namespaced_deployment.return_value = MagicMock(
             items=[1, 2, 3]
         )
-        mock_core_v1.list_namespaced_service.return_value = MagicMock(
-            items=[1, 2]
-        )
-        mock_core_v1.list_namespaced_pod.return_value = MagicMock(
-            items=[1, 2, 3, 4]
-        )
+        mock_core_v1.list_namespaced_service.return_value = MagicMock(items=[1, 2])
+        mock_core_v1.list_namespaced_pod.return_value = MagicMock(items=[1, 2, 3, 4])
 
         with patch("kubernetes_client.get_pod_status_counts") as mock_status:
             mock_status.return_value = {
