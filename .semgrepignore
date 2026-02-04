@@ -1,0 +1,14 @@
+# Semgrep ignore file
+# Exclude files that don't need security scanning
+
+*.md
+*.txt
+*.json
+*.yml
+*.yaml
+Dockerfile
+.dockerignore
+.github/
+tests/
+*.test.js
+*.spec.js

@@ -1,18 +1,16 @@
 # Unit Tests for Kubernetes Dashboard
 
+import pytest
 import json
 from unittest.mock import MagicMock, patch
-
-import pytest
 from flask import Flask
 
+# Import the modules to test
 from dashboard_types import KubernetesInfo, PodStatus
 from kubernetes_client import get_resource_counts, init_kubernetes
 from security import sanitize_input, validate_image_name
 from security_scanner import clear_scan_cache, get_scan_summary, scan_image
-# Import the modules to test
-from system_monitor import (clear_metrics_cache, get_metrics_history,
-                            get_system_metrics)
+from system_monitor import clear_metrics_cache, get_metrics_history, get_system_metrics
 
 
 class TestSystemMonitor:

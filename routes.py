@@ -7,11 +7,23 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 # Import modular components
-from config import (ALLOWED_ORIGINS, API_PORT, FLASK_DEBUG, LOG_LEVEL,
-                    METRICS_INTERVAL, RATE_LIMITS)
-from kubernetes_client import (get_component_status, get_namespaces, get_nodes,
-                               get_pod_logs, get_pods, get_resource_counts,
-                               init_kubernetes)
+from config import (
+    ALLOWED_ORIGINS,
+    API_PORT,
+    FLASK_DEBUG,
+    LOG_LEVEL,
+    METRICS_INTERVAL,
+    RATE_LIMITS,
+)
+from kubernetes_client import (
+    get_component_status,
+    get_namespaces,
+    get_nodes,
+    get_pod_logs,
+    get_pods,
+    get_resource_counts,
+    init_kubernetes,
+)
 from security import add_security_headers, sanitize_input, validate_image_name
 from security_scanner import export_scan_results, get_scan_summary, scan_image
 from system_monitor import get_metrics_history, get_system_metrics
@@ -339,4 +351,4 @@ def rate_limit_exceeded(e):
 if __name__ == "__main__":
     logger.info(f"🚀 Starting Kubernetes Dashboard API on port {API_PORT}")
     logger.info(f"📊 Kubernetes available: {k8s_available}")
-    app.run(host="0.0.0.0", port=API_PORT, debug=FLASK_DEBUG)
+    app.run(host="127.0.0.1", port=API_PORT, debug=FLASK_DEBUG)

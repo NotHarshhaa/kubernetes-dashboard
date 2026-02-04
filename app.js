@@ -435,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
     schedulerStatus.textContent = "Checking...";
     controllerStatus.textContent = "Checking...";
 
-    fetch("http://127.0.0.1:5000/health")
+    fetch("/health")
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "ok") {
@@ -643,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       
-      const data = await fetchWithRetry("http://127.0.0.1:5000/system_info");
+      const data = await fetchWithRetry("/system_info");
       
       // Validate data structure
       if (!data || typeof data !== 'object') {
@@ -714,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function fetchNamespaces() {
-    fetch("http://127.0.0.1:5000/kubernetes_namespaces")
+    fetch("/kubernetes_namespaces")
       .then((res) => res.json())
       .then((namespaces) => {
         namespaceDropdown.innerHTML = "";
@@ -740,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function fetchKubernetesInfo(namespace) {
-    fetch(`http://127.0.0.1:5000/kubernetes_info?namespace=${namespace}`)
+    fetch(`/kubernetes_info?namespace=${namespace}`)
       .then((res) => res.json())
       .then((data) => {
         document.querySelector(".deployments .count").textContent =
@@ -877,7 +877,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     scanResults.parentNode.insertBefore(progressBar, scanResults);
     
-    fetch("http://127.0.0.1:5000/scan_image", {
+    fetch("/scan_image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ container_id: imageName }),

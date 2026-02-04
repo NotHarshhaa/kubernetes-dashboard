@@ -23,12 +23,12 @@ def main():
         # Import configuration
         from config import API_PORT, FLASK_DEBUG
 
-        logger.info(f"🌐 Server will be available at: http://0.0.0.0:{API_PORT}")
+        logger.info(f"🌐 Server will be available at: http://localhost:{API_PORT}")
         logger.info(f"🔧 Debug mode: {'✅ Enabled' if FLASK_DEBUG else '❌ Disabled'}")
 
         # Start the Flask application
         app.run(
-            host="0.0.0.0",
+            host="127.0.0.1",
             port=API_PORT,
             debug=FLASK_DEBUG,
             use_reloader=not FLASK_DEBUG,  # Don't use reloader in production
