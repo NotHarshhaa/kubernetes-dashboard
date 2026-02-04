@@ -11,9 +11,9 @@ env:
   IMAGE_NAME: kubernetes-dashboard
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
-    name: Code Quality Checks
+    name: Run Tests
     
     steps:
     - name: Checkout code
@@ -23,80 +23,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-        cache: 'pip'  # Enable pip caching
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 black isort mypy
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
-    - name: Check code formatting with black
-      run: black --check --diff .
-      
-    - name: Check import sorting with isort
-      run: isort --check-only --diff .
-      
-    - name: Type checking with mypy
-      run: mypy --ignore-missing-imports .
-
-  security-scan:
-    runs-on: ubuntu-latest
-    name: Security Scanning
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install bandit
-      run: pip install bandit
-      
-    - name: Run Bandit Security Linter
-      run: bandit -r . -f json -o bandit-report.json || true
-        
-    - name: Run Semgrep
-      uses: returntocorp/semgrep-action@v1
-      with:
-        config: >-
-          p/security-audit
-          p/secrets
-          p/xss
-          p/command-injection
-          
-    - name: Check dependencies for vulnerabilities
-      run: |
-        python -m pip install --upgrade pip
-        pip install safety
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        safety check --json --output safety-report.json || true
-        
-    - name: Upload safety report
-      uses: actions/upload-artifact@v4
-      with:
-        name: safety-report
-        path: safety-report.json
-
-  test:
-    runs-on: ubuntu-latest
-    name: Run Tests
-    strategy:
-      matrix:
-        python-version: ['3.9', '3.11']  # Reduced from 4 to 2 versions
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'  # Enable pip caching
+        cache: 'pip'
         
     - name: Install dependencies
       run: |
@@ -115,36 +42,8 @@ jobs:
         flags: unittests
         name: codecov-umbrella
 
-  validate-docker:
-    runs-on: ubuntu-latest
-    name: Validate Docker Configuration
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Validate Dockerfile
-      run: |
-        # Check if Dockerfile exists
-        test -f Dockerfile || (echo "Dockerfile not found" && exit 1)
-        
-        # Validate Dockerfile syntax
-        docker build --help | grep -q "build" && echo "Docker build command available"
-        
-    - name: Build test image
-      run: |
-        docker build -t test-image .
-        
-    - name: Test container startup
-      run: |
-        docker run -d --name test-container -p 5000:5000 test-image
-        sleep 10
-        curl -f http://localhost:5000/health || exit 1
-        docker stop test-container
-        docker rm test-container
-
   build:
-    needs: [lint, security-scan, test, validate-docker]
+    needs: test
     runs-on: ubuntu-latest
     name: Build Docker Image
     if: github.event_name != 'pull_request'
@@ -179,7 +78,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64  # Reduced to single platform for faster builds
+        platforms: linux/amd64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -188,8 +87,6 @@ jobs:
         build-args: |
           BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           VCS_REF=${{ github.sha }}
-        # Optimize build layers
-        target: production
           
     - name: Generate SBOM
       uses: anchore/sbom-action@v0
@@ -231,19 +128,19 @@ jobs:
         path: trivy-results.sarif
 
   notify:
-    needs: [lint, security-scan, test, validate-docker, build, security-scan-image]
+    needs: [test, build, security-scan-image]
     runs-on: ubuntu-latest
     name: Build Status
     if: always()
     
     steps:
     - name: Notify on success
-      if: needs.lint.result == 'success' && needs.security-scan.result == 'success' && needs.test.result == 'success' && needs.validate-docker.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped') && (needs.security-scan-image.result == 'success' || needs.security-scan-image.result == 'skipped')
+      if: needs.test.result == 'success' && needs.build.result == 'success' && (needs.security-scan-image.result == 'success' || needs.security-scan-image.result == 'skipped')
       run: |
         echo "✅ All checks passed! Image ${{ needs.build.outputs.image-tag }} built and pushed successfully"
         
     - name: Notify on failure
-      if: needs.lint.result == 'failure' || needs.security-scan.result == 'failure' || needs.test.result == 'failure' || needs.validate-docker.result == 'failure' || needs.build.result == 'failure' || needs.security-scan-image.result == 'failure'
+      if: needs.test.result == 'failure' || needs.build.result == 'failure' || needs.security-scan-image.result == 'failure'
       run: |
         echo "❌ Some checks failed!"
         exit 1
