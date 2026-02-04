@@ -1,63 +1,152 @@
 import logging
+import time
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from types import KubernetesInfo, PodStatus
+from config import KUBE_CONFIG_PATH
 
 logger = logging.getLogger("k8s-dashboard")
 
-# Initialize Kubernetes configuration
-def init_kubernetes():
-    """Initialize Kubernetes configuration."""
-    try:
-        config.load_kube_config()
-        logger.info("✅ Kubernetes configuration loaded successfully.")
+# Kubernetes client instances (cached)
+_core_v1 = None
+_apps_v1 = None
+_k8s_available = False
+_last_init_attempt = 0
+_init_retry_interval = 30  # seconds
+
+def init_kubernetes() -> bool:
+    """Initialize Kubernetes configuration with retry logic."""
+    global _core_v1, _apps_v1, _k8s_available, _last_init_attempt
+    
+    # Avoid repeated initialization attempts
+    current_time = time.time()
+    if (_k8s_available and _core_v1 and _apps_v1):
         return True
-    except Exception:
+    
+    if (current_time - _last_init_attempt < _init_retry_interval):
+        logger.debug("Skipping Kubernetes initialization - too soon since last attempt")
+        return _k8s_available
+    
+    _last_init_attempt = current_time
+    
+    try:
+        # Try to load kube config from specified path or default
+        if KUBE_CONFIG_PATH:
+            config.load_kube_config(config_file=KUBE_CONFIG_PATH)
+            logger.info(f"✅ Kubernetes configuration loaded from {KUBE_CONFIG_PATH}")
+        else:
+            config.load_kube_config()
+            logger.info("✅ Kubernetes configuration loaded from default location")
+        
+        # Initialize API clients
+        _core_v1 = client.CoreV1Api()
+        _apps_v1 = client.AppsV1Api()
+        
+        # Test the connection by listing namespaces
+        _core_v1.list_namespace()
+        
+        _k8s_available = True
+        logger.info("✅ Kubernetes API connection verified successfully")
+        return True
+        
+    except Exception as e:
         try:
             # Try to load in-cluster config if running inside K8s
             config.load_incluster_config()
-            logger.info("✅ In-cluster Kubernetes configuration loaded.")
+            _core_v1 = client.CoreV1Api()
+            _apps_v1 = client.AppsV1Api()
+            
+            # Test the connection
+            _core_v1.list_namespace()
+            
+            _k8s_available = True
+            logger.info("✅ In-cluster Kubernetes configuration loaded and verified")
             return True
-        except Exception:
-            logger.warning("⚠️ Failed to load Kubernetes configuration, some features will be limited.")
+            
+        except Exception as e2:
+            _k8s_available = False
+            _core_v1 = None
+            _apps_v1 = None
+            logger.warning(f"⚠️ Failed to load Kubernetes configuration: {str(e2)}")
+            logger.warning("⚠️ Kubernetes features will be limited")
             return False
 
 
+def get_k8s_clients():
+    """Get Kubernetes API clients, initializing if necessary."""
+    if not _k8s_available or not _core_v1 or not _apps_v1:
+        init_kubernetes()
+    
+    return _core_v1, _apps_v1
+
+
 def get_resource_counts(namespace: str) -> KubernetesInfo:
-    """Get counts of various Kubernetes resources in a namespace."""
+    """Get counts of various Kubernetes resources in a namespace with enhanced error handling."""
+    if not _k8s_available:
+        raise RuntimeError("Kubernetes not available")
+    
+    core_v1, apps_v1 = get_k8s_clients()
+    
     try:
-        core_v1 = client.CoreV1Api()
-        apps_v1 = client.AppsV1Api()
+        logger.debug(f"Fetching resource counts for namespace: {namespace}")
         
-        # Get deployments
-        deployments = apps_v1.list_namespaced_deployment(namespace=namespace)
+        # Get deployments with timeout
+        deployments = apps_v1.list_namespaced_deployment(
+            namespace=namespace, 
+            _request_timeout=10
+        )
         num_deployments = len(deployments.items)
         
-        # Get services
-        services = core_v1.list_namespaced_service(namespace=namespace)
+        # Get services with timeout
+        services = core_v1.list_namespaced_service(
+            namespace=namespace, 
+            _request_timeout=10
+        )
         num_services = len(services.items)
         
-        # Get pods and their statuses
-        pods = core_v1.list_namespaced_pod(namespace=namespace)
-        num_pods = len(pods.items)
+        # Get pods with timeout and better error handling
+        try:
+            pods = core_v1.list_namespaced_pod(
+                namespace=namespace, 
+                _request_timeout=10
+            )
+            num_pods = len(pods.items)
+        except ApiException as e:
+            if e.status == 403:
+                logger.warning(f"Access denied to pods in namespace {namespace}")
+                num_pods = 0
+                pods = type('PodList', (), {'items': []})()
+            else:
+                raise
         
-        # Count pod statuses
+        # Count pod statuses with detailed categorization
         pod_statuses = get_pod_status_counts(pods.items)
         
-        return {
+        result = {
             'namespace': namespace,
             'num_deployments': num_deployments,
             'num_services': num_services,
             'num_pods': num_pods,
-            'pod_statuses': pod_statuses
+            'pod_statuses': pod_statuses,
+            'timestamp': time.time()
         }
+        
+        logger.debug(f"Resource counts for {namespace}: {result}")
+        return result
+        
     except ApiException as e:
-        logger.error(f"❌ Kubernetes API error: {e.reason}")
-        raise
+        error_msg = f"Kubernetes API error: {e.reason} (status: {e.status})"
+        if e.status == 404:
+            error_msg = f"Namespace '{namespace}' not found"
+        elif e.status == 403:
+            error_msg = f"Access denied to namespace '{namespace}'"
+        
+        logger.error(f"❌ {error_msg}")
+        raise RuntimeError(error_msg)
     except Exception as e:
-        logger.error(f"❌ Error fetching Kubernetes info: {str(e)}")
-        raise
+        logger.error(f"❌ Error fetching Kubernetes info for namespace {namespace}: {str(e)}")
+        raise RuntimeError(f"Failed to fetch Kubernetes information: {str(e)}")
 
 
 def get_pod_status_counts(pods: List) -> PodStatus:

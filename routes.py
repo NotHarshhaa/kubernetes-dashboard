@@ -62,7 +62,20 @@ def get_system_info():
         return jsonify(metrics)
     except Exception as e:
         logger.error(f"❌ Error in system_info endpoint: {str(e)}")
-        return jsonify({'error': 'Failed to get system information'}), 500
+        return jsonify({'error': 'Failed to get system information', 'details': str(e)}), 500
+
+
+# System Info (non-metrics)
+@app.route('/system_details', methods=['GET'])
+def get_system_details():
+    """Get basic system information without performance metrics."""
+    try:
+        from system_monitor import get_system_info as get_sys_info
+        info = get_sys_info()
+        return jsonify(info)
+    except Exception as e:
+        logger.error(f"❌ Error in system_details endpoint: {str(e)}")
+        return jsonify({'error': 'Failed to get system details', 'details': str(e)}), 500
 
 
 # Metrics History
@@ -74,7 +87,21 @@ def get_history():
         return jsonify(history)
     except Exception as e:
         logger.error(f"❌ Error getting metrics history: {str(e)}")
-        return jsonify({'error': 'Failed to get metrics history'}), 500
+        return jsonify({'error': 'Failed to get metrics history', 'details': str(e)}), 500
+
+
+# Clear Metrics Cache
+@app.route('/clear_metrics_cache', methods=['POST'])
+@limiter.limit("10 per minute")
+def clear_metrics_cache():
+    """Clear metrics cache and history."""
+    try:
+        from system_monitor import clear_metrics_cache
+        clear_metrics_cache()
+        return jsonify({'message': 'Metrics cache cleared successfully'})
+    except Exception as e:
+        logger.error(f"❌ Error clearing metrics cache: {str(e)}")
+        return jsonify({'error': 'Failed to clear metrics cache', 'details': str(e)}), 500
 
 
 # Kubernetes Information
@@ -194,6 +221,7 @@ def get_component_status_endpoint():
 def scan_image_endpoint():
     """Scan a Docker image for vulnerabilities."""
     image_name = request.json.get('image') if request.is_json else request.form.get('image')
+    force_refresh = request.json.get('force_refresh', False) if request.is_json else False
     
     if not image_name:
         return jsonify({'error': 'Image name is required'}), 400
@@ -204,11 +232,17 @@ def scan_image_endpoint():
         return jsonify({'error': 'Invalid image name format'}), 400
     
     try:
-        result = scan_image(image_name)
+        result = scan_image(image_name, force_refresh=force_refresh)
         return jsonify(result)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 503
+    except TimeoutError as e:
+        return jsonify({'error': str(e)}), 408
     except Exception as e:
         logger.error(f"❌ Error during security scan: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Security scan failed', 'details': str(e)}), 500
 
 
 # Export Scan Results
@@ -230,7 +264,35 @@ def export_scan_endpoint():
         )
     except Exception as e:
         logger.error(f"❌ Error exporting scan results: {str(e)}")
-        return jsonify({'error': 'Failed to export results'}), 500
+        return jsonify({'error': 'Failed to export results', 'details': str(e)}), 500
+
+
+# Scan Cache Management
+@app.route('/scan_cache', methods=['GET'])
+def get_scan_cache():
+    """Get scan cache information."""
+    try:
+        from security_scanner import get_scan_cache_info
+        cache_info = get_scan_cache_info()
+        return jsonify(cache_info)
+    except Exception as e:
+        logger.error(f"❌ Error getting scan cache info: {str(e)}")
+        return jsonify({'error': 'Failed to get scan cache info', 'details': str(e)}), 500
+
+
+@app.route('/scan_cache', methods=['DELETE'])
+@limiter.limit("5 per minute")
+def clear_scan_cache():
+    """Clear scan cache."""
+    try:
+        from security_scanner import clear_scan_cache
+        image_name = request.args.get('image')
+        clear_scan_cache(image_name)
+        message = f"Scan cache cleared for {image_name}" if image_name else "All scan cache cleared"
+        return jsonify({'message': message})
+    except Exception as e:
+        logger.error(f"❌ Error clearing scan cache: {str(e)}")
+        return jsonify({'error': 'Failed to clear scan cache', 'details': str(e)}), 500
 
 
 # Error handlers
