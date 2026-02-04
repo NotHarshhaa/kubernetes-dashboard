@@ -3,88 +3,116 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Kubernetes Dashboard</title>
+        <meta name="description" content="Modern Kubernetes Dashboard for monitoring and managing container orchestration" />
+        <meta name="keywords" content="kubernetes, dashboard, monitoring, containers, devops" />
+        <meta name="author" content="Kubernetes Dashboard Team" />
+        <title>Kubernetes Dashboard - Modern Container Orchestration Management</title>
         <link rel="stylesheet" href="styles.css" />
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            crossorigin="anonymous"
         />
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
         <script src="app.js" defer></script>
         <script src="theme.js" defer></script>
     </head>
     <body class="light-theme">
         <div class="app-container">
-            <!-- Sidebar -->
-            <aside class="sidebar">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar" role="navigation" aria-label="Main navigation">
                 <div class="logo-container">
                     <img
-                        src="kubernetes-logo.png"
+                        src="kubernetes-icon.svg"
                         alt="Kubernetes Logo"
                         class="logo"
+                        width="48"
+                        height="48"
                     />
                     <h1>Kubernetes<br />Dashboard</h1>
                 </div>
 
-                <nav class="sidebar-nav">
-                    <ul>
-                        <li class="active">
-                            <a href="#"
-                                ><i class="fas fa-tachometer-alt"></i>
-                                Dashboard</a
-                            >
+                <nav class="sidebar-nav" role="menubar" aria-orientation="vertical">
+                    <ul role="menu">
+                        <li class="active" role="menuitem">
+                            <a href="#dashboard" aria-current="page">
+                                <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                                <span>Dashboard</span>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"><i class="fas fa-cube"></i> Pods</a>
+                        <li role="menuitem">
+                            <a href="#pods">
+                                <i class="fas fa-cube" aria-hidden="true"></i>
+                                <span>Pods</span>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                ><i class="fas fa-server"></i> Deployments</a
-                            >
+                        <li role="menuitem">
+                            <a href="#deployments">
+                                <i class="fas fa-server" aria-hidden="true"></i>
+                                <span>Deployments</span>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                ><i class="fas fa-network-wired"></i>
-                                Services</a
-                            >
+                        <li role="menuitem">
+                            <a href="#services">
+                                <i class="fas fa-network-wired" aria-hidden="true"></i>
+                                <span>Services</span>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"
-                                ><i class="fas fa-shield-alt"></i> Security</a
-                            >
+                        <li role="menuitem">
+                            <a href="#security">
+                                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                <span>Security</span>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"><i class="fas fa-file-alt"></i> Logs</a>
+                        <li role="menuitem">
+                            <a href="#logs">
+                                <i class="fas fa-file-alt" aria-hidden="true"></i>
+                                <span>Logs</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
 
                 <div class="sidebar-footer">
-                    <button id="themeToggle" class="theme-toggle">
-                        <i class="fas fa-moon"></i>
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
                         <span>Dark Mode</span>
                     </button>
-                    <div class="version">v2.0.0</div>
+                    <div class="version" aria-label="Version information">v2.0.0</div>
                 </div>
             </aside>
 
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Header -->
-                <header class="header">
+            <!-- Main Content Area -->
+            <main class="main-content" role="main">
+                <!-- Header Controls -->
+                <header class="header" role="banner">
                     <div class="namespace-selector">
                         <label for="namespace-dropdown">Namespace:</label>
-                        <select id="namespace-dropdown"></select>
+                        <select id="namespace-dropdown" aria-describedby="namespace-help">
+                            <option value="default">default</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <small id="namespace-help" class="sr-only">Select Kubernetes namespace to view resources</small>
                     </div>
 
                     <div class="header-actions">
                         <div class="auto-refresh-toggle">
                             <label for="autoRefreshToggle">Auto-refresh:</label>
-                            <input type="checkbox" id="autoRefreshToggle" aria-describedby="refresh-interval" />
-                            <span id="refresh-interval" class="refresh-interval">10s</span>
+                            <input 
+                                type="checkbox" 
+                                id="autoRefreshToggle" 
+                                aria-describedby="refresh-interval"
+                                role="switch"
+                            />
+                            <span id="refresh-interval" class="refresh-interval" aria-live="polite">10s</span>
                         </div>
 
-                        <button id="refreshButton" class="refresh-button" aria-label="Refresh dashboard data">
+                        <button 
+                            id="refreshButton" 
+                            class="refresh-button" 
+                            aria-label="Refresh dashboard data"
+                            title="Refresh all dashboard data"
+                        >
                             <i class="fas fa-sync-alt" aria-hidden="true"></i>
                         </button>
 
@@ -92,6 +120,7 @@
                             id="healthCheckButton"
                             class="health-check-button"
                             aria-label="Perform cluster health check"
+                            title="Check cluster health status"
                         >
                             <i class="fas fa-heartbeat" aria-hidden="true"></i>
                             <span>Health Check</span>
@@ -99,198 +128,171 @@
                     </div>
                 </header>
 
-                <!-- Dashboard Content -->
+                <!-- Dashboard Content Sections -->
                 <div class="dashboard-content">
-                    <!-- System Metrics Cards -->
-                    <section class="metrics-section">
-                        <h2>System Metrics</h2>
-                        <div class="metrics-grid">
-                            <!-- CPU Card -->
-                            <div class="metric-card cpu-utilization">
+                    <!-- System Metrics Section -->
+                    <section class="metrics-section" aria-labelledby="metrics-heading">
+                        <h2 id="metrics-heading">System Metrics</h2>
+                        <div class="metrics-grid" role="list">
+                            <!-- CPU Utilization Card -->
+                            <article class="metric-card cpu-utilization" role="listitem">
                                 <div class="metric-header">
                                     <h3>
-                                        <i class="fas fa-microchip"></i> CPU
-                                        Usage
+                                        <i class="fas fa-microchip" aria-hidden="true"></i>
+                                        CPU Usage
                                     </h3>
                                 </div>
                                 <div class="metric-body">
-                                    <div class="chart-container">
+                                    <div class="chart-container" role="img" aria-label="CPU usage chart">
                                         <canvas id="cpuChart"></canvas>
                                     </div>
                                     <div class="metric-value">
-                                        <span class="percentage">--%</span>
+                                        <span class="percentage" aria-live="polite">--%</span>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
 
-                            <!-- Memory Card -->
-                            <div class="metric-card memory-utilization">
+                            <!-- Memory Utilization Card -->
+                            <article class="metric-card memory-utilization" role="listitem">
                                 <div class="metric-header">
                                     <h3>
-                                        <i class="fas fa-memory"></i> Memory
-                                        Usage
+                                        <i class="fas fa-memory" aria-hidden="true"></i>
+                                        Memory Usage
                                     </h3>
                                 </div>
                                 <div class="metric-body">
-                                    <div class="chart-container">
+                                    <div class="chart-container" role="img" aria-label="Memory usage chart">
                                         <canvas id="memoryChart"></canvas>
                                     </div>
                                     <div class="metric-value">
-                                        <span class="percentage">--%</span>
+                                        <span class="percentage" aria-live="polite">--%</span>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
 
-                            <!-- Storage Card -->
-                            <div class="metric-card storage-used">
+                            <!-- Storage Usage Card -->
+                            <article class="metric-card storage-used" role="listitem">
                                 <div class="metric-header">
                                     <h3>
-                                        <i class="fas fa-hdd"></i> Storage Usage
+                                        <i class="fas fa-hdd" aria-hidden="true"></i>
+                                        Storage Usage
                                     </h3>
                                 </div>
                                 <div class="metric-body">
-                                    <div class="chart-container">
+                                    <div class="chart-container" role="img" aria-label="Storage usage chart">
                                         <canvas id="storageChart"></canvas>
                                     </div>
                                     <div class="metric-value">
-                                        <span class="percentage">--%</span>
+                                        <span class="percentage" aria-live="polite">--%</span>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         </div>
                     </section>
 
-                    <!-- Kubernetes Resources -->
-                    <section class="k8s-resources-section">
-                        <h2>Cluster Resources</h2>
-                        <div class="resources-grid">
+                    <!-- Kubernetes Resources Section -->
+                    <section class="k8s-resources-section" aria-labelledby="resources-heading">
+                        <h2 id="resources-heading">Cluster Resources</h2>
+                        <div class="resources-grid" role="list">
                             <!-- Deployments Card -->
-                            <div class="resource-card deployments">
-                                <div class="resource-icon">
+                            <article class="resource-card deployments" role="listitem">
+                                <div class="resource-icon" aria-hidden="true">
                                     <i class="fas fa-rocket"></i>
                                 </div>
                                 <div class="resource-details">
                                     <h3>Deployments</h3>
-                                    <span class="count">--</span>
+                                    <span class="count" aria-live="polite">--</span>
                                 </div>
-                            </div>
+                            </article>
 
                             <!-- Pods Card -->
-                            <div class="resource-card pods-running">
-                                <div class="resource-icon">
+                            <article class="resource-card pods-running" role="listitem">
+                                <div class="resource-icon" aria-hidden="true">
                                     <i class="fas fa-cube"></i>
                                 </div>
                                 <div class="resource-details">
                                     <h3>Pods Running</h3>
-                                    <span class="count">--</span>
+                                    <span class="count" aria-live="polite">--</span>
                                 </div>
-                            </div>
+                            </article>
 
                             <!-- Services Card -->
-                            <div class="resource-card services-running">
-                                <div class="resource-icon">
+                            <article class="resource-card services-running" role="listitem">
+                                <div class="resource-icon" aria-hidden="true">
                                     <i class="fas fa-network-wired"></i>
                                 </div>
                                 <div class="resource-details">
                                     <h3>Services</h3>
-                                    <span class="count">--</span>
+                                    <span class="count" aria-live="polite">--</span>
                                 </div>
-                            </div>
+                            </article>
                         </div>
                     </section>
 
-                    <!-- Health Status -->
-                    <section class="health-status-section">
-                        <h2>Cluster Health</h2>
+                    <!-- Cluster Health Section -->
+                    <section class="health-status-section" aria-labelledby="health-heading">
+                        <h2 id="health-heading">Cluster Health</h2>
                         <div class="health-status-container">
                             <div
                                 id="healthCheckResult"
                                 class="health-status-indicator"
+                                role="status"
+                                aria-live="polite"
+                                aria-label="Cluster health status"
                             >
                                 <span class="status-text">Not Checked</span>
                             </div>
                             <div class="health-details">
-                                <div class="health-metrics">
-                                    <div class="health-metric">
-                                        <span class="metric-label"
-                                            >API Server:</span
-                                        >
-                                        <span
-                                            class="metric-value"
-                                            id="apiServerStatus"
-                                            >--</span
-                                        >
+                                <div class="health-metrics" role="list">
+                                    <div class="health-metric" role="listitem">
+                                        <span class="metric-label">API Server:</span>
+                                        <span class="metric-value" id="apiServerStatus" aria-live="polite">--</span>
                                     </div>
-                                    <div class="health-metric">
-                                        <span class="metric-label"
-                                            >Scheduler:</span
-                                        >
-                                        <span
-                                            class="metric-value"
-                                            id="schedulerStatus"
-                                            >--</span
-                                        >
+                                    <div class="health-metric" role="listitem">
+                                        <span class="metric-label">Scheduler:</span>
+                                        <span class="metric-value" id="schedulerStatus" aria-live="polite">--</span>
                                     </div>
-                                    <div class="health-metric">
-                                        <span class="metric-label"
-                                            >Controller Manager:</span
-                                        >
-                                        <span
-                                            class="metric-value"
-                                            id="controllerStatus"
-                                            >--</span
-                                        >
+                                    <div class="health-metric" role="listitem">
+                                        <span class="metric-label">Controller Manager:</span>
+                                        <span class="metric-value" id="controllerStatus" aria-live="polite">--</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <!-- Pod Visualization -->
-                    <section class="pod-visualization-section">
-                        <h2>Pod Status</h2>
+                    <!-- Pod Status Visualization Section -->
+                    <section class="pod-visualization-section" aria-labelledby="pod-status-heading">
+                        <h2 id="pod-status-heading">Pod Status</h2>
                         <div class="pod-visualization-container">
-                            <div class="pod-status-summary">
-                                <div class="status-item running">
-                                    <span
-                                        class="status-count"
-                                        id="podsRunningCount"
-                                        >--</span
-                                    >
+                            <div class="pod-status-summary" role="list">
+                                <div class="status-item running" role="listitem">
+                                    <span class="status-count" id="podsRunningCount" aria-live="polite">--</span>
                                     <span class="status-label">Running</span>
                                 </div>
-                                <div class="status-item pending">
-                                    <span
-                                        class="status-count"
-                                        id="podsPendingCount"
-                                        >--</span
-                                    >
+                                <div class="status-item pending" role="listitem">
+                                    <span class="status-count" id="podsPendingCount" aria-live="polite">--</span>
                                     <span class="status-label">Pending</span>
                                 </div>
-                                <div class="status-item failed">
-                                    <span
-                                        class="status-count"
-                                        id="podsFailedCount"
-                                        >--</span
-                                    >
+                                <div class="status-item failed" role="listitem">
+                                    <span class="status-count" id="podsFailedCount" aria-live="polite">--</span>
                                     <span class="status-label">Failed</span>
                                 </div>
                             </div>
-                            <div class="pod-status-chart-container">
+                            <div class="pod-status-chart-container" role="img" aria-label="Pod status distribution chart">
                                 <canvas id="podStatusChart"></canvas>
                             </div>
                         </div>
                     </section>
 
-                    <!-- Security Scanner -->
-                    <section class="security-section">
-                        <h2>Container Security Scanner</h2>
+                    <!-- Security Scanner Section -->
+                    <section class="security-section" aria-labelledby="security-heading">
+                        <h2 id="security-heading">Container Security Scanner</h2>
                         <div class="security-scanner-container">
-                            <form id="scanForm" class="scan-form">
+                            <form id="scanForm" class="scan-form" aria-labelledby="scan-form-heading">
+                                <h3 id="scan-form-heading" class="sr-only">Scan Docker Image for Vulnerabilities</h3>
                                 <div class="form-group">
-                                    <label for="imageInput"
-                                        >Docker Image:</label
-                                    >
+                                    <label for="imageInput">Docker Image:</label>
                                     <div class="input-with-button">
                                         <input
                                             type="text"
@@ -299,6 +301,7 @@
                                             placeholder="e.g. nginx:latest"
                                             aria-describedby="image-help"
                                             required
+                                            autocomplete="off"
                                         />
                                         <button
                                             type="submit"
@@ -312,22 +315,23 @@
                                 </div>
                             </form>
 
-                            <div class="scan-results-container">
+                            <div class="scan-results-container" aria-live="polite">
                                 <div class="scan-summary" id="scanSummary">
-                                    <div class="vulnerability-counts">
-                                        <div class="vuln-count critical">
+                                    <h3 class="sr-only">Vulnerability Summary</h3>
+                                    <div class="vulnerability-counts" role="list">
+                                        <div class="vuln-count critical" role="listitem">
                                             <span class="count">-</span>
                                             <span class="label">Critical</span>
                                         </div>
-                                        <div class="vuln-count high">
+                                        <div class="vuln-count high" role="listitem">
                                             <span class="count">-</span>
                                             <span class="label">High</span>
                                         </div>
-                                        <div class="vuln-count medium">
+                                        <div class="vuln-count medium" role="listitem">
                                             <span class="count">-</span>
                                             <span class="label">Medium</span>
                                         </div>
-                                        <div class="vuln-count low">
+                                        <div class="vuln-count low" role="listitem">
                                             <span class="count">-</span>
                                             <span class="label">Low</span>
                                         </div>
@@ -340,14 +344,18 @@
                                         <button
                                             id="exportScanResults"
                                             class="export-button"
+                                            aria-label="Export scan results"
                                         >
-                                            <i class="fas fa-download"></i>
+                                            <i class="fas fa-download" aria-hidden="true"></i>
                                             Export
                                         </button>
                                     </div>
                                     <pre
                                         id="scanResults"
                                         class="scan-results-output"
+                                        role="status"
+                                        aria-label="Scan results details"
+                                        tabindex="0"
                                     >
 {}</pre
                                     >
@@ -356,37 +364,48 @@
                         </div>
                     </section>
 
-                    <!-- Log Viewer -->
-                    <section class="logs-section">
-                        <h2>Pod Logs</h2>
+                    <!-- Log Viewer Section -->
+                    <section class="logs-section" aria-labelledby="logs-heading">
+                        <h2 id="logs-heading">Pod Logs</h2>
                         <div class="logs-container">
                             <div class="logs-header">
                                 <div class="pod-selector">
                                     <label for="podSelector">Select Pod:</label>
-                                    <select id="podSelector">
+                                    <select id="podSelector" aria-describedby="pod-help">
                                         <option value="">
                                             -- Select Pod --
                                         </option>
                                     </select>
+                                    <small id="pod-help" class="sr-only">Choose a pod to view its logs</small>
                                 </div>
                                 <div class="logs-actions">
                                     <button
                                         id="refreshLogs"
                                         class="refresh-logs-button"
+                                        aria-label="Refresh pod logs"
                                     >
-                                        <i class="fas fa-sync-alt"></i> Refresh
+                                        <i class="fas fa-sync-alt" aria-hidden="true"></i> Refresh
                                     </button>
                                     <div class="logs-filter">
+                                        <label for="logsFilter" class="sr-only">Filter logs:</label>
                                         <input
                                             type="text"
                                             id="logsFilter"
                                             placeholder="Filter logs..."
+                                            aria-label="Filter log messages"
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div class="logs-output-container">
-                                <pre id="logsOutput" class="logs-output">
+                                <pre 
+                                    id="logsOutput" 
+                                    class="logs-output"
+                                    role="status"
+                                    aria-label="Pod log output"
+                                    aria-live="polite"
+                                    tabindex="0"
+                                >
 Select a pod to view logs</pre
                                 >
                             </div>
@@ -397,6 +416,12 @@ Select a pod to view logs</pre
         </div>
 
         <!-- Notification System -->
-        <div id="notifications" class="notifications-container"></div>
+        <div 
+            id="notifications" 
+            class="notifications-container"
+            role="status"
+            aria-live="polite"
+            aria-label="System notifications"
+        ></div>
     </body>
 </html>

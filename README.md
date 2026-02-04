@@ -1,70 +1,47 @@
-# 🚀 **Kubernetes Dashboard – Enhanced Kubernetes Monitoring & Security**  
+# 🚀 **Kubernetes Dashboard – Modern Container Orchestration Management**
 
 ![kubedash](https://imgur.com/xF4zrEI.png)
 
-**A comprehensive Kubernetes Dashboard with real-time system monitoring, interactive visualizations, health checks, container security scanning, and dark/light theme support.**
+**A comprehensive, modern Kubernetes Dashboard with real-time monitoring, interactive visualizations, enhanced UI/UX, and security scanning.**
 
-Empower your DevOps workflow with **advanced cluster insights, security vulnerability detection, and an intuitive UI** for Kubernetes resource management.  
-
----
-
-## 📌 **Table of Contents**  
-
-- [🌟 Overview](#-overview)  
-- [✨ Features](#-features)  
-- [🛠 Prerequisites](#-prerequisites)  
-- [⚙️ Installation & Setup](#️-installation--setup)  
-- [🔍 How It Works](#-how-it-works)  
-- [🛡 Security & Vulnerability Scanning](#-security--vulnerability-scanning)  
-- [⚙️ Technology Stack](#️-technology-stack)  
-- [🚀 Deployment Options](#-deployment-options)  
-- [📜 License](#-license)  
-- [🌟 Support & Contributions](#-support--contributions)  
+Empower your DevOps workflow with **advanced cluster insights, modern glassmorphic UI, and security vulnerability detection** for Kubernetes resource management.
 
 ---
 
 ## 🌟 **Overview**  
 
-The **Enhanced Kubernetes Dashboard** provides a modern, feature-rich interface for **monitoring, managing, and securing your Kubernetes clusters**.
-
-🔹 **Real-time visualizations** – Interactive charts for CPU, memory, and storage metrics  
-🔹 **Comprehensive cluster view** – Monitor deployments, pods, services, and more  
-🔹 **Dark/Light theme support** – Comfortable viewing in any environment  
-🔹 **Security scanning with Trivy** – Detect vulnerabilities in container images  
-🔹 **Pod logs viewer** – Easily access and filter container logs  
-🔹 **Modern responsive UI** – Optimized for desktop and mobile devices  
-🔹 **Health status monitoring** – Track cluster component health  
-
-This dashboard enables **DevOps engineers, SREs, and developers** to efficiently manage their **Kubernetes clusters** while ensuring security best practices.  
+The **Modern Kubernetes Dashboard** provides a **beautiful, feature-rich interface** for **monitoring, managing, and securing your Kubernetes clusters**.
 
 ---
 
-## ✨ **New Features & Enhancements**
+## ✨ **Features**  
 
-### 🎨 **UI Improvements**
-- **Modern dashboard layout** with sidebar navigation
-- **Dark/light theme support** with system preference detection
-- **Responsive design** for all device sizes
-- **Interactive charts** for system metrics
-- **Improved notifications system**
+### 🎨 **Modern UI/UX Design**
+- **🌈 Glassmorphic Design** – Modern frosted glass effects with gradient backgrounds
+- **🎭 Enhanced Themes** – Improved dark/light mode with smooth transitions
+- **📱 Responsive Layout** – Perfect adaptation to all screen sizes (1400px to 480px)
+- **⚡ Smooth Animations** – Micro-interactions, hover effects, and loading states
+- **🎯 Better Typography** – Clear visual hierarchy and improved readability
+- **♿ Accessibility Features** – ARIA labels, keyboard navigation, screen reader support
 
-### 📊 **Visualization Enhancements**
-- **Real-time metric charts** for CPU, memory, and storage
-- **Pod status visualization** with color-coded status indicators
-- **Vulnerability summary charts** for security scans
-- **Historical metrics** for trend analysis
+### 📊 **Monitoring & Visualization**
+- **📈 Real-time Charts** – CPU, memory, and storage metrics with Chart.js
+- **📋 Historical Data** – Performance trends and metrics history
+- **🔄 Auto-refresh** – Configurable automatic data updates
+- **🎨 Interactive Visualizations** – Pod status charts and health indicators
 
-### 🔧 **Functional Improvements**
-- **Enhanced pod management** with detailed status information
-- **Advanced log viewer** with filtering capabilities
-- **Improved security scanner** with vulnerability classification
-- **Health status indicators** for cluster components
-- **Streamlined namespace management**
+### ☸️ **Kubernetes Integration**
+- **🏛️ Resource Management** – Deployments, pods, services monitoring
+- **📂 Namespace Support** – Multi-namespace resource filtering
+- **🏥 Health Monitoring** – Component-level health checks
+- **📝 Log Viewer** – Real-time pod logs with filtering
+- **🔍 Node Information** – Cluster node details and status
 
 ### 🔒 **Security Features**
-- **Detailed vulnerability reports** with severity classification
-- **Export functionality** for scan results
-- **Component-level health monitoring**
+- **🛡️ Trivy Integration** – Container vulnerability scanning
+- **📊 Severity Classification** – Critical, High, Medium, Low vulnerability counts
+- **📤 Export Functionality** – JSON/CSV export for compliance
+- **🔍 Detailed Reports** – CVE information and remediation suggestions
 
 ---
 
@@ -111,95 +88,38 @@ pip install -r requirements.txt
 ### 3️⃣ **Start the Flask Application**  
 
 ```bash
-python systeminfo.py
+# New modular version (recommended)
+python app.py
+
+# Or use the original monolithic version
+python systeminfo.py.backup
 ```
 
 🚀 The dashboard is now accessible at **[http://localhost:5000](http://localhost:5000)**.  
 
 ---
 
-## 🔍 **How It Works**  
+## 🔍 **Usage Instructions**  
 
-### 📊 **Real-time System Monitoring**  
+### � **System Monitoring**  
 
-- **Interactive charts** display live CPU, memory, and storage metrics
-- **Historical data tracking** shows performance trends over time
-- **Auto-refresh functionality** keeps data current
+1. **View Real-time Metrics** – The dashboard automatically displays CPU, memory, and storage usage
+2. **Historical Data** – Charts show performance trends over time
+3. **Auto-refresh** – Enable auto-refresh for continuous monitoring (adjustable interval)
 
-### 🔄 **Kubernetes Resource Management**  
+### ☸️ **Kubernetes Resource Management**  
 
-- **Choose a namespace** from the dropdown to filter resources
-- **View deployments, pods, and services** specific to the selected namespace
-- **Pod status visualization** shows running, pending, and failed pods
+1. **Select Namespace** – Use the dropdown to filter resources by namespace
+2. **View Resources** – Monitor deployments, pods, and services in the selected namespace
+3. **Pod Status** – Visual indicators show running, pending, and failed pods
+4. **Health Checks** – Monitor cluster component health (API server, scheduler, controller manager)
 
-### 🛡 **Image Security Scanning**  
+### 🛡 **Security Scanning**  
 
-- Enter a **Docker image name** (e.g., `nginx:latest`)
-- Get a **comprehensive vulnerability report** with severity classifications
-- **Export scan results** for documentation and compliance
-
-### 📋 **Pod Logs Viewer**
-
-- **Select a pod** to view its logs
-- **Filter log content** to find specific information
-- **Real-time log updates** for active monitoring
-
----
-
-## 🛡 **Security & Vulnerability Scanning**
-
-This dashboard integrates **Trivy** to perform real-time security assessments of **Docker images**.  
-
-### 🔥 **Enhanced Security Features**  
-
-✅ **Vulnerability summary** with severity counts (Critical, High, Medium, Low)  
-✅ **Detailed vulnerability reports** with CVE information  
-✅ **Export functionality** for documentation and compliance  
-✅ **Visual indicators** for security status  
-
-### 🔍 **Running a Scan**  
-
-1. Enter the Docker image name in the scan form
-2. Click the Scan button
-3. View the vulnerability summary and detailed report
-4. Export results if needed
-
----
-
-## ⚙️ **Technology Stack**  
-
-| **Component**        | **Technology**             |
-|----------------------|---------------------------|
-| **Frontend**         | HTML5, CSS3, JavaScript ES6 |
-| **UI Framework**     | Custom CSS with Flexbox/Grid |
-| **Charts**           | Chart.js                  |
-| **Backend**          | Python Flask              |
-| **Kubernetes API**   | Python Kubernetes Client  |
-| **Security Scanning**| Trivy                     |
-| **Deployment**       | Docker, Kubernetes        |
-
----
-
-## 🚀 **Deployment Options**  
-
-You can deploy the Kubernetes Dashboard using **Docker, Kubernetes, or a cloud platform**.  
-
-### 🔹 **Run with Docker**  
-
-```bash
-docker build -t kubernetes-dashboard .
-docker run -p 5000:5000 kubernetes-dashboard
-```
-
-### 🔹 **Deploy on Kubernetes**  
-
-```bash
-kubectl apply -f k8s-manifest.yaml
-```
-
-### 🔹 **Deploy on Cloud (AWS/GCP/Azure)**  
-
-You can deploy the dashboard on a **Kubernetes cluster** running on AWS EKS, GCP GKE, or Azure AKS.  
+1. **Enter Image Name** – Type a Docker image name (e.g., `nginx:latest`, `ubuntu:20.04`)
+2. **Run Scan** – Click the Scan button to start vulnerability analysis
+3. **View Results** – See vulnerability counts by severity (Critical, High, Medium, Low)
+4. **Export Reports** – Download scan results in JSON or CSV format for documentation
 
 ---
 
