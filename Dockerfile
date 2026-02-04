@@ -19,9 +19,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Trivy for security scanning
-RUN wget -qO - https://github.com/aquasecurity/trivy/releases/latest/download/trivy_linux_amd64.tar.gz | tar -xzv \
-    && mv trivy /usr/local/bin/trivy \
-    && chmod +x /usr/local/bin/trivy
+RUN wget -qO /tmp/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/latest/download/trivy_linux_amd64.tar.gz \
+    && tar -xzf /tmp/trivy.tar.gz -C /tmp/ \
+    && mv /tmp/trivy /usr/local/bin/trivy \
+    && chmod +x /usr/local/bin/trivy \
+    && rm -f /tmp/trivy.tar.gz
 
 # Copy requirements first for better caching
 COPY requirements.txt .
