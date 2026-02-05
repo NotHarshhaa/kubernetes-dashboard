@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: kubernetes-dashboard
+  IMAGE_NAME: harshhaareddy/kubernetes-dashboard
 
 jobs:
   build-and-push:

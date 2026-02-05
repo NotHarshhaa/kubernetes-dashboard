@@ -7,10 +7,7 @@ yarn-error.log*
 # Next.js
 .next/
 out/
-
-# Production
-build
-dist
+build/
 
 # Misc
 .DS_Store
@@ -18,6 +15,7 @@ dist
 
 # Debug
 npm debug.log*
+.env*
 
 # Local env files
 .env*.local
