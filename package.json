@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "docker:build": "docker build -t kubernetes-dashboard .",
+    "docker:run": "docker run -p 3000:3000 kubernetes-dashboard",
+    "docker:compose": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "k8s:deploy": "kubectl apply -f k8s/",
+    "k8s:delete": "kubectl delete -f k8s/",
+    "k8s:status": "kubectl get pods -l app=kubernetes-dashboard && kubectl get services"
   },
   "dependencies": {
     "@kubernetes/client-node": "^1.4.0",

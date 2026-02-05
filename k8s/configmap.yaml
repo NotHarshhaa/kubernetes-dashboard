@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-dashboard-config
+  namespace: default
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"
+  REFRESH_INTERVAL: "10000"
+  THEME: "light"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubernetes-dashboard-secrets
+  namespace: default
+type: Opaque
+data:
+  # Base64 encoded values
+  # echo -n "admin" | base64
+  KUBERNETES_DASHBOARD_USERNAME: YWRtaW4=
+  # echo -n "password123" | base64  
+  KUBERNETES_DASHBOARD_PASSWORD: cGFzc3dvcmQxMjM=
