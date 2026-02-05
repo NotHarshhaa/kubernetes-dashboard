@@ -1,161 +1,127 @@
-# 🚀 **Kubernetes Dashboard – Modern Container Orchestration Management**
+# Kubernetes Dashboard
 
-![kubedash](https://imgur.com/xF4zrEI.png)
+A modern, responsive Kubernetes dashboard built with Next.js and shadcn/ui. This application provides a comprehensive interface for monitoring and managing Kubernetes clusters.
 
-**A comprehensive, modern Kubernetes Dashboard with real-time monitoring, interactive visualizations, enhanced UI/UX, and security scanning.**
+## Features
 
-Empower your DevOps workflow with **advanced cluster insights, modern glassmorphic UI, and security vulnerability detection** for Kubernetes resource management.
+- **Cluster Overview**: Real-time cluster metrics and health status
+- **Pod Management**: View, monitor, and manage pods across all namespaces
+- **Service Management**: Monitor services and their configurations
+- **Node Monitoring**: Track node health and resource utilization
+- **Deployment Management**: Monitor deployment status and replica counts
+- **Real-time Monitoring**: CPU, memory, and network usage charts
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
----
+## Tech Stack
 
-## 🌟 **Overview**  
+- **Frontend**: Next.js 14 with TypeScript
+- **UI Components**: shadcn/ui with Tailwind CSS
+- **Icons**: Lucide React
+- **Charts**: Recharts
+- **Kubernetes Integration**: @kubernetes/client-node
 
-The **Modern Kubernetes Dashboard** provides a **beautiful, feature-rich interface** for **monitoring, managing, and securing your Kubernetes clusters**.
+## Prerequisites
 
----
+- Node.js 18+ 
+- npm, yarn, pnpm, or bun
+- Access to a Kubernetes cluster
+- kubectl configured with cluster access
 
-## ✨ **Features**  
+## Getting Started
 
-### 🎨 **Modern UI/UX Design**
-- **🌈 Glassmorphic Design** – Modern frosted glass effects with gradient backgrounds
-- **🎭 Enhanced Themes** – Improved dark/light mode with smooth transitions
-- **📱 Responsive Layout** – Perfect adaptation to all screen sizes (1400px to 480px)
-- **⚡ Smooth Animations** – Micro-interactions, hover effects, and loading states
-- **🎯 Better Typography** – Clear visual hierarchy and improved readability
-- **♿ Accessibility Features** – ARIA labels, keyboard navigation, screen reader support
-
-### 📊 **Monitoring & Visualization**
-- **📈 Real-time Charts** – CPU, memory, and storage metrics with Chart.js
-- **📋 Historical Data** – Performance trends and metrics history
-- **🔄 Auto-refresh** – Configurable automatic data updates
-- **🎨 Interactive Visualizations** – Pod status charts and health indicators
-
-### ☸️ **Kubernetes Integration**
-- **🏛️ Resource Management** – Deployments, pods, services monitoring
-- **📂 Namespace Support** – Multi-namespace resource filtering
-- **🏥 Health Monitoring** – Component-level health checks
-- **📝 Log Viewer** – Real-time pod logs with filtering
-- **🔍 Node Information** – Cluster node details and status
-
-### 🔒 **Security Features**
-- **🛡️ Trivy Integration** – Container vulnerability scanning
-- **📊 Severity Classification** – Critical, High, Medium, Low vulnerability counts
-- **📤 Export Functionality** – JSON/CSV export for compliance
-- **🔍 Detailed Reports** – CVE information and remediation suggestions
-
----
-
-## 🛠 **Prerequisites**  
-
-Before installing the Kubernetes Dashboard, ensure you have the following dependencies installed:  
-
-🔹 **Python 3.8+** – Required for Flask backend.  
-🔹 **pip** – Python package manager.  
-🔹 **Docker & Kubernetes Cluster** – To monitor cluster resources.  
-🔹 **kubectl** – Kubernetes command-line tool.  
-🔹 **Trivy** – For container image vulnerability scanning.  
-
-Install **kubectl** and **Trivy** if not already installed:  
-
+1. **Install dependencies**:
 ```bash
-# Install kubectl (for Kubernetes resource monitoring)
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl
-sudo mv kubectl /usr/local/bin/
-
-# Install Trivy (for security scanning)
-brew install aquasecurity/trivy/trivy  # For macOS
-sudo apt install trivy  # For Ubuntu/Debian
+npm install
 ```
 
----
-
-## ⚙️ **Installation & Setup**  
-
-### 1️⃣ **Clone the Repository**  
-
+2. **Run the development server**:
 ```bash
-git clone https://github.com/NotHarshhaa/kubernetes-dashboard.git
-cd kubernetes-dashboard
+npm run dev
 ```
 
-### 2️⃣ **Install Python Dependencies**  
+3. **Open your browser**:
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-```bash
-pip install -r requirements.txt
+## Kubernetes Setup
+
+The dashboard uses your local kubectl configuration to connect to your Kubernetes cluster. Make sure:
+
+1. Your kubectl is properly configured
+2. You have the necessary permissions to view cluster resources
+3. The cluster is accessible from your development environment
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── pods/              # Pods management page
+│   ├── services/          # Services management page
+│   ├── nodes/             # Node monitoring page
+│   ├── deployments/       # Deployment management page
+│   ├── monitoring/        # Real-time monitoring page
+│   └── page.tsx          # Dashboard overview
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   └── dashboard-layout.tsx  # Main layout component
+└── lib/
+    ├── utils.ts           # Utility functions
+    └── kubernetes.ts      # Kubernetes API service
 ```
 
-### 3️⃣ **Start the Flask Application**  
+## Available Pages
+
+- **/** - Cluster overview with key metrics
+- **/pods** - Pod management and monitoring
+- **/services** - Service configuration and status
+- **/nodes** - Node health and resource usage
+- **/deployments** - Deployment status and management
+- **/monitoring** - Real-time metrics and charts
+
+## Development
+
+### Adding New Features
+
+1. Create new pages in the `src/app/` directory
+2. Add Kubernetes API methods in `src/lib/kubernetes.ts`
+3. Use shadcn/ui components for consistent UI
+4. Follow the existing code patterns and TypeScript conventions
+
+### Kubernetes API Integration
+
+The application uses the official Kubernetes JavaScript client. All API interactions are handled through the `kubernetesService` in `src/lib/kubernetes.ts`.
+
+## Build and Deploy
 
 ```bash
-# New modular version (recommended)
-python app.py
+# Build for production
+npm run build
 
-# Or use the original monolithic version
-python systeminfo.py.backup
+# Start production server
+npm start
 ```
 
-🚀 The dashboard is now accessible at **[http://localhost:5000](http://localhost:5000)**.  
+### Deployment Options
 
----
+- **Vercel**: Deploy directly to Vercel for serverless hosting
+- **Docker**: Containerize the application for Kubernetes deployment
+- **Static Export**: Generate static files for CDN hosting
 
-## 🔍 **Usage Instructions**  
+## Security Considerations
 
-### � **System Monitoring**  
+- The dashboard runs in the browser and connects directly to your Kubernetes cluster
+- Ensure your kubeconfig has appropriate read-only permissions
+- Consider using a service account with limited permissions for production deployments
+- Enable RBAC to restrict access to sensitive cluster resources
 
-1. **View Real-time Metrics** – The dashboard automatically displays CPU, memory, and storage usage
-2. **Historical Data** – Charts show performance trends over time
-3. **Auto-refresh** – Enable auto-refresh for continuous monitoring (adjustable interval)
+## Contributing
 
-### ☸️ **Kubernetes Resource Management**  
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-1. **Select Namespace** – Use the dropdown to filter resources by namespace
-2. **View Resources** – Monitor deployments, pods, and services in the selected namespace
-3. **Pod Status** – Visual indicators show running, pending, and failed pods
-4. **Health Checks** – Monitor cluster component health (API server, scheduler, controller manager)
+## License
 
-### 🛡 **Security Scanning**  
-
-1. **Enter Image Name** – Type a Docker image name (e.g., `nginx:latest`, `ubuntu:20.04`)
-2. **Run Scan** – Click the Scan button to start vulnerability analysis
-3. **View Results** – See vulnerability counts by severity (Critical, High, Medium, Low)
-4. **Export Reports** – Download scan results in JSON or CSV format for documentation
-
----
-
-## 📜 **License**  
-
-This project is licensed under the **MIT License** – free for personal and commercial use.  
-
----
-
-## 🌟 **Support & Contributions**
-
-### 🤝 **Contributing**  
-
-Contributions are welcome! If you'd like to improve this project, feel free to submit a pull request.  
-
----
-
-### **Hit the Star!** ⭐
-
-**If you find this repository helpful and plan to use it for learning, please give it a star. Your support is appreciated!**
-
----
-
-### 🛠️ **Author & Community**  
-
-This project is crafted by **[Harshhaa](https://github.com/NotHarshhaa)** 💡.  
-I'd love to hear your feedback! Feel free to share your thoughts.  
-
----
-
-### 📧 **Connect with me:**
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/harshhaa-vardhan-reddy) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/NotHarshhaa)  [![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/prodevopsguy) [![Dev.to](https://img.shields.io/badge/Dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)](https://dev.to/notharshhaa) [![Hashnode](https://img.shields.io/badge/Hashnode-2962FF?style=for-the-badge&logo=hashnode&logoColor=white)](https://hashnode.com/@prodevopsguy)  
-
----
-
-### 📢 **Stay Connected**  
-
-![Follow Me](https://imgur.com/2j7GSPs.png)
+This project is licensed under the MIT License.
