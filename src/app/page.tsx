@@ -95,26 +95,26 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <Card className="relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses[color || 'blue']} opacity-5`}></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</CardTitle>
-            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base font-semibold text-slate-600 dark:text-slate-400">{title}</CardTitle>
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 shadow-inner">
               {icon}
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex items-baseline space-x-2">
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
+            <div className="flex items-baseline space-x-3">
+              <div className="text-3xl font-bold text-slate-900 dark:text-white">{value}</div>
               {trend && (
-                <div className={`flex items-center text-xs ${
+                <div className={`flex items-center text-sm ${
                   trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-slate-500'
                 }`}>
-                  {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : trend === 'down' ? <ArrowDownRight className="w-3 h-3" /> : null}
+                  {trend === 'up' ? <ArrowUpRight className="w-4 h-4" /> : trend === 'down' ? <ArrowDownRight className="w-4 h-4" /> : null}
                 </div>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{subtitle}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -172,22 +172,22 @@ export default function Home() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Cluster Overview</h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Monitor and manage your Kubernetes cluster</p>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Cluster Overview</h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Monitor and manage your Kubernetes cluster with real-time insights</p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               {isDemoMode && (
-                <Badge variant="outline" className="border-purple-600 text-purple-600 bg-purple-50 dark:bg-purple-900/20">
-                  <Eye className="w-3 h-3 mr-1" />
+                <Badge variant="outline" className="border-purple-600 text-purple-600 bg-purple-50 dark:bg-purple-900/20 rounded-lg px-4 py-2">
+                  <Eye className="w-4 h-4 mr-2" />
                   Demo Mode
                 </Badge>
               )}
-              <Badge variant="outline" className="border-green-600 text-green-600 bg-green-50 dark:bg-green-900/20">
-                <div className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+              <Badge variant="outline" className="border-green-600 text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2">
+                <div className="mr-2 h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
                 Connected
               </Badge>
-              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                <Activity className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="lg" onClick={() => window.location.reload()} className="rounded-xl">
+                <Activity className="h-5 w-5 mr-2" />
                 Refresh
               </Button>
             </div>
@@ -200,7 +200,7 @@ export default function Home() {
             title="Nodes"
             value={clusterInfo?.nodes || 0}
             subtitle={`${readyNodes} ready, ${nodes.length - readyNodes} not ready`}
-            icon={<Server className="h-5 w-5 text-blue-600" />}
+            icon={<Server className="h-6 w-6 text-blue-600" />}
             trend="neutral"
             color="blue"
           />
@@ -208,7 +208,7 @@ export default function Home() {
             title="Pods"
             value={clusterInfo?.pods || 0}
             subtitle={`${runningPods} running, ${pods.length - runningPods} other states`}
-            icon={<Container className="h-5 w-5 text-green-600" />}
+            icon={<Container className="h-6 w-6 text-green-600" />}
             trend="up"
             color="green"
           />
@@ -216,7 +216,7 @@ export default function Home() {
             title="Services"
             value={clusterInfo?.services || 0}
             subtitle={`${internalServices} internal, ${services.length - internalServices} external`}
-            icon={<Network className="h-5 w-5 text-purple-600" />}
+            icon={<Network className="h-6 w-6 text-purple-600" />}
             trend="neutral"
             color="purple"
           />
@@ -224,7 +224,7 @@ export default function Home() {
             title="Namespaces"
             value={clusterInfo?.namespaces || 0}
             subtitle="Active namespaces"
-            icon={<Database className="h-5 w-5 text-orange-600" />}
+            icon={<Database className="h-6 w-6 text-orange-600" />}
             trend="neutral"
             color="orange"
           />
@@ -236,29 +236,31 @@ export default function Home() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-blue-600" />
+          <Card className="border-0 shadow-xl rounded-2xl">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center space-x-3 text-2xl">
+                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/20">
+                  <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
                 <span>Cluster Information</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Kubernetes {clusterInfo?.version} • Production Environment
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Cluster Name</p>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{clusterInfo?.name}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cluster Name</p>
+                  <p className="text-xl font-semibold text-slate-900 dark:text-white">{clusterInfo?.name}</p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Kubernetes Version</p>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{clusterInfo?.version}</p>
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kubernetes Version</p>
+                  <p className="text-xl font-semibold text-slate-900 dark:text-white">{clusterInfo?.version}</p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Connection Status</p>
-                  <div className="mt-1">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Connection Status</p>
+                  <div className="mt-2">
                     {getStatusBadge('Connected')}
                   </div>
                 </div>
