@@ -18,6 +18,8 @@ import {
   Server,
   Shield,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Bell,
   LucideIcon
 } from "lucide-react"
@@ -39,6 +41,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
 
   const NavItem = ({ item }: { item: typeof navigation[0] }) => {
@@ -52,8 +55,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           "group relative flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
           isActive
             ? "bg-gradient-to-r " + item.color + " text-white shadow-lg scale-[1.02]"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
+          sidebarCollapsed ? "justify-center px-3" : "justify-between"
         )}
+        title={sidebarCollapsed ? item.name : undefined}
       >
         <div className={cn(
           "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
@@ -66,21 +71,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             isActive ? "text-white" : "text-slate-600 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
           )} />
         </div>
-        <div className="ml-3 flex-1">
-          <div className={cn(
-            "font-medium transition-all duration-200",
-            isActive ? "text-white" : "text-slate-900 dark:text-white"
-          )}>
-            {item.name}
+        {!sidebarCollapsed && (
+          <div className="ml-3 flex-1">
+            <div className={cn(
+              "font-medium transition-all duration-200",
+              isActive ? "text-white" : "text-slate-900 dark:text-white"
+            )}>
+              {item.name}
+            </div>
+            <div className={cn(
+              "text-xs transition-all duration-200",
+              isActive ? "text-white/80" : "text-slate-500 dark:text-slate-400"
+            )}>
+              {item.description}
+            </div>
           </div>
-          <div className={cn(
-            "text-xs transition-all duration-200",
-            isActive ? "text-white/80" : "text-slate-500 dark:text-slate-400"
-          )}>
-            {item.description}
-          </div>
-        </div>
-        {isActive && (
+        )}
+        {isActive && !sidebarCollapsed && (
           <div className="absolute right-2 h-2 w-2 rounded-full bg-white animate-pulse" />
         )}
       </a>
@@ -119,42 +126,89 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col lg:bg-white/95 lg:border-r lg:border-slate-200/50 dark:lg:bg-slate-900/95 dark:lg:border-slate-700/50 lg:backdrop-blur-sm">
-        <div className="flex h-20 items-center px-6 border-b border-slate-200/50 dark:border-slate-700/50">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
+      <div className={cn(
+        "hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:bg-white/95 lg:border-r lg:border-slate-200/50 dark:lg:bg-slate-900/95 dark:lg:border-slate-700/50 lg:backdrop-blur-sm transition-all duration-300",
+        sidebarCollapsed ? "lg:w-20" : "lg:w-80"
+      )}>
+        <div className={cn(
+          "flex h-20 items-center border-b border-slate-200/50 dark:border-slate-700/50 transition-all duration-300",
+          sidebarCollapsed ? "px-4 justify-center" : "px-6 justify-between"
+        )}>
+          <div className={cn(
+            "flex items-center space-x-3 transition-all duration-300",
+            sidebarCollapsed ? "" : ""
+          )}>
+            <div 
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg transition-all duration-300 relative",
+                sidebarCollapsed && "cursor-pointer hover:scale-110"
+              )}
+              onClick={() => sidebarCollapsed && setSidebarCollapsed(false)}
+              title="Expand sidebar"
+            >
               <Shield className="h-6 w-6 text-white" />
+              {sidebarCollapsed && (
+                <div className="absolute -right-1 -top-1 h-3 w-3 bg-blue-500 rounded-full flex items-center justify-center">
+                  <ChevronRight className="h-2 w-2 text-white" />
+                </div>
+              )}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">K8s Dashboard</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Cluster Management</p>
-            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">K8s Dashboard</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Cluster Management</p>
+              </div>
+            )}
           </div>
+          {!sidebarCollapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Collapse sidebar"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
         </div>
-        <nav className="flex-1 space-y-2 px-3 py-6">
+        <nav className={cn(
+          "flex-1 space-y-2 px-3 py-6 transition-all duration-300",
+          sidebarCollapsed ? "px-2 py-6 space-y-4" : ""
+        )}>
           {navigation.map((item) => (
             <NavItem key={item.name} item={item} />
           ))}
         </nav>
         <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-4 backdrop-blur-sm bg-white/50 dark:bg-slate-800/50">
-          <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+          <div className={cn(
+            "flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300",
+            sidebarCollapsed ? "justify-center" : ""
+          )}>
             <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700">
               <AvatarImage src="/avatars/01.png" alt="User" />
               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">CA</AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Cluster Admin</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">admin@k8s.local</p>
-            </div>
-            <Button variant="ghost" size="sm" className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-              <ChevronDown className="h-4 w-4" />
-            </Button>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Cluster Admin</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">admin@k8s.local</p>
+              </div>
+            )}
+            {!sidebarCollapsed && (
+              <Button variant="ghost" size="sm" className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-80">
+      <div className={cn(
+        "transition-all duration-300",
+        sidebarCollapsed ? "lg:pl-20" : "lg:pl-80"
+      )}>
         <div className="sticky top-0 z-40 flex h-20 items-center gap-x-4 border-b border-slate-200/50 bg-white/90 backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/90 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <Button
             variant="ghost"
