@@ -666,7 +666,6 @@ export default function SettingsPage() {
                     <Switch
                       checked={debugMode}
                       onCheckedChange={setDebugMode}
-                      size="sm"
                     />
                   </div>
                   
@@ -678,7 +677,6 @@ export default function SettingsPage() {
                     <Switch
                       checked={betaFeatures}
                       onCheckedChange={setBetaFeatures}
-                      size="sm"
                     />
                   </div>
                   
@@ -690,7 +688,6 @@ export default function SettingsPage() {
                     <Switch
                       checked={cacheEnabled}
                       onCheckedChange={setCacheEnabled}
-                      size="sm"
                     />
                   </div>
                   
@@ -702,7 +699,6 @@ export default function SettingsPage() {
                     <Switch
                       checked={metricsEnabled}
                       onCheckedChange={setMetricsEnabled}
-                      size="sm"
                     />
                   </div>
                 </CardContent>
