@@ -18,7 +18,8 @@ import {
   Clock,
   Shield,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Eye
 } from "lucide-react"
 
 export default function Home() {
@@ -28,6 +29,7 @@ export default function Home() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isDemoMode, setIsDemoMode] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +46,9 @@ export default function Home() {
         setPods(podsData)
         setNodes(nodesData)
         setServices(servicesData)
+        
+        // Check if we're using demo data by checking if cluster name is 'demo-cluster'
+        setIsDemoMode(info.name === 'demo-cluster')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch cluster data')
       } finally {
@@ -171,6 +176,12 @@ export default function Home() {
               <p className="text-slate-500 dark:text-slate-400 mt-1">Monitor and manage your Kubernetes cluster</p>
             </div>
             <div className="flex items-center space-x-3">
+              {isDemoMode && (
+                <Badge variant="outline" className="border-purple-600 text-purple-600 bg-purple-50 dark:bg-purple-900/20">
+                  <Eye className="w-3 h-3 mr-1" />
+                  Demo Mode
+                </Badge>
+              )}
               <Badge variant="outline" className="border-green-600 text-green-600 bg-green-50 dark:bg-green-900/20">
                 <div className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
                 Connected

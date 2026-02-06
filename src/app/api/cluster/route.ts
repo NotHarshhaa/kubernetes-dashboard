@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
+import { generateDemoClusterInfo } from '@/lib/demo-data'
+
+const DEMO_MODE = process.env.DEMO_MODE === 'true'
 
 export async function GET() {
+  // Return demo data if demo mode is enabled
+  if (DEMO_MODE) {
+    return NextResponse.json(generateDemoClusterInfo())
+  }
+
   try {
     const kc = new k8s.KubeConfig()
     kc.loadFromDefault()
@@ -26,6 +34,11 @@ export async function GET() {
     return NextResponse.json(clusterInfo)
   } catch (error) {
     console.error('Error fetching cluster info:', error)
+    // Fallback to demo data if real cluster is not available
+    if (!DEMO_MODE) {
+      console.log('Falling back to demo data due to connection error')
+      return NextResponse.json(generateDemoClusterInfo())
+    }
     return NextResponse.json(
       { error: 'Failed to fetch cluster info' },
       { status: 500 }
