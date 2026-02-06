@@ -17,12 +17,14 @@ import {
   X,
   Server,
   Shield,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Bell,
+  LogOut,
   LucideIcon
 } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { useToast } from "@/contexts/toast-context"
 import { usePathname } from "next/navigation"
 
 const navigation = [
@@ -43,6 +45,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
+  const { signOut } = useAuth()
+  const { success, info } = useToast()
+
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  
+  const handleLogout = () => {
+    signOut()
+    success("Successfully logged out")
+    // The protected route will automatically redirect to sign-in page
+  }
 
   const NavItem = ({ item }: { item: typeof navigation[0] }) => {
     const isActive = pathname === item.href
@@ -182,7 +194,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
         <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-4 backdrop-blur-sm bg-white/50 dark:bg-slate-800/50">
           <div className={cn(
-            "flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300",
+            "flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300 relative",
             sidebarCollapsed ? "justify-center" : ""
           )}>
             <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700">
@@ -193,11 +205,37 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Cluster Admin</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">admin@k8s.local</p>
+                {isDemoMode && (
+                  <div className="mt-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                      Demo Mode
+                    </span>
+                  </div>
+                )}
               </div>
             )}
             {!sidebarCollapsed && (
-              <Button variant="ghost" size="sm" className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-                <ChevronDown className="h-4 w-4" />
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                  onClick={handleLogout}
+                  title="Sign out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {sidebarCollapsed && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="absolute -top-1 -right-1 h-6 w-6 p-0 rounded-full bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/40"
+                onClick={handleLogout}
+                title="Sign out"
+              >
+                <LogOut className="h-3 w-3 text-red-600 dark:text-red-400" />
               </Button>
             )}
           </div>

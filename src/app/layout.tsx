@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/language-context";
+import { AuthProvider } from "@/contexts/auth-context";
+import { ToastProvider } from "@/contexts/toast-context";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,9 +37,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <LanguageProvider>
-          {children}
-        </LanguageProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
+          </AuthProvider>
+        </ToastProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );

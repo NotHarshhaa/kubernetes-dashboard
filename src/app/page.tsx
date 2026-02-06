@@ -1,25 +1,29 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { ProtectedRoute } from "@/components/protected-route"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { apiClient, ClusterInfo, Pod, Node, Service } from "@/lib/api-client"
+import { Badge } from "@/components/ui/badge"
+import { apiClient, ClusterInfo, Pod, Node, Service, Deployment } from "@/lib/api-client"
 import { 
   Activity, 
   Container, 
   Database, 
-  Network, 
-  Server, 
-  AlertTriangle,
+  Home as HomeIcon,
+  RefreshCw,
+  Server,
+  Shield,
+  Eye,
+  ArrowUpRight,
+  Zap,
   CheckCircle,
   Clock,
-  Shield,
-  ArrowUpRight,
+  AlertTriangle,
   ArrowDownRight,
-  Eye
+  Network
 } from "lucide-react"
 
 export default function Home() {
@@ -162,8 +166,9 @@ export default function Home() {
   const internalServices = services.filter(s => s.type === 'ClusterIP').length
 
   return (
-    <DashboardLayout>
-      <div className="space-y-8">
+    <ProtectedRoute>
+      <DashboardLayout>
+        <div className="space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -357,5 +362,6 @@ export default function Home() {
         </div>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }
