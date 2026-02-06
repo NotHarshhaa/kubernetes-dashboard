@@ -4,21 +4,21 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ProtectedRoute } from "@/components/protected-route"
+import { ActivityFeed } from "@/components/activity-feed"
+import { ResourceCharts } from "@/components/resource-charts"
+import { QuickActions } from "@/components/quick-actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { apiClient, ClusterInfo, Pod, Node, Service, Deployment } from "@/lib/api-client"
+import { apiClient, ClusterInfo, Pod, Node, Service } from "@/lib/api-client"
 import { 
   Activity, 
   Container, 
   Database, 
-  Home as HomeIcon,
-  RefreshCw,
   Server,
   Shield,
   Eye,
   ArrowUpRight,
-  Zap,
   CheckCircle,
   Clock,
   AlertTriangle,
@@ -359,6 +359,15 @@ export default function Home() {
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* New Features Section */}
+          <div className="space-y-6">
+            <ActivityFeed />
+            <QuickActions />
+          </div>
+
+          {/* Resource Charts Section */}
+          <ResourceCharts />
         </div>
       </div>
     </DashboardLayout>
