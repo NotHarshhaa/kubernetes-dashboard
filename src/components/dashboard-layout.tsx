@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { EnhancedSearch } from "@/components/enhanced-search"
 import { 
   Activity, 
   Container, 
@@ -18,7 +19,6 @@ import {
   Shield,
   ChevronDown,
   Bell,
-  Search,
   LucideIcon
 } from "lucide-react"
 import { usePathname } from "next/navigation"
@@ -167,14 +167,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
-              <div className="relative flex-1 max-w-lg">
-                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search resources, pods, services..."
-                  className="w-full rounded-xl border border-slate-200/50 bg-slate-50/50 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-white dark:placeholder-slate-400 transition-all duration-200"
-                />
-              </div>
+              <EnhancedSearch />
             </div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               <Button variant="ghost" size="sm" className="relative rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
