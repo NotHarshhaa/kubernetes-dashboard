@@ -125,7 +125,7 @@ export default function DeploymentsPage() {
   const [scaleReplicas, setScaleReplicas] = useState(1)
 
   const fetchDeployments = useCallback(async () => {
-    if (!isDemoMode) return // Skip fetch in real-time mode
+    if (isDemoMode) return // Skip fetch in demo mode - use mock data instead
     
     try {
       setLoading(true)
@@ -365,20 +365,26 @@ export default function DeploymentsPage() {
   }
 
   useEffect(() => {
-    fetchDeployments()
-  }, [fetchDeployments])
+    if (!isDemoMode) {
+      fetchDeployments()
+    } else {
+      // Initialize demo data
+      setDemoLastUpdate(new Date())
+      setLoading(false)
+    }
+  }, [fetchDeployments, isDemoMode])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
     
-    if (autoRefresh) {
+    if (autoRefresh && !isDemoMode) {
       interval = setInterval(fetchDeployments, 10000) // Refresh every 10 seconds
     }
     
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [autoRefresh, fetchDeployments])
+  }, [autoRefresh, fetchDeployments, isDemoMode])
 
   const getStatusBadge = (deployment: Deployment) => {
     if (deployment.readyReplicas === deployment.replicas) {

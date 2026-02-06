@@ -129,7 +129,7 @@ export default function ServicesPage() {
   const currentGetServiceEvents = isDemoMode ? demoGetServiceEvents : getServiceEvents
 
   const fetchServices = useCallback(async () => {
-    if (!isDemoMode) return // Skip fetch in real-time mode
+    if (isDemoMode) return // Skip fetch in demo mode - use mock data instead
     
     try {
       setLoading(true)
@@ -312,20 +312,26 @@ export default function ServicesPage() {
   }
 
   useEffect(() => {
-    fetchServices()
-  }, [fetchServices])
+    if (!isDemoMode) {
+      fetchServices()
+    } else {
+      // Initialize demo data
+      setDemoLastUpdate(new Date())
+      setLoading(false)
+    }
+  }, [fetchServices, isDemoMode])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
     
-    if (autoRefresh) {
+    if (autoRefresh && !isDemoMode) {
       interval = setInterval(fetchServices, 10000) // Refresh every 10 seconds
     }
     
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [autoRefresh, fetchServices])
+  }, [autoRefresh, fetchServices, isDemoMode])
 
   const getTypeBadge = (type: string) => {
     switch (type.toLowerCase()) {

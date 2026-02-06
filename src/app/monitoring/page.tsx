@@ -62,7 +62,24 @@ export default function MonitoringPage() {
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
   
   // Use real-time metrics hook or demo fallback based on environment
-  const realTimeData = useRealTimeMetrics()
+  let realTimeData
+  try {
+    realTimeData = useRealTimeMetrics()
+  } catch (error) {
+    console.error('Real-time metrics hook failed, falling back to demo mode:', error)
+    realTimeData = {
+      metrics: { cpu: [], memory: [], network: [], pods: [], nodes: [] },
+      events: [],
+      alerts: [],
+      isConnected: false,
+      lastUpdate: null,
+      dismissAlert: () => {},
+      dismissAllAlerts: () => {},
+      getLatestMetric: () => null,
+      getMetricTrend: () => 'stable'
+    }
+  }
+  
   const { 
     metrics: realTimeMetrics, 
     events: realTimeEvents, 
@@ -146,7 +163,7 @@ export default function MonitoringPage() {
   const { success, error: showError, info } = useToast()
 
   const fetchData = useCallback(async () => {
-    if (!isDemoMode) return // Skip fetch in real-time mode
+    if (isDemoMode) return // Skip fetch in demo mode - use mock data instead
     
     try {
       setLoading(true)
@@ -163,7 +180,7 @@ export default function MonitoringPage() {
       const mockMetrics = generateMockMetrics()
       setDemoMetrics(mockMetrics)
       
-      // Generate mock currentAlerts
+      // Generate mock alerts
       const mockAlerts = generateMockAlerts(podsData, nodesData)
       setDemoAlerts(mockAlerts)
       
@@ -267,20 +284,30 @@ export default function MonitoringPage() {
   }
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    if (!isDemoMode) {
+      fetchData()
+    } else {
+      // Initialize demo data
+      const mockMetrics = generateMockMetrics()
+      setDemoMetrics(mockMetrics)
+      const mockAlerts = generateMockAlerts([], [])
+      setDemoAlerts(mockAlerts)
+      setDemoLastUpdate(new Date())
+      setLoading(false)
+    }
+  }, [fetchData, isDemoMode])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
     
-    if (autoRefresh) {
+    if (autoRefresh && !isDemoMode) {
       interval = setInterval(fetchData, refreshInterval * 1000)
     }
     
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [autoRefresh, refreshInterval, fetchData])
+  }, [autoRefresh, refreshInterval, fetchData, isDemoMode])
 
   const exportMonitoringData = () => {
     const csvContent = [

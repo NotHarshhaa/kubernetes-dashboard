@@ -56,6 +56,12 @@ export function useRealTimeMetrics() {
 
   // Initialize real-time connection
   useEffect(() => {
+    // Skip everything in demo mode
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      console.log('Demo mode detected - skipping real-time metrics initialization')
+      return
+    }
+
     // Subscribe to metrics updates
     const unsubscribeMetrics = metricsClient.subscribe('metrics', (data) => {
       handleMetricsUpdate(data.payload)

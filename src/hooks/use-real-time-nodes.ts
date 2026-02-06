@@ -28,6 +28,12 @@ export function useRealTimeNodes() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
+    // Skip everything in demo mode
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      console.log('Demo mode detected - skipping real-time nodes initialization')
+      return
+    }
+
     // Subscribe to node updates
     const unsubscribeNodes = metricsClient.subscribe('nodes', (data) => {
       handleNodeUpdate(data.payload)
@@ -76,24 +82,32 @@ export function useRealTimeNodes() {
           status: 'Ready',
           roles: ['control-plane', 'master'],
           version: 'v1.28.0',
-          age: '30d',
           internalIP: '192.168.1.10',
           externalIP: '',
           osImage: 'Ubuntu 22.04 LTS',
           kernelVersion: '5.15.0-88-generic',
-          containerRuntime: 'containerd://1.6.18'
+          containerRuntime: 'containerd://1.6.18',
+          cpuCapacity: '4',
+          memoryCapacity: '8Gi',
+          podsCapacity: '110',
+          allocatableCPU: '4',
+          allocatableMemory: '7910Mi'
         },
         {
           name: 'node-2',
           status: 'Ready',
           roles: ['worker'],
           version: 'v1.28.0',
-          age: '25d',
           internalIP: '192.168.1.11',
           externalIP: '',
           osImage: 'Ubuntu 22.04 LTS',
           kernelVersion: '5.15.0-88-generic',
-          containerRuntime: 'containerd://1.6.18'
+          containerRuntime: 'containerd://1.6.18',
+          cpuCapacity: '4',
+          memoryCapacity: '8Gi',
+          podsCapacity: '110',
+          allocatableCPU: '4',
+          allocatableMemory: '7910Mi'
         }
       ]
 

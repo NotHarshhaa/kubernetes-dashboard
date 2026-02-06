@@ -127,7 +127,7 @@ export default function NodesPage() {
   }] : getNodeEvents
 
   const fetchNodes = useCallback(async () => {
-    if (!isDemoMode) return // Skip fetch in real-time mode
+    if (isDemoMode) return // Skip fetch in demo mode - use mock data instead
     
     try {
       setLoading(true)
@@ -142,20 +142,26 @@ export default function NodesPage() {
   }, [isDemoMode])
 
   useEffect(() => {
-    fetchNodes()
-  }, [fetchNodes])
+    if (!isDemoMode) {
+      fetchNodes()
+    } else {
+      // Initialize demo data
+      setDemoLastUpdate(new Date())
+      setLoading(false)
+    }
+  }, [fetchNodes, isDemoMode])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
     
-    if (autoRefresh) {
+    if (autoRefresh && !isDemoMode) {
       interval = setInterval(fetchNodes, 10000) // Refresh every 10 seconds
     }
     
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [autoRefresh, fetchNodes])
+  }, [autoRefresh, fetchNodes, isDemoMode])
 
   const fetchNodeEvents = async (node: Node) => {
     try {

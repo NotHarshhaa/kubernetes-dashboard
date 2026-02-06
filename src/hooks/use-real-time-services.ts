@@ -32,6 +32,12 @@ export function useRealTimeServices() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
+    // Skip everything in demo mode
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      console.log('Demo mode detected - skipping real-time services initialization')
+      return
+    }
+
     // Subscribe to service updates
     const unsubscribeServices = metricsClient.subscribe('services', (data) => {
       handleServiceUpdate(data.payload)
@@ -80,10 +86,8 @@ export function useRealTimeServices() {
           type: 'ClusterIP',
           clusterIP: '10.96.0.1',
           externalIPs: [],
-          ports: ['80/TCP'],
-          age: '15d',
-          selector: 'app=nginx',
-          endpoints: ['10.244.0.2:80', '10.244.0.3:80', '10.244.0.4:80']
+          ports: '80/TCP',
+          age: '15d'
         },
         {
           name: 'redis-service',
@@ -91,10 +95,8 @@ export function useRealTimeServices() {
           type: 'ClusterIP',
           clusterIP: '10.96.0.2',
           externalIPs: [],
-          ports: ['6379/TCP'],
-          age: '10d',
-          selector: 'app=redis',
-          endpoints: ['10.244.0.5:6379']
+          ports: '6379/TCP',
+          age: '10d'
         },
         {
           name: 'app-backend-service',
@@ -102,21 +104,17 @@ export function useRealTimeServices() {
           type: 'LoadBalancer',
           clusterIP: '10.96.0.3',
           externalIPs: ['192.168.1.100'],
-          ports: ['8080/TCP', '8443/TCP'],
-          age: '7d',
-          selector: 'app=backend',
-          endpoints: ['10.244.1.2:8080', '10.244.1.3:8080', '10.244.1.4:8080', '10.244.1.5:8080']
+          ports: '8080/TCP,8443/TCP',
+          age: '7d'
         },
         {
-          name: 'api-gateway',
+          name: 'database-service',
           namespace: 'production',
-          type: 'NodePort',
+          type: 'ClusterIP',
           clusterIP: '10.96.0.4',
           externalIPs: [],
-          ports: ['30000/TCP'],
-          age: '5d',
-          selector: 'app=gateway',
-          endpoints: ['10.244.1.6:30000']
+          ports: '5432/TCP',
+          age: '12d'
         }
       ]
 

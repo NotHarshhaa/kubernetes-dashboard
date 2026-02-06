@@ -31,6 +31,12 @@ export function useRealTimeDeployments() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
+    // Skip everything in demo mode
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      console.log('Demo mode detected - skipping real-time deployments initialization')
+      return
+    }
+
     // Subscribe to deployment updates
     const unsubscribeDeployments = metricsClient.subscribe('deployments', (data) => {
       handleDeploymentUpdate(data.payload)
@@ -78,36 +84,30 @@ export function useRealTimeDeployments() {
           namespace: 'default',
           replicas: 3,
           readyReplicas: 3,
-          upToDateReplicas: 3,
           availableReplicas: 3,
+          unavailableReplicas: 0,
           age: '15d',
-          status: 'Running',
-          images: ['nginx:1.21'],
-          selector: 'app=nginx'
+          images: ['nginx:1.21']
         },
         {
           name: 'redis-deployment',
           namespace: 'default',
           replicas: 1,
           readyReplicas: 1,
-          upToDateReplicas: 1,
           availableReplicas: 1,
+          unavailableReplicas: 0,
           age: '10d',
-          status: 'Running',
-          images: ['redis:7-alpine'],
-          selector: 'app=redis'
+          images: ['redis:7-alpine']
         },
         {
           name: 'app-backend',
           namespace: 'production',
           replicas: 5,
           readyReplicas: 4,
-          upToDateReplicas: 5,
           availableReplicas: 4,
+          unavailableReplicas: 1,
           age: '7d',
-          status: 'Progressing',
-          images: ['myapp/backend:v2.1'],
-          selector: 'app=backend'
+          images: ['node:18-alpine']
         }
       ]
 
