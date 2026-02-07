@@ -179,18 +179,27 @@ export default function Home() {
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Cluster Overview</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Monitor and manage your Kubernetes cluster with real-time insights</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                  isDemoMode 
+                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                    : 'bg-green-50 border-green-200 text-green-700'
+                }`}>
+                  {isDemoMode ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      <span className="text-sm font-medium">Demo Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">Connected</span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              {isDemoMode && (
-                <Badge variant="outline" className="border-purple-600 text-purple-600 bg-purple-50 dark:bg-purple-900/20 rounded-lg px-4 py-2">
-                  <Eye className="w-4 h-4 mr-2" />
-                  Demo Mode
-                </Badge>
-              )}
-              <Badge variant="outline" className="border-green-600 text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2">
-                <div className="mr-2 h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                Connected
-              </Badge>
               <Button variant="outline" size="lg" onClick={() => window.location.reload()} className="rounded-xl">
                 <Activity className="h-5 w-5 mr-2" />
                 Refresh

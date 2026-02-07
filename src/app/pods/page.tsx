@@ -41,6 +41,10 @@ import {
 } from "lucide-react"
 
 export default function PodsPage() {
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const currentIsConnected = !isDemoMode
+  const currentLastUpdate = new Date()
+  
   const [pods, setPods] = useState<Pod[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -308,6 +312,37 @@ export default function PodsPage() {
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Pods</h1>
               <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Manage and monitor your container pods with real-time status</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                  isDemoMode 
+                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                    : currentIsConnected 
+                      ? 'bg-green-50 border-green-200 text-green-700'
+                      : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  {isDemoMode ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      <span className="text-sm font-medium">Demo Mode</span>
+                    </>
+                  ) : currentIsConnected ? (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">Connected</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm font-medium">Disconnected</span>
+                    </>
+                  )}
+                </div>
+                {currentLastUpdate && (
+                  <span className="text-xs text-slate-500">
+                    Last update: {currentLastUpdate.toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button 
