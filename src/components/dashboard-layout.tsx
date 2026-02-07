@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Bell,
   LogOut,
+  Layers,
   LucideIcon
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -33,6 +34,7 @@ const navigation = [
   { name: "Services", href: "/services", icon: Network, description: "Network services", color: "from-purple-500 to-purple-600" },
   { name: "Deployments", href: "/deployments", icon: Database, description: "Application deployments", color: "from-orange-500 to-orange-600" },
   { name: "Nodes", href: "/nodes", icon: Server, description: "Cluster nodes", color: "from-cyan-500 to-cyan-600" },
+  { name: "Namespaces", href: "/namespaces", icon: Layers, description: "Resource isolation", color: "from-indigo-500 to-indigo-600" },
   { name: "Monitoring", href: "/monitoring", icon: Activity, description: "Metrics and logs", color: "from-pink-500 to-pink-600" },
   { name: "Settings", href: "/settings", icon: Settings, description: "Configuration", color: "from-slate-500 to-slate-600" },
 ]

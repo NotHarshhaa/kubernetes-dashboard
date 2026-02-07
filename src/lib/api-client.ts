@@ -57,6 +57,24 @@ export interface Deployment {
   images: string[]
 }
 
+export interface Namespace {
+  name: string
+  status: string
+  age: string
+  labels: Record<string, string>
+  annotations: Record<string, string>
+  resourceQuotas: {
+    pods?: string
+    services?: string
+    secrets?: string
+    configMaps?: string
+  }
+  limits: {
+    cpu?: string
+    memory?: string
+  }
+}
+
 class ApiClient {
   private baseUrl: string
 
@@ -112,6 +130,14 @@ class ApiClient {
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error('Failed to fetch deployments')
+    }
+    return response.json()
+  }
+
+  async getNamespaces(): Promise<Namespace[]> {
+    const response = await fetch(`${this.baseUrl}/api/namespaces`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch namespaces')
     }
     return response.json()
   }

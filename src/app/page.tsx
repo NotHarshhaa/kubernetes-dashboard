@@ -99,17 +99,17 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses[color || 'blue']} opacity-5`}></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold text-slate-600 dark:text-slate-400">{title}</CardTitle>
-            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 shadow-inner">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-slate-600 dark:text-slate-400">{title}</CardTitle>
+            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 shadow-inner">
               {icon}
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex items-baseline space-x-3">
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">{value}</div>
+            <div className="flex items-baseline space-x-2">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
               {trend && (
                 <div className={`flex items-center text-sm ${
                   trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-slate-500'
@@ -118,7 +118,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{subtitle}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">{subtitle}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -241,31 +241,31 @@ export default function Home() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-xl rounded-2xl">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center space-x-3 text-2xl">
-                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/20">
-                  <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <Card className="border-0 shadow-lg rounded-xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center space-x-3 text-xl">
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <span>Cluster Information</span>
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription>
                 Kubernetes {clusterInfo?.version} • Production Environment
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cluster Name</p>
-                  <p className="text-xl font-semibold text-slate-900 dark:text-white">{clusterInfo?.name}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{clusterInfo?.name}</p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kubernetes Version</p>
-                  <p className="text-xl font-semibold text-slate-900 dark:text-white">{clusterInfo?.version}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{clusterInfo?.version}</p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Connection Status</p>
-                  <div className="mt-2">
+                  <div className="mt-1">
                     {getStatusBadge('Connected')}
                   </div>
                 </div>

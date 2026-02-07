@@ -1,5 +1,5 @@
 // Demo data generators for Kubernetes Dashboard
-import { ClusterInfo, Pod, Node, Service, Deployment } from '@/lib/api-client'
+import { ClusterInfo, Pod, Node, Service, Deployment, Namespace } from '@/lib/api-client'
 
 export function generateDemoClusterInfo(): ClusterInfo {
   return {
@@ -184,4 +184,103 @@ export function generateDemoDeployments(): Deployment[] {
     ...deployment,
     age: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
   }))
+}
+
+export function generateDemoNamespaces(): Namespace[] {
+  return [
+    {
+      name: 'default',
+      status: 'Active',
+      age: '30d',
+      labels: {},
+      annotations: {},
+      resourceQuotas: {
+        pods: '10',
+        services: '5',
+        secrets: '10',
+        configMaps: '10'
+      },
+      limits: {
+        cpu: '2',
+        memory: '4Gi'
+      }
+    },
+    {
+      name: 'kube-system',
+      status: 'Active',
+      age: '30d',
+      labels: {},
+      annotations: {},
+      resourceQuotas: {
+        pods: '20',
+        services: '10',
+        secrets: '20',
+        configMaps: '20'
+      },
+      limits: {
+        cpu: '4',
+        memory: '8Gi'
+      }
+    },
+    {
+      name: 'production',
+      status: 'Active',
+      age: '15d',
+      labels: {
+        'environment': 'production',
+        'team': 'backend'
+      },
+      annotations: {},
+      resourceQuotas: {
+        pods: '50',
+        services: '20',
+        secrets: '30',
+        configMaps: '20'
+      },
+      limits: {
+        cpu: '10',
+        memory: '16Gi'
+      }
+    },
+    {
+      name: 'staging',
+      status: 'Active',
+      age: '10d',
+      labels: {
+        'environment': 'staging',
+        'team': 'backend'
+      },
+      annotations: {},
+      resourceQuotas: {
+        pods: '30',
+        services: '15',
+        secrets: '20',
+        configMaps: '15'
+      },
+      limits: {
+        cpu: '6',
+        memory: '12Gi'
+      }
+    },
+    {
+      name: 'development',
+      status: 'Active',
+      age: '7d',
+      labels: {
+        'environment': 'development',
+        'team': 'frontend'
+      },
+      annotations: {},
+      resourceQuotas: {
+        pods: '25',
+        services: '10',
+        secrets: '15',
+        configMaps: '15'
+      },
+      limits: {
+        cpu: '4',
+        memory: '8Gi'
+      }
+    }
+  ]
 }
