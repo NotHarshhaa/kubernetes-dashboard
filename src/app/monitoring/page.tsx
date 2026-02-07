@@ -91,15 +91,108 @@ export default function MonitoringPage() {
     getLatestMetric: realTimeGetLatestMetric, 
     getMetricTrend: realTimeGetMetricTrend 
   } = isDemoMode ? {
-    metrics: { cpu: [], memory: [], network: [], pods: [], nodes: [] },
-    events: [],
-    alerts: [],
+    metrics: {
+      cpu: [
+        { time: '00:00', value: 45, label: 'cpu' },
+        { time: '00:05', value: 52, label: 'cpu' },
+        { time: '00:10', value: 48, label: 'cpu' },
+        { time: '00:15', value: 58, label: 'cpu' },
+        { time: '00:20', value: 55, label: 'cpu' },
+        { time: '00:25', value: 62, label: 'cpu' }
+      ],
+      memory: [
+        { time: '00:00', value: 68, label: 'memory' },
+        { time: '00:05', value: 72, label: 'memory' },
+        { time: '00:10', value: 70, label: 'memory' },
+        { time: '00:15', value: 75, label: 'memory' },
+        { time: '00:20', value: 73, label: 'memory' },
+        { time: '00:25', value: 78, label: 'memory' }
+      ],
+      network: [
+        { time: '00:00', value: 120, label: 'network' },
+        { time: '00:05', value: 145, label: 'network' },
+        { time: '00:10', value: 132, label: 'network' },
+        { time: '00:15', value: 168, label: 'network' },
+        { time: '00:20', value: 155, label: 'network' },
+        { time: '00:25', value: 189, label: 'network' }
+      ],
+      pods: [
+        { time: '00:00', value: 24, label: 'pods' },
+        { time: '00:05', value: 26, label: 'pods' },
+        { time: '00:10', value: 25, label: 'pods' },
+        { time: '00:15', value: 28, label: 'pods' },
+        { time: '00:20', value: 27, label: 'pods' },
+        { time: '00:25', value: 30, label: 'pods' }
+      ],
+      nodes: [
+        { time: '00:00', value: 3, label: 'nodes' },
+        { time: '00:05', value: 3, label: 'nodes' },
+        { time: '00:10', value: 3, label: 'nodes' },
+        { time: '00:15', value: 3, label: 'nodes' },
+        { time: '00:20', value: 3, label: 'nodes' },
+        { time: '00:25', value: 3, label: 'nodes' }
+      ]
+    },
+    events: [
+      {
+        type: 'Normal',
+        reason: 'Scheduled',
+        message: 'Successfully assigned default/nginx-deployment to node-1',
+        source: { component: 'scheduler', host: 'control-plane' },
+        involvedObject: { kind: 'Pod', name: 'nginx-deployment-xyz', namespace: 'default' },
+        lastTimestamp: new Date().toISOString()
+      },
+      {
+        type: 'Normal',
+        reason: 'Pulling',
+        message: 'Pulling image "nginx:1.21"',
+        source: { component: 'kubelet', host: 'node-1' },
+        involvedObject: { kind: 'Pod', name: 'nginx-deployment-xyz', namespace: 'default' },
+        lastTimestamp: new Date().toISOString()
+      }
+    ],
+    alerts: [
+      {
+        id: '1',
+        type: 'warning',
+        title: 'High CPU Usage',
+        message: 'CPU usage is above 80% on node-1',
+        timestamp: new Date().toISOString(),
+        dismissed: false
+      },
+      {
+        id: '2',
+        type: 'info',
+        title: 'Pod Restart',
+        message: 'Pod redis-deployment restarted 2 times in the last hour',
+        timestamp: new Date().toISOString(),
+        dismissed: false
+      }
+    ],
     isConnected: false,
-    lastUpdate: null,
-    dismissAlert: () => {},
+    lastUpdate: new Date(),
+    dismissAlert: (id: string) => {},
     dismissAllAlerts: () => {},
-    getLatestMetric: () => null,
-    getMetricTrend: () => 'stable'
+    getLatestMetric: (type: string) => {
+      const metrics = {
+        cpu: { value: 62, timestamp: new Date().toISOString() },
+        memory: { value: 78, timestamp: new Date().toISOString() },
+        network: { value: 189, timestamp: new Date().toISOString() },
+        pods: { value: 30, timestamp: new Date().toISOString() },
+        nodes: { value: 3, timestamp: new Date().toISOString() }
+      }
+      return metrics[type as keyof typeof metrics] || null
+    },
+    getMetricTrend: (type: string) => {
+      const trends = {
+        cpu: 'up',
+        memory: 'stable',
+        network: 'up',
+        pods: 'up',
+        nodes: 'stable'
+      }
+      return trends[type as keyof typeof trends] || 'stable'
+    }
   } : realTimeData
 
   const [pods, setPods] = useState<Pod[]>([])
@@ -293,6 +386,97 @@ export default function MonitoringPage() {
       const mockAlerts = generateMockAlerts([], [])
       setDemoAlerts(mockAlerts)
       setDemoLastUpdate(new Date())
+      
+      // Set mock pods and nodes data
+      const mockPods: Pod[] = [
+        {
+          name: 'nginx-deployment-xyz',
+          namespace: 'default',
+          status: 'Running',
+          phase: 'Running',
+          node: 'node-1',
+          ip: '10.244.0.5',
+          createdAt: new Date().toISOString(),
+          restarts: 0,
+          ready: '1/1'
+        },
+        {
+          name: 'redis-deployment-abc',
+          namespace: 'default',
+          status: 'Running',
+          phase: 'Running',
+          node: 'node-2',
+          ip: '10.244.1.3',
+          createdAt: new Date().toISOString(),
+          restarts: 1,
+          ready: '1/1'
+        },
+        {
+          name: 'app-backend-def',
+          namespace: 'production',
+          status: 'Running',
+          phase: 'Running',
+          node: 'node-3',
+          ip: '10.244.2.7',
+          createdAt: new Date().toISOString(),
+          restarts: 0,
+          ready: '1/1'
+        }
+      ]
+      
+      const mockNodes: Node[] = [
+        {
+          name: 'node-1',
+          status: 'Ready',
+          roles: ['control-plane', 'master'],
+          version: 'v1.28.0',
+          internalIP: '192.168.1.10',
+          externalIP: '',
+          osImage: 'Ubuntu 22.04 LTS',
+          kernelVersion: '5.15.0-88-generic',
+          containerRuntime: 'containerd://1.6.18',
+          cpuCapacity: '4',
+          memoryCapacity: '8Gi',
+          podsCapacity: '110',
+          allocatableCPU: '4',
+          allocatableMemory: '7910Mi'
+        },
+        {
+          name: 'node-2',
+          status: 'Ready',
+          roles: ['worker'],
+          version: 'v1.28.0',
+          internalIP: '192.168.1.11',
+          externalIP: '',
+          osImage: 'Ubuntu 22.04 LTS',
+          kernelVersion: '5.15.0-88-generic',
+          containerRuntime: 'containerd://1.6.18',
+          cpuCapacity: '4',
+          memoryCapacity: '8Gi',
+          podsCapacity: '110',
+          allocatableCPU: '4',
+          allocatableMemory: '7910Mi'
+        },
+        {
+          name: 'node-3',
+          status: 'Ready',
+          roles: ['worker'],
+          version: 'v1.28.0',
+          internalIP: '192.168.1.12',
+          externalIP: '',
+          osImage: 'Ubuntu 22.04 LTS',
+          kernelVersion: '5.15.0-88-generic',
+          containerRuntime: 'containerd://1.6.18',
+          cpuCapacity: '4',
+          memoryCapacity: '8Gi',
+          podsCapacity: '110',
+          allocatableCPU: '4',
+          allocatableMemory: '7910Mi'
+        }
+      ]
+      
+      setPods(mockPods)
+      setNodes(mockNodes)
       setLoading(false)
     }
   }, [fetchData, isDemoMode])

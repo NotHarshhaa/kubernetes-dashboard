@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
 import { generateDemoDeployments } from '@/lib/demo-data'
 
-const DEMO_MODE = process.env.DEMO_MODE === 'true'
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 export async function GET(request: Request) {
   // Return demo data if demo mode is enabled

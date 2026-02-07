@@ -48,7 +48,44 @@ export default function ServicesPage() {
     getServiceMetrics, 
     getServiceEvents 
   } = isDemoMode ? {
-    services: [],
+    services: [
+      {
+        name: 'nginx-service',
+        namespace: 'default',
+        type: 'ClusterIP',
+        clusterIP: '10.96.0.1',
+        externalIPs: [],
+        ports: '80/TCP',
+        age: '15d'
+      },
+      {
+        name: 'redis-service',
+        namespace: 'default',
+        type: 'ClusterIP',
+        clusterIP: '10.96.0.2',
+        externalIPs: [],
+        ports: '6379/TCP',
+        age: '10d'
+      },
+      {
+        name: 'app-backend-service',
+        namespace: 'production',
+        type: 'LoadBalancer',
+        clusterIP: '10.96.0.3',
+        externalIPs: ['192.168.1.100'],
+        ports: '8080/TCP,8443/TCP',
+        age: '7d'
+      },
+      {
+        name: 'database-service',
+        namespace: 'production',
+        type: 'ClusterIP',
+        clusterIP: '10.96.0.4',
+        externalIPs: [],
+        ports: '5432/TCP',
+        age: '12d'
+      }
+    ],
     serviceMetrics: [],
     serviceEvents: [],
     isConnected: false,

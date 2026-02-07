@@ -62,7 +62,56 @@ export default function NodesPage() {
     getNodeMetrics, 
     getNodeEvents 
   } = isDemoMode ? {
-    nodes: [],
+    nodes: [
+      {
+        name: 'node-1',
+        status: 'Ready',
+        roles: ['control-plane', 'master'],
+        version: 'v1.28.0',
+        internalIP: '192.168.1.10',
+        externalIP: '',
+        osImage: 'Ubuntu 22.04 LTS',
+        kernelVersion: '5.15.0-88-generic',
+        containerRuntime: 'containerd://1.6.18',
+        cpuCapacity: '4',
+        memoryCapacity: '8Gi',
+        podsCapacity: '110',
+        allocatableCPU: '4',
+        allocatableMemory: '7910Mi'
+      },
+      {
+        name: 'node-2',
+        status: 'Ready',
+        roles: ['worker'],
+        version: 'v1.28.0',
+        internalIP: '192.168.1.11',
+        externalIP: '',
+        osImage: 'Ubuntu 22.04 LTS',
+        kernelVersion: '5.15.0-88-generic',
+        containerRuntime: 'containerd://1.6.18',
+        cpuCapacity: '4',
+        memoryCapacity: '8Gi',
+        podsCapacity: '110',
+        allocatableCPU: '4',
+        allocatableMemory: '7910Mi'
+      },
+      {
+        name: 'node-3',
+        status: 'Ready',
+        roles: ['worker'],
+        version: 'v1.28.0',
+        internalIP: '192.168.1.12',
+        externalIP: '',
+        osImage: 'Ubuntu 22.04 LTS',
+        kernelVersion: '5.15.0-88-generic',
+        containerRuntime: 'containerd://1.6.18',
+        cpuCapacity: '4',
+        memoryCapacity: '8Gi',
+        podsCapacity: '110',
+        allocatableCPU: '4',
+        allocatableMemory: '7910Mi'
+      }
+    ],
     nodeMetrics: [],
     nodeEvents: [],
     isConnected: false,
@@ -447,12 +496,28 @@ export default function NodesPage() {
 
   const formatMemory = (memory: string) => {
     if (!memory) return '-'
-    const match = memory.match(/(\d+)Ki/)
-    if (match) {
-      const kb = parseInt(match[1])
+    
+    // Handle different memory units
+    const matchKi = memory.match(/(\d+)Ki/)
+    if (matchKi) {
+      const kb = parseInt(matchKi[1])
       const gb = (kb / 1024 / 1024).toFixed(1)
       return `${gb} GB`
     }
+    
+    const matchMi = memory.match(/(\d+)Mi/)
+    if (matchMi) {
+      const mb = parseInt(matchMi[1])
+      const gb = (mb / 1024).toFixed(1)
+      return `${gb} GB`
+    }
+    
+    const matchGi = memory.match(/(\d+)Gi/)
+    if (matchGi) {
+      const gb = parseInt(matchGi[1])
+      return `${gb} GB`
+    }
+    
     return memory
   }
 
@@ -503,7 +568,25 @@ export default function NodesPage() {
 
   const readyNodes = nodes.filter(n => n.status === 'Ready').length
   const totalCPU = nodes.reduce((acc, node) => acc + parseInt(node.cpuCapacity || '0'), 0)
-  const totalMemory = formatMemory(nodes.reduce((acc, node) => acc + (parseInt(node.memoryCapacity?.match(/(\d+)Ki/)?.[1] || '0')), 0).toString() + 'Ki')
+  const totalMemory = formatMemory(nodes.reduce((acc, node) => {
+    // Handle different memory units
+    const matchKi = node.memoryCapacity?.match(/(\d+)Ki/)
+    if (matchKi) {
+      return acc + parseInt(matchKi[1])
+    }
+    
+    const matchMi = node.memoryCapacity?.match(/(\d+)Mi/)
+    if (matchMi) {
+      return acc + (parseInt(matchMi[1]) * 1024) // Convert Mi to Ki
+    }
+    
+    const matchGi = node.memoryCapacity?.match(/(\d+)Gi/)
+    if (matchGi) {
+      return acc + (parseInt(matchGi[1]) * 1024 * 1024) // Convert Gi to Ki
+    }
+    
+    return acc
+  }, 0).toString() + 'Ki')
 
   return (
     <DashboardLayout>

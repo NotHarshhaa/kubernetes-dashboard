@@ -53,7 +53,38 @@ export default function DeploymentsPage() {
     getDeploymentMetrics, 
     getDeploymentEvents 
   } = isDemoMode ? {
-    deployments: [],
+    deployments: [
+      {
+        name: 'nginx-deployment',
+        namespace: 'default',
+        replicas: 3,
+        readyReplicas: 3,
+        availableReplicas: 3,
+        unavailableReplicas: 0,
+        age: '15d',
+        images: ['nginx:1.21']
+      },
+      {
+        name: 'redis-deployment',
+        namespace: 'default',
+        replicas: 1,
+        readyReplicas: 1,
+        availableReplicas: 1,
+        unavailableReplicas: 0,
+        age: '10d',
+        images: ['redis:7-alpine']
+      },
+      {
+        name: 'app-backend',
+        namespace: 'production',
+        replicas: 5,
+        readyReplicas: 4,
+        availableReplicas: 4,
+        unavailableReplicas: 1,
+        age: '7d',
+        images: ['node:18-alpine']
+      }
+    ],
     deploymentMetrics: [],
     deploymentEvents: [],
     isConnected: false,
