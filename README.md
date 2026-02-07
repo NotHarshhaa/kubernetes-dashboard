@@ -61,7 +61,11 @@ npm run dev
 - **Modern UI**: Beautiful animations with Framer Motion
 - **Responsive Design**: Works on desktop and mobile devices
 
-## � Pages
+## 📸 Gallery
+
+Check out our [**Dashboard Gallery**](./GALLERY.md) to see screenshots of all dashboard sections including monitoring, nodes, deployments, services, and more!
+
+## 📄 Pages
 
 - **/** - Cluster overview with key metrics
 - **/pods** - Pod management and monitoring
