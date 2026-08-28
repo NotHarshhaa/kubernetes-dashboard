@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
-import { generateDemoNamespaces } from '@/lib/demo-data'
+import { k8sStore } from '@/lib/k8s-store'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 export async function GET() {
-  // Return demo data if demo mode is enabled
   if (DEMO_MODE) {
-    return NextResponse.json(generateDemoNamespaces())
+    return NextResponse.json(k8sStore.getNamespaces())
   }
 
   try {
@@ -17,30 +16,19 @@ export async function GET() {
 
     const res = await k8sApi.listNamespace()
 
-    const namespaces = res.items.map((namespace: k8s.V1Namespace) => ({
-      name: namespace.metadata?.name || '',
-      status: namespace.status?.phase || 'Unknown',
-      age: namespace.metadata?.creationTimestamp 
-        ? Math.floor((Date.now() - new Date(namespace.metadata.creationTimestamp).getTime()) / (1000 * 60 * 60 * 24)) + 'd'
-        : 'Unknown',
-      labels: namespace.metadata?.labels || {},
-      annotations: namespace.metadata?.annotations || {},
-      resourceQuotas: {
-        pods: 'Unlimited',
-        services: 'Unlimited',
-        secrets: 'Unlimited',
-        configMaps: 'Unlimited'
-      },
-      limits: {
-        cpu: 'Unlimited',
-        memory: 'Unlimited'
-      }
+    const namespaces = res.items.map((ns: k8s.V1Namespace) => ({
+      name: ns.metadata?.name || '',
+      status: ns.status?.phase || 'Active',
+      age: ns.metadata?.creationTimestamp ? new Date(ns.metadata.creationTimestamp).toISOString() : 'Active',
+      labels: ns.metadata?.labels || {},
+      annotations: ns.metadata?.annotations || {},
+      resourceQuotas: { pods: 'Unlimited', services: 'Unlimited' },
+      limits: { cpu: 'Unlimited', memory: 'Unlimited' }
     }))
 
     return NextResponse.json(namespaces)
   } catch (error) {
-    console.error('Error fetching namespaces:', error)
-    // Fallback to demo data on error
-    return NextResponse.json(generateDemoNamespaces())
+    console.error('Error fetching namespaces from K8s, using store fallback:', error)
+    return NextResponse.json(k8sStore.getNamespaces())
   }
 }

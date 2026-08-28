@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
-import { generateDemoNodes } from '@/lib/demo-data'
+import { k8sStore } from '@/lib/k8s-store'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 export async function GET() {
-  // Return demo data if demo mode is enabled
   if (DEMO_MODE) {
-    return NextResponse.json(generateDemoNodes())
+    return NextResponse.json(k8sStore.getNodes())
   }
 
   try {
@@ -17,35 +16,34 @@ export async function GET() {
 
     const res = await k8sApi.listNode()
 
-    const nodes = res.items.map((node: k8s.V1Node) => ({
-      name: node.metadata?.name || '',
-      status: node.status?.conditions?.find((c: k8s.V1NodeCondition) => c.type === 'Ready')?.status === 'True' ? 'Ready' : 'NotReady',
-      roles: node.metadata?.labels?.['node-role.kubernetes.io/master'] ? ['master'] : 
-             node.metadata?.labels?.['node-role.kubernetes.io/control-plane'] ? ['control-plane'] : ['worker'],
-      version: node.status?.nodeInfo?.kubeletVersion || '',
-      internalIP: node.status?.addresses?.find((addr: k8s.V1NodeAddress) => addr.type === 'InternalIP')?.address || '',
-      externalIP: node.status?.addresses?.find((addr: k8s.V1NodeAddress) => addr.type === 'ExternalIP')?.address || '',
-      osImage: node.status?.nodeInfo?.osImage || '',
-      kernelVersion: node.status?.nodeInfo?.kernelVersion || '',
-      containerRuntime: node.status?.nodeInfo?.containerRuntimeVersion || '',
-      cpuCapacity: node.status?.capacity?.cpu || '',
-      memoryCapacity: node.status?.capacity?.memory || '',
-      podsCapacity: node.status?.capacity?.pods || '',
-      allocatableCPU: node.status?.allocatable?.cpu || '',
-      allocatableMemory: node.status?.allocatable?.memory || ''
-    }))
+    const nodes = res.items.map((node: k8s.V1Node) => {
+      const isReady = node.status?.conditions?.find(c => c.type === 'Ready')?.status === 'True'
+      const isCordoned = node.spec?.unschedulable === true
+      const status = isCordoned ? 'SchedulingDisabled' : isReady ? 'Ready' : 'NotReady'
+
+      return {
+        name: node.metadata?.name || '',
+        status,
+        roles: Object.keys(node.metadata?.labels || {})
+          .filter(label => label.startsWith('node-role.kubernetes.io/'))
+          .map(label => label.replace('node-role.kubernetes.io/', '')) || ['worker'],
+        version: node.status?.nodeInfo?.kubeletVersion || '',
+        internalIP: node.status?.addresses?.find(a => a.type === 'InternalIP')?.address || '',
+        externalIP: node.status?.addresses?.find(a => a.type === 'ExternalIP')?.address || '',
+        osImage: node.status?.nodeInfo?.osImage || '',
+        kernelVersion: node.status?.nodeInfo?.kernelVersion || '',
+        containerRuntime: node.status?.nodeInfo?.containerRuntimeVersion || '',
+        cpuCapacity: node.status?.capacity?.cpu || '',
+        memoryCapacity: node.status?.capacity?.memory || '',
+        podsCapacity: node.status?.capacity?.pods || '110',
+        allocatableCPU: node.status?.allocatable?.cpu || '',
+        allocatableMemory: node.status?.allocatable?.memory || ''
+      }
+    })
 
     return NextResponse.json(nodes)
   } catch (error) {
-    console.error('Error fetching nodes:', error)
-    // Fallback to demo data if real cluster is not available
-    if (!DEMO_MODE) {
-      console.log('Falling back to demo data due to connection error')
-      return NextResponse.json(generateDemoNodes())
-    }
-    return NextResponse.json(
-      { error: 'Failed to fetch nodes' },
-      { status: 500 }
-    )
+    console.error('Error fetching nodes from K8s, using store fallback:', error)
+    return NextResponse.json(k8sStore.getNodes())
   }
 }

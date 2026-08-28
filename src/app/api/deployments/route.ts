@@ -1,30 +1,23 @@
 import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
-import { generateDemoDeployments } from '@/lib/demo-data'
+import { k8sStore } from '@/lib/k8s-store'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 export async function GET(request: Request) {
-  // Return demo data if demo mode is enabled
+  const { searchParams } = new URL(request.url)
+  const namespace = searchParams.get('namespace') || undefined
+
   if (DEMO_MODE) {
-    const { searchParams } = new URL(request.url)
-    const namespace = searchParams.get('namespace')
-    const demoDeployments = generateDemoDeployments()
-    const filteredDeployments = namespace 
-      ? demoDeployments.filter(deployment => deployment.namespace === namespace)
-      : demoDeployments
-    return NextResponse.json(filteredDeployments)
+    return NextResponse.json(k8sStore.getDeployments(namespace))
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const namespace = searchParams.get('namespace')
-
     const kc = new k8s.KubeConfig()
     kc.loadFromDefault()
     const appsApi = kc.makeApiClient(k8s.AppsV1Api)
 
-    const res = namespace
+    const res = namespace && namespace !== 'all'
       ? await appsApi.listNamespacedDeployment({ namespace })
       : await appsApi.listDeploymentForAllNamespaces()
 
@@ -35,27 +28,14 @@ export async function GET(request: Request) {
       readyReplicas: deployment.status?.readyReplicas || 0,
       availableReplicas: deployment.status?.availableReplicas || 0,
       unavailableReplicas: deployment.status?.unavailableReplicas || 0,
-      age: deployment.metadata?.creationTimestamp || '',
-      images: deployment.spec?.template?.spec?.containers?.map((c: k8s.V1Container) => c.image) || []
+      age: deployment.metadata?.creationTimestamp ? new Date(deployment.metadata.creationTimestamp).toISOString() : 'Active',
+      images: deployment.spec?.template?.spec?.containers?.map((c: k8s.V1Container) => c.image || '') || [],
+      labels: deployment.metadata?.labels || {}
     }))
 
     return NextResponse.json(deployments)
   } catch (error) {
-    console.error('Error fetching deployments:', error)
-    // Fallback to demo data if real cluster is not available
-    if (!DEMO_MODE) {
-      console.log('Falling back to demo data due to connection error')
-      const { searchParams } = new URL(request.url)
-      const namespace = searchParams.get('namespace')
-      const demoDeployments = generateDemoDeployments()
-      const filteredDeployments = namespace 
-        ? demoDeployments.filter(deployment => deployment.namespace === namespace)
-        : demoDeployments
-      return NextResponse.json(filteredDeployments)
-    }
-    return NextResponse.json(
-      { error: 'Failed to fetch deployments' },
-      { status: 500 }
-    )
+    console.error('Error fetching deployments from K8s, using store fallback:', error)
+    return NextResponse.json(k8sStore.getDeployments(namespace))
   }
 }

@@ -4,6 +4,6 @@ import { k8sStore } from '@/lib/k8s-store'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const namespace = searchParams.get('namespace') || undefined
-  const events = k8sStore.getEvents(namespace)
-  return NextResponse.json(events)
+  const data = k8sStore.getJobs(namespace)
+  return NextResponse.json(data)
 }

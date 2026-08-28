@@ -1,145 +1,189 @@
-export interface ClusterInfo {
-  name: string
-  version: string
-  nodes: number
-  pods: number
-  services: number
-  namespaces: number
-}
+// Enhanced API Client for all Kubernetes Workloads and Resources
+export { type ClusterInfo, type Pod, type Deployment, type StatefulSet, type DaemonSet, type Job, type CronJob, type Service, type Ingress, type ConfigMap, type Secret, type Node, type Namespace, type ResourceEvent } from './k8s-store'
+import type { ClusterInfo, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Namespace, ResourceEvent } from './k8s-store'
 
-export interface Pod {
-  name: string
-  namespace: string
-  status: string
-  phase: string
-  node: string
-  ip: string
-  createdAt: string
-  restarts: number
-  ready: string
-}
-
-export interface Service {
-  name: string
-  namespace: string
-  type: string
-  clusterIP: string
-  externalIPs: string[]
-  ports: string
-  age: string
-}
-
-export interface Node {
-  name: string
-  status: string
-  roles: string[]
-  version: string
-  internalIP: string
-  externalIP: string
-  osImage: string
-  kernelVersion: string
-  containerRuntime: string
-  cpuCapacity: string
-  memoryCapacity: string
-  podsCapacity: string
-  allocatableCPU: string
-  allocatableMemory: string
-}
-
-export interface Deployment {
-  name: string
-  namespace: string
-  replicas: number
-  readyReplicas: number
-  availableReplicas: number
-  unavailableReplicas: number
-  age: string
-  images: string[]
-}
-
-export interface Namespace {
-  name: string
-  status: string
-  age: string
-  labels: Record<string, string>
-  annotations: Record<string, string>
-  resourceQuotas: {
-    pods?: string
-    services?: string
-    secrets?: string
-    configMaps?: string
+export interface WorkloadSummary {
+  deployments: Deployment[]
+  statefulSets: StatefulSet[]
+  daemonSets: DaemonSet[]
+  jobs: Job[]
+  cronJobs: CronJob[]
+  pods: Pod[]
+  summary: {
+    totalWorkloads: number
+    healthyWorkloads: number
+    warningWorkloads: number
+    totalPods: number
+    runningPods: number
   }
-  limits: {
-    cpu?: string
-    memory?: string
-  }
+}
+
+export interface ActionResponse {
+  success: boolean
+  message: string
+  data?: any
 }
 
 class ApiClient {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000'
+    this.baseUrl = ''
+  }
+
+  private async fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.headers || {})
+      }
+    })
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+      try {
+        const errorJson = await response.json()
+        if (errorJson.message || errorJson.error) {
+          errorMessage = errorJson.message || errorJson.error
+        }
+      } catch (_) {}
+      throw new Error(errorMessage)
+    }
+
+    return response.json()
   }
 
   async getClusterInfo(): Promise<ClusterInfo> {
-    const response = await fetch(`${this.baseUrl}/api/cluster`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch cluster info')
-    }
-    return response.json()
+    return this.fetchJson<ClusterInfo>('/api/cluster')
   }
 
   async getPods(namespace?: string): Promise<Pod[]> {
-    const url = namespace 
-      ? `${this.baseUrl}/api/pods?namespace=${namespace}`
-      : `${this.baseUrl}/api/pods`
-    
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error('Failed to fetch pods')
-    }
-    return response.json()
-  }
-
-  async getServices(namespace?: string): Promise<Service[]> {
-    const url = namespace 
-      ? `${this.baseUrl}/api/services?namespace=${namespace}`
-      : `${this.baseUrl}/api/services`
-    
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error('Failed to fetch services')
-    }
-    return response.json()
-  }
-
-  async getNodes(): Promise<Node[]> {
-    const response = await fetch(`${this.baseUrl}/api/nodes`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch nodes')
-    }
-    return response.json()
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Pod[]>(`/api/pods${query}`)
   }
 
   async getDeployments(namespace?: string): Promise<Deployment[]> {
-    const url = namespace 
-      ? `${this.baseUrl}/api/deployments?namespace=${namespace}`
-      : `${this.baseUrl}/api/deployments`
-    
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error('Failed to fetch deployments')
-    }
-    return response.json()
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Deployment[]>(`/api/deployments${query}`)
+  }
+
+  async getStatefulSets(namespace?: string): Promise<StatefulSet[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<StatefulSet[]>(`/api/statefulsets${query}`)
+  }
+
+  async getDaemonSets(namespace?: string): Promise<DaemonSet[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<DaemonSet[]>(`/api/daemonsets${query}`)
+  }
+
+  async getJobs(namespace?: string): Promise<Job[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Job[]>(`/api/jobs${query}`)
+  }
+
+  async getCronJobs(namespace?: string): Promise<CronJob[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<CronJob[]>(`/api/cronjobs${query}`)
+  }
+
+  async getWorkloads(namespace?: string): Promise<WorkloadSummary> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<WorkloadSummary>(`/api/workloads${query}`)
+  }
+
+  async getServices(namespace?: string): Promise<Service[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Service[]>(`/api/services${query}`)
+  }
+
+  async getIngresses(namespace?: string): Promise<Ingress[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Ingress[]>(`/api/ingresses${query}`)
+  }
+
+  async getConfigMaps(namespace?: string): Promise<ConfigMap[]> {
+    const query = namespace && namespace !== 'all' ? `?type=configmaps&namespace=${encodeURIComponent(namespace)}` : '?type=configmaps'
+    return this.fetchJson<ConfigMap[]>(`/api/config${query}`)
+  }
+
+  async getSecrets(namespace?: string): Promise<Secret[]> {
+    const query = namespace && namespace !== 'all' ? `?type=secrets&namespace=${encodeURIComponent(namespace)}` : '?type=secrets'
+    return this.fetchJson<Secret[]>(`/api/config${query}`)
+  }
+
+  async getNodes(): Promise<Node[]> {
+    return this.fetchJson<Node[]>('/api/nodes')
   }
 
   async getNamespaces(): Promise<Namespace[]> {
-    const response = await fetch(`${this.baseUrl}/api/namespaces`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch namespaces')
-    }
-    return response.json()
+    return this.fetchJson<Namespace[]>('/api/namespaces')
+  }
+
+  async getEvents(namespace?: string): Promise<ResourceEvent[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<ResourceEvent[]>(`/api/activities${query}`)
+  }
+
+  // --- Actions ---
+  async executeAction(action: string, params: Record<string, any> = {}): Promise<ActionResponse> {
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action, params })
+    })
+  }
+
+  async scaleDeployment(name: string, namespace: string, replicas: number): Promise<ActionResponse> {
+    return this.executeAction('scale-deployment', { deployment: name, namespace, replicas })
+  }
+
+  async scaleStatefulSet(name: string, namespace: string, replicas: number): Promise<ActionResponse> {
+    return this.executeAction('scale-statefulset', { statefulset: name, namespace, replicas })
+  }
+
+  async restartDeployment(name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('restart-deployment', { deployment: name, namespace })
+  }
+
+  async restartDaemonSet(name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('restart-daemonset', { daemonset: name, namespace })
+  }
+
+  async restartPod(name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('restart-pod', { pod: name, namespace })
+  }
+
+  async deleteResource(kind: string, name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('delete-resource', { kind, name, namespace })
+  }
+
+  async triggerCronJob(name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('trigger-cronjob', { cronjob: name, namespace })
+  }
+
+  async toggleCronJobSuspend(name: string, namespace: string): Promise<ActionResponse> {
+    return this.executeAction('toggle-cronjob-suspend', { cronjob: name, namespace })
+  }
+
+  async cordonNode(name: string, cordon: boolean): Promise<ActionResponse> {
+    return this.executeAction('cordon-node', { node: name, cordon })
+  }
+
+  async drainNode(name: string): Promise<ActionResponse> {
+    return this.executeAction('drain-node', { node: name })
+  }
+
+  async getPodLogs(namespace: string, podName: string, container?: string): Promise<string> {
+    const query = container ? `?container=${encodeURIComponent(container)}` : ''
+    const res = await this.fetchJson<{ logs: string }>(`/api/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/logs${query}`)
+    return res.logs
+  }
+
+  async getResourceYaml(kind: string, name: string, namespace: string): Promise<string> {
+    const res = await this.executeAction('get-yaml', { kind, name, namespace })
+    return res.data?.yaml || ''
   }
 }
 

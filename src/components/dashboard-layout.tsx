@@ -22,6 +22,9 @@ import {
   Bell,
   LogOut,
   Layers,
+  Boxes,
+  KeyRound,
+  FileCode2,
   LucideIcon
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -30,13 +33,15 @@ import { usePathname } from "next/navigation"
 
 const navigation = [
   { name: "Overview", href: "/", icon: Home, description: "Cluster at a glance", color: "from-blue-500 to-blue-600" },
-  { name: "Pods", href: "/pods", icon: Container, description: "Manage containers", color: "from-green-500 to-green-600" },
-  { name: "Services", href: "/services", icon: Network, description: "Network services", color: "from-purple-500 to-purple-600" },
-  { name: "Deployments", href: "/deployments", icon: Database, description: "Application deployments", color: "from-orange-500 to-orange-600" },
-  { name: "Nodes", href: "/nodes", icon: Server, description: "Cluster nodes", color: "from-cyan-500 to-cyan-600" },
+  { name: "Workloads", href: "/workloads", icon: Boxes, description: "All controllers & workloads", color: "from-amber-500 to-orange-600" },
+  { name: "Pods", href: "/pods", icon: Container, description: "Container instances & logs", color: "from-green-500 to-green-600" },
+  { name: "Deployments", href: "/deployments", icon: Database, description: "Scale & rolling updates", color: "from-orange-500 to-orange-600" },
+  { name: "Services & Ingress", href: "/services", icon: Network, description: "Network routing & ports", color: "from-purple-500 to-purple-600" },
+  { name: "Config & Secrets", href: "/config", icon: KeyRound, description: "ConfigMaps & credentials", color: "from-emerald-500 to-teal-600" },
+  { name: "Nodes", href: "/nodes", icon: Server, description: "Cluster nodes & resources", color: "from-cyan-500 to-cyan-600" },
   { name: "Namespaces", href: "/namespaces", icon: Layers, description: "Resource isolation", color: "from-indigo-500 to-indigo-600" },
-  { name: "Monitoring", href: "/monitoring", icon: Activity, description: "Metrics and logs", color: "from-pink-500 to-pink-600" },
-  { name: "Settings", href: "/settings", icon: Settings, description: "Configuration", color: "from-slate-500 to-slate-600" },
+  { name: "Monitoring", href: "/monitoring", icon: Activity, description: "Metrics & live alerts", color: "from-pink-500 to-pink-600" },
+  { name: "Settings", href: "/settings", icon: Settings, description: "Cluster configuration", color: "from-slate-500 to-slate-600" },
 ]
 
 interface DashboardLayoutProps {
