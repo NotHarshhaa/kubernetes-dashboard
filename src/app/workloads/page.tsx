@@ -27,7 +27,7 @@ import {
   Trash2,
   RefreshCw,
   Search,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   Zap,
   MoreHorizontal,
@@ -105,7 +105,7 @@ export default function WorkloadsPage() {
     fetchWorkloads()
   }, [fetchWorkloads])
 
-  // --- Handlers ---
+  // Handlers
   const handleScale = async () => {
     try {
       if (scaleDialog.kind === 'Deployment') {
@@ -203,14 +203,16 @@ export default function WorkloadsPage() {
         {/* Top Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Boxes className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Boxes className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
                   Workloads Hub
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                  Complete controller management for Deployments, StatefulSets, DaemonSets, Jobs, CronJobs & Pods
+                <p className="text-muted-foreground text-xs">
+                  Unified orchestrator management for Deployments, StatefulSets, DaemonSets, Jobs, CronJobs & Pods
                 </p>
               </div>
             </div>
@@ -218,11 +220,10 @@ export default function WorkloadsPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
               size="sm"
               onClick={fetchWorkloads}
             >
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -230,94 +231,94 @@ export default function WorkloadsPage() {
 
         {/* Global Workload Metric Badges */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Deployments
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.deployments.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <CheckCircle className="h-3 w-3 text-emerald-500" />
-              {data?.deployments.filter(d => d.readyReplicas === d.replicas).length || 0} ready
+              <CheckCircle2 className="size-3 text-emerald-500" />
+              <span>{data?.deployments.filter(d => d.readyReplicas === d.replicas).length || 0} ready</span>
             </div>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               StatefulSets
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.statefulSets.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Database className="h-3 w-3 text-blue-500" />
-              {data?.statefulSets.reduce((acc, s) => acc + s.readyReplicas, 0) || 0} pods
+              <Database className="size-3 text-sky-500" />
+              <span>{data?.statefulSets.reduce((acc, s) => acc + s.readyReplicas, 0) || 0} pods</span>
             </div>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               DaemonSets
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.daemonSets.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Layers className="h-3 w-3 text-purple-500" />
-              {data?.daemonSets.reduce((acc, d) => acc + d.numberReady, 0) || 0} nodes
+              <Layers className="size-3 text-violet-500" />
+              <span>{data?.daemonSets.reduce((acc, d) => acc + d.numberReady, 0) || 0} nodes</span>
             </div>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Jobs
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Batch Jobs
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.jobs.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <CheckCircle className="h-3 w-3 text-indigo-500" />
-              {data?.jobs.filter(j => j.status === 'Complete').length || 0} succeeded
+              <CheckCircle2 className="size-3 text-emerald-500" />
+              <span>{data?.jobs.filter(j => j.status === 'Complete').length || 0} complete</span>
             </div>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               CronJobs
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.cronJobs.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Clock className="h-3 w-3 text-amber-500" />
-              {data?.cronJobs.filter(c => !c.suspend).length || 0} active
+              <Clock className="size-3 text-amber-500" />
+              <span>{data?.cronJobs.filter(c => !c.suspend).length || 0} active</span>
             </div>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card className="hover:border-primary/40 transition-colors">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Total Pods
             </span>
-            <div className="text-2xl font-bold text-foreground mt-1">
+            <div className="text-2xl font-bold text-foreground font-mono mt-1">
               {data?.pods.length || 0}
             </div>
             <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Zap className="h-3 w-3 text-emerald-500" />
-              {data?.pods.filter(p => p.status === 'Running').length || 0} running
+              <Zap className="size-3 text-emerald-500" />
+              <span>{data?.pods.filter(p => p.status === 'Running').length || 0} running</span>
             </div>
           </Card>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border bg-card">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl border border-border/80 bg-card shadow-xs">
           <div className="relative flex-1 w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search workloads across all controllers..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-9 h-9"
+              className="pl-9 h-8.5"
             />
           </div>
 
@@ -325,7 +326,7 @@ export default function WorkloadsPage() {
             <select
               value={selectedNamespace}
               onChange={e => setSelectedNamespace(e.target.value)}
-              className="h-9 px-3 rounded-md text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8.5 px-3 rounded-lg text-xs border border-input bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-xs"
             >
               <option value="all">All Namespaces</option>
               {namespaces.map(ns => (
@@ -357,27 +358,25 @@ export default function WorkloadsPage() {
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Database className="h-4 w-4 text-primary" />
+                      <Database className="size-4 text-primary" />
                       Deployments
                     </CardTitle>
                     <CardDescription>Stateless applications with rolling updates</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('deployments')} className="text-xs">
-                    View All <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+                    View All <ArrowUpRight className="size-3.5 ml-1" />
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {filteredDeployments.slice(0, 4).map(d => (
-                    <div key={`${d.namespace}-${d.name}`} className="flex items-center justify-between p-2.5 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+                    <div key={`${d.namespace}-${d.name}`} className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
                       <div>
-                        <div className="font-medium text-sm text-foreground">{d.name}</div>
-                        <div className="text-xs text-muted-foreground">{d.namespace} • {d.images[0]}</div>
+                        <div className="font-semibold text-xs font-mono text-foreground">{d.name}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{d.namespace} • {d.images[0]}</div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={d.readyReplicas === d.replicas ? 'default' : 'secondary'}>
-                          {d.readyReplicas}/{d.replicas} Replicas
-                        </Badge>
-                      </div>
+                      <Badge variant={d.readyReplicas === d.replicas ? 'success' : 'warning'}>
+                        {d.readyReplicas}/{d.replicas} Replicas
+                      </Badge>
                     </div>
                   ))}
                 </CardContent>
@@ -388,27 +387,25 @@ export default function WorkloadsPage() {
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Database className="h-4 w-4 text-primary" />
+                      <Database className="size-4 text-sky-500" />
                       StatefulSets
                     </CardTitle>
                     <CardDescription>Databases and ordered stateful pods</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('statefulsets')} className="text-xs">
-                    View All <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+                    View All <ArrowUpRight className="size-3.5 ml-1" />
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {filteredStatefulSets.slice(0, 4).map(s => (
-                    <div key={`${s.namespace}-${s.name}`} className="flex items-center justify-between p-2.5 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+                    <div key={`${s.namespace}-${s.name}`} className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
                       <div>
-                        <div className="font-medium text-sm text-foreground">{s.name}</div>
-                        <div className="text-xs text-muted-foreground">{s.namespace} • Service: {s.serviceName}</div>
+                        <div className="font-semibold text-xs font-mono text-foreground">{s.name}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{s.namespace} • Service: {s.serviceName}</div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">
-                          {s.readyReplicas}/{s.replicas} Pods
-                        </Badge>
-                      </div>
+                      <Badge variant="info">
+                        {s.readyReplicas}/{s.replicas} Pods
+                      </Badge>
                     </div>
                   ))}
                 </CardContent>
@@ -419,23 +416,23 @@ export default function WorkloadsPage() {
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-primary" />
+                      <Layers className="size-4 text-violet-500" />
                       DaemonSets
                     </CardTitle>
                     <CardDescription>Node-level background system agents</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('daemonsets')} className="text-xs">
-                    View All <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+                    View All <ArrowUpRight className="size-3.5 ml-1" />
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {filteredDaemonSets.slice(0, 4).map(ds => (
-                    <div key={`${ds.namespace}-${ds.name}`} className="flex items-center justify-between p-2.5 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+                    <div key={`${ds.namespace}-${ds.name}`} className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
                       <div>
-                        <div className="font-medium text-sm text-foreground">{ds.name}</div>
-                        <div className="text-xs text-muted-foreground">{ds.namespace} • {ds.images[0]}</div>
+                        <div className="font-semibold text-xs font-mono text-foreground">{ds.name}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{ds.namespace} • {ds.images[0]}</div>
                       </div>
-                      <Badge variant="secondary">
+                      <Badge variant="purple">
                         {ds.numberReady}/{ds.desiredNumberScheduled} Nodes
                       </Badge>
                     </div>
@@ -448,24 +445,24 @@ export default function WorkloadsPage() {
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" />
+                      <Clock className="size-4 text-amber-500" />
                       CronJobs & Batch Tasks
                     </CardTitle>
                     <CardDescription>Scheduled jobs and one-off executions</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('cronjobs')} className="text-xs">
-                    View All <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+                    View All <ArrowUpRight className="size-3.5 ml-1" />
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {filteredCronJobs.slice(0, 4).map(cj => (
-                    <div key={`${cj.namespace}-${cj.name}`} className="flex items-center justify-between p-2.5 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+                    <div key={`${cj.namespace}-${cj.name}`} className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors">
                       <div>
-                        <div className="font-medium text-sm text-foreground">{cj.name}</div>
-                        <div className="text-xs text-muted-foreground">{cj.namespace} • Schedule: <code className="font-mono text-xs">{cj.schedule}</code></div>
+                        <div className="font-semibold text-xs font-mono text-foreground">{cj.name}</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">{cj.namespace} • Schedule: <code className="font-mono">{cj.schedule}</code></div>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => handleTriggerCronJob(cj)} className="h-7 text-xs">
-                        <Play className="h-3 w-3 mr-1" /> Run Now
+                      <Button size="xs" variant="default" onClick={() => handleTriggerCronJob(cj)}>
+                        <Play className="size-3 mr-1" /> Run Now
                       </Button>
                     </div>
                   ))}
@@ -476,7 +473,7 @@ export default function WorkloadsPage() {
 
           {/* 2. Deployments Tab */}
           <TabsContent value="deployments">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -485,35 +482,35 @@ export default function WorkloadsPage() {
                     <TableHead>Replicas</TableHead>
                     <TableHead>Images</TableHead>
                     <TableHead>Age</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDeployments.map(d => (
                     <TableRow key={`${d.namespace}-${d.name}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold">{d.name}</span>
+                          <Database className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{d.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{d.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{d.namespace}</Badge></TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-semibold">{d.readyReplicas}/{d.replicas}</span>
-                          <Badge variant={d.readyReplicas === d.replicas ? 'default' : 'secondary'} className="text-xs">
+                        <div className="flex items-center gap-2 font-mono">
+                          <span className="text-xs font-semibold">{d.readyReplicas}/{d.replicas}</span>
+                          <Badge variant={d.readyReplicas === d.replicas ? 'success' : 'warning'} className="text-[10px]">
                             {d.readyReplicas === d.replicas ? 'Ready' : 'Scaling'}
                           </Badge>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-xs font-mono text-muted-foreground max-w-[200px] truncate" title={d.images.join(', ')}>
+                        <div className="text-xs font-mono text-muted-foreground max-w-[220px] truncate" title={d.images.join(', ')}>
                           {d.images.join(', ')}
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{d.age}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
@@ -527,26 +524,26 @@ export default function WorkloadsPage() {
                                 targetReplicas: d.replicas
                               })
                             }
-                            className="h-8 text-xs"
+                            className="h-7.5 text-xs shadow-xs"
                           >
-                            <Sliders className="h-3.5 w-3.5 mr-1" /> Scale
+                            <Sliders className="size-3.5 mr-1" /> Scale
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleRestartDeployment(d)}>
-                                <RotateCcw className="h-4 w-4 mr-2" /> Rolling Restart
+                                <RotateCcw className="size-3.5 mr-2" /> Rolling Restart
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, kind: 'Deployment', name: d.name, namespace: d.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete('Deployment', d.name, d.namespace)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDelete('Deployment', d.name, d.namespace)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -561,7 +558,7 @@ export default function WorkloadsPage() {
 
           {/* 3. StatefulSets Tab */}
           <TabsContent value="statefulsets">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -570,26 +567,26 @@ export default function WorkloadsPage() {
                     <TableHead>Service</TableHead>
                     <TableHead>Pods</TableHead>
                     <TableHead>Images</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredStatefulSets.map(s => (
                     <TableRow key={`${s.namespace}-${s.name}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold">{s.name}</span>
+                          <Database className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{s.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{s.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{s.namespace}</Badge></TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{s.serviceName}</TableCell>
                       <TableCell>
-                        <span className="font-mono text-sm font-semibold">{s.readyReplicas}/{s.replicas}</span>
+                        <span className="font-mono text-xs font-semibold">{s.readyReplicas}/{s.replicas}</span>
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{s.images.join(', ')}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
@@ -603,23 +600,23 @@ export default function WorkloadsPage() {
                                 targetReplicas: s.replicas
                               })
                             }
-                            className="h-8 text-xs"
+                            className="h-7.5 text-xs shadow-xs"
                           >
-                            <Sliders className="h-3.5 w-3.5 mr-1" /> Scale
+                            <Sliders className="size-3.5 mr-1" /> Scale
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, kind: 'StatefulSet', name: s.name, namespace: s.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete('StatefulSet', s.name, s.namespace)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDelete('StatefulSet', s.name, s.namespace)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -634,7 +631,7 @@ export default function WorkloadsPage() {
 
           {/* 4. DaemonSets Tab */}
           <TabsContent value="daemonsets">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -642,41 +639,41 @@ export default function WorkloadsPage() {
                     <TableHead>Namespace</TableHead>
                     <TableHead>Node Coverage</TableHead>
                     <TableHead>Images</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDaemonSets.map(ds => (
                     <TableRow key={`${ds.namespace}-${ds.name}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Layers className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold">{ds.name}</span>
+                          <Layers className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{ds.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{ds.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{ds.namespace}</Badge></TableCell>
                       <TableCell>
-                        <span className="font-mono text-sm font-semibold">{ds.numberReady}/{ds.desiredNumberScheduled} scheduled</span>
+                        <span className="font-mono text-xs font-semibold">{ds.numberReady}/{ds.desiredNumberScheduled} scheduled</span>
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{ds.images.join(', ')}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="outline" onClick={() => handleRestartDaemonSet(ds)} className="h-8 text-xs">
-                            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Restart
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button size="sm" variant="outline" onClick={() => handleRestartDaemonSet(ds)} className="h-7.5 text-xs shadow-xs">
+                            <RotateCcw className="size-3.5 mr-1" /> Restart
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, kind: 'DaemonSet', name: ds.name, namespace: ds.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete('DaemonSet', ds.name, ds.namespace)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDelete('DaemonSet', ds.name, ds.namespace)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -691,7 +688,7 @@ export default function WorkloadsPage() {
 
           {/* 5. Jobs Tab */}
           <TabsContent value="jobs">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -700,43 +697,45 @@ export default function WorkloadsPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Duration</TableHead>
                     <TableHead>Started At</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredJobs.map(j => (
                     <TableRow key={`${j.namespace}-${j.name}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                          <span className="font-semibold">{j.name}</span>
+                          <CheckCircle2 className="size-4 text-primary" />
+                          <span className="font-mono text-xs">{j.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{j.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{j.namespace}</Badge></TableCell>
                       <TableCell>
-                        <Badge variant={j.status === 'Complete' ? 'default' : 'secondary'}>
+                        <Badge variant={j.status === 'Complete' ? 'success' : 'secondary'}>
                           {j.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs font-mono">{j.duration || '-'}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(j.startTime).toLocaleString()}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
-                            size="sm"
+                            size="icon-sm"
                             variant="outline"
                             onClick={() => setYamlDialog({ open: true, kind: 'Job', name: j.name, namespace: j.namespace })}
-                            className="h-8 text-xs"
+                            className="size-7.5 rounded-lg shadow-xs"
+                            title="View YAML"
                           >
-                            <FileCode2 className="h-3.5 w-3.5 mr-1" /> YAML
+                            <FileCode2 className="size-3.5" />
                           </Button>
                           <Button
-                            size="sm"
+                            size="icon-sm"
                             variant="ghost"
                             onClick={() => handleDelete('Job', j.name, j.namespace)}
-                            className="h-8 text-xs text-destructive hover:text-destructive"
+                            className="size-7.5 rounded-lg text-rose-600 hover:text-rose-600 hover:bg-rose-500/10"
+                            title="Delete Job"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="size-3.5" />
                           </Button>
                         </div>
                       </TableCell>
@@ -749,7 +748,7 @@ export default function WorkloadsPage() {
 
           {/* 6. CronJobs Tab */}
           <TabsContent value="cronjobs">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -758,51 +757,49 @@ export default function WorkloadsPage() {
                     <TableHead>Schedule</TableHead>
                     <TableHead>State</TableHead>
                     <TableHead>Last Run</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCronJobs.map(cj => (
                     <TableRow key={`${cj.namespace}-${cj.name}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-primary" />
-                          <span className="font-semibold">{cj.name}</span>
+                          <Clock className="size-4 text-amber-500" />
+                          <span className="font-mono text-xs">{cj.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{cj.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{cj.namespace}</Badge></TableCell>
                       <TableCell className="font-mono text-xs font-semibold">
                         {cj.schedule}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={!cj.suspend ? 'default' : 'secondary'}>
+                        <Badge variant={!cj.suspend ? 'success' : 'warning'}>
                           {!cj.suspend ? 'Active' : 'Suspended'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {cj.lastScheduleTime ? new Date(cj.lastScheduleTime).toLocaleString() : 'Never'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="default" onClick={() => handleTriggerCronJob(cj)} className="h-8 text-xs">
-                            <Play className="h-3 w-3 mr-1" /> Run Now
+                      <TableCell className="text-xs text-muted-foreground">{cj.lastScheduleTime ? new Date(cj.lastScheduleTime).toLocaleString() : 'Never'}</TableCell>
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button size="sm" variant="default" onClick={() => handleTriggerCronJob(cj)} className="h-7.5 text-xs shadow-xs">
+                            <Play className="size-3.5 mr-1" /> Run Now
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleToggleCronJobSuspend(cj)}>
-                                <Power className="h-4 w-4 mr-2" /> {cj.suspend ? 'Resume Schedule' : 'Suspend Schedule'}
+                                <Power className="size-3.5 mr-2" /> {cj.suspend ? 'Resume Schedule' : 'Suspend Schedule'}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, kind: 'CronJob', name: cj.name, namespace: cj.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete('CronJob', cj.name, cj.namespace)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDelete('CronJob', cj.name, cj.namespace)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -817,7 +814,7 @@ export default function WorkloadsPage() {
 
           {/* 7. Pods Tab */}
           <TabsContent value="pods">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -827,29 +824,29 @@ export default function WorkloadsPage() {
                     <TableHead>Restarts</TableHead>
                     <TableHead>Node</TableHead>
                     <TableHead>IP</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPods.map(p => (
-                    <TableRow key={`${p.namespace}-${p.name}`}>
-                      <TableCell className="font-medium">
+                  {filteredPods.map((p, idx) => (
+                    <TableRow key={`${p.namespace}-${p.name}-${p.node || idx}`}>
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Container className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold">{p.name}</span>
+                          <Container className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{p.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{p.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-mono">{p.namespace}</Badge></TableCell>
                       <TableCell>
-                        <Badge variant={p.status === 'Running' ? 'default' : 'secondary'}>
+                        <Badge variant={p.status === 'Running' ? 'success' : 'destructive'}>
                           {p.status} ({p.ready})
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">{p.restarts}</TableCell>
+                      <TableCell className="text-xs font-mono font-medium">{p.restarts}</TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{p.node}</TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{p.ip}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
@@ -861,26 +858,26 @@ export default function WorkloadsPage() {
                                 containers: p.containers || [{ name: 'main' }]
                               })
                             }
-                            className="h-8 text-xs"
+                            className="h-7.5 text-xs shadow-xs"
                           >
-                            <Terminal className="h-3.5 w-3.5 mr-1" /> Logs
+                            <Terminal className="size-3.5 mr-1" /> Logs
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, kind: 'Pod', name: p.name, namespace: p.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => apiClient.restartPod(p.name, p.namespace).then(() => { success(`Pod restarted`); fetchWorkloads() })}>
-                                <RotateCcw className="h-4 w-4 mr-2" /> Restart Pod
+                                <RotateCcw className="size-3.5 mr-2" /> Restart Pod
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDelete('Pod', p.name, p.namespace)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDelete('Pod', p.name, p.namespace)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -899,25 +896,27 @@ export default function WorkloadsPage() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Sliders className="h-4 w-4 text-primary" />
-                Scale {scaleDialog.kind}: {scaleDialog.name}
+                <Sliders className="size-4.5 text-primary" />
+                <span>Scale {scaleDialog.kind}:</span>
+                <span className="font-mono text-primary">{scaleDialog.name}</span>
               </DialogTitle>
               <DialogDescription>
-                Set desired replica count for this workload in {scaleDialog.namespace}
+                Set desired replica count for this workload in namespace <span className="font-mono">{scaleDialog.namespace}</span>
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-3">
-              <div className="flex items-center justify-between text-sm font-medium">
-                <span>Target Replicas:</span>
-                <span className="text-xl font-bold text-primary">{scaleDialog.targetReplicas}</span>
+            <div className="space-y-4 py-2">
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-muted/30">
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Target Replicas</span>
+                <span className="text-2xl font-bold text-primary font-mono">{scaleDialog.targetReplicas}</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, targetReplicas: Math.max(0, prev.targetReplicas - 1) }))}
+                  className="size-8"
                 >
                   -
                 </Button>
@@ -931,24 +930,25 @@ export default function WorkloadsPage() {
                 />
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, targetReplicas: prev.targetReplicas + 1 }))}
+                  className="size-8"
                 >
                   +
                 </Button>
               </div>
 
-              <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
-                Current replicas: <strong className="text-foreground">{scaleDialog.currentReplicas}</strong>.
-                Scaling will update the cluster controller immediately.
+              <div className="p-3 bg-muted/50 border border-border/50 rounded-xl text-xs text-muted-foreground">
+                Current replicas: <strong className="text-foreground font-mono">{scaleDialog.currentReplicas}</strong>.
+                Scaling will update the cluster controller state.
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))}>
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
+              <Button variant="outline" size="sm" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))}>
                 Cancel
               </Button>
-              <Button onClick={handleScale}>
+              <Button size="sm" onClick={handleScale}>
                 Apply Scale
               </Button>
             </div>

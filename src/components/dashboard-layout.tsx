@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 import { 
   Activity, 
   Container, 
@@ -16,6 +17,7 @@ import {
   KeyRound, 
   Bell, 
   LogOut,
+  Sparkles,
   LucideIcon 
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -74,18 +76,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar variant="inset" collapsible="icon">
-        <SidebarHeader>
+      <Sidebar variant="inset" collapsible="icon" className="border-r border-border/70">
+        <SidebarHeader className="pb-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
+              <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent/70 transition-colors">
                 <a href="/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Shield className="size-4" />
+                  <div className="flex aspect-square size-8.5 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-primary/80 text-primary-foreground shadow-sm">
+                    <Shield className="size-4.5" />
                   </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">K8s Dashboard</span>
-                    <span className="truncate text-xs text-muted-foreground">Cluster Management</span>
+                  <div className="grid flex-1 text-left text-xs leading-tight">
+                    <span className="truncate font-bold tracking-tight text-foreground text-sm">K8s Dashboard</span>
+                    <span className="truncate text-[11px] text-muted-foreground">Cluster Management</span>
                   </div>
                 </a>
               </SidebarMenuButton>
@@ -93,19 +95,31 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent className="px-1">
           <SidebarGroup>
-            <SidebarGroupLabel>Cluster Resources</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 px-3">
+              Cluster Resources
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {mainNavItems.map((item) => {
                   const Icon = item.icon as LucideIcon
                   const isActive = pathname === item.href
                   return (
                     <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
-                        <a href={item.href}>
-                          <Icon className="size-4" />
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive} 
+                        tooltip={item.name}
+                        className={cn(
+                          "rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150",
+                          isActive 
+                            ? "bg-primary text-primary-foreground font-semibold shadow-xs" 
+                            : "hover:bg-sidebar-accent hover:text-foreground text-muted-foreground"
+                        )}
+                      >
+                        <a href={item.href} className="flex items-center gap-2.5">
+                          <Icon className={cn("size-4", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
                           <span>{item.name}</span>
                         </a>
                       </SidebarMenuButton>
@@ -117,17 +131,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>Operations & System</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 px-3">
+              Operations & Telemetry
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {secondaryNavItems.map((item) => {
                   const Icon = item.icon as LucideIcon
                   const isActive = pathname === item.href
                   return (
                     <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
-                        <a href={item.href}>
-                          <Icon className="size-4" />
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive} 
+                        tooltip={item.name}
+                        className={cn(
+                          "rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150",
+                          isActive 
+                            ? "bg-primary text-primary-foreground font-semibold shadow-xs" 
+                            : "hover:bg-sidebar-accent hover:text-foreground text-muted-foreground"
+                        )}
+                      >
+                        <a href={item.href} className="flex items-center gap-2.5">
+                          <Icon className={cn("size-4", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
                           <span>{item.name}</span>
                         </a>
                       </SidebarMenuButton>
@@ -139,24 +165,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
+        <SidebarFooter className="p-2 border-t border-border/60">
           <SidebarMenu>
             <SidebarMenuItem>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-sidebar-accent/50">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-sidebar-accent/40 border border-border/40">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="size-7">
+                  <Avatar className="size-7.5 border border-border/80">
                     <AvatarImage src="/avatars/01.png" alt="Admin" />
-                    <AvatarFallback className="text-xs">CA</AvatarFallback>
+                    <AvatarFallback className="text-[11px] font-semibold bg-primary/10 text-primary">CA</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
-                    <span className="truncate text-xs font-medium">Cluster Admin</span>
-                    <span className="truncate text-[10px] text-muted-foreground">admin@k8s.local</span>
+                    <span className="truncate text-xs font-semibold text-foreground">Cluster Admin</span>
+                    <span className="truncate text-[10px] text-muted-foreground font-mono">admin@k8s.local</span>
                   </div>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="size-7 text-muted-foreground hover:text-foreground"
+                  className="size-7 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                   onClick={handleLogout}
                   title="Sign out"
                 >
@@ -168,9 +194,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
-          <SidebarTrigger className="-ml-1" />
+      <SidebarInset className="bg-background/95">
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border/70 bg-background/80 px-4 backdrop-blur-md">
+          <SidebarTrigger className="-ml-1 size-8 rounded-lg hover:bg-muted" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           
           <div className="flex flex-1 items-center justify-between gap-4">
@@ -178,25 +204,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <EnhancedSearch />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               {isDemoMode && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-[11px] font-semibold gap-1 py-0.5">
+                  <Sparkles className="size-3 text-amber-500" />
                   Demo Mode
                 </Badge>
               )}
-              <Button variant="ghost" size="icon" className="size-8 relative text-muted-foreground hover:text-foreground">
+              
+              <Button variant="ghost" size="icon" className="size-8 relative rounded-lg text-muted-foreground hover:text-foreground">
                 <Bell className="size-4" />
-                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
+                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-rose-500 animate-pulse" />
               </Button>
-              <Badge variant="outline" className="h-7 px-2.5 text-xs font-medium gap-1.5 border-border">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-                Connected
+              
+              <Badge variant="outline" className="h-7.5 px-2.5 text-xs font-medium gap-1.5 border-emerald-500/30 bg-emerald-500/5 text-foreground rounded-lg">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Connected</span>
               </Badge>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 overflow-y-auto max-w-7xl w-full mx-auto">
           {children}
         </main>
       </SidebarInset>

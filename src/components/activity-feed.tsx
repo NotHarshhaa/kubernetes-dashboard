@@ -12,7 +12,8 @@ import {
   Server, 
   AlertTriangle,
   Clock,
-  RefreshCw
+  RefreshCw,
+  CheckCircle2
 } from "lucide-react"
 
 interface ActivityItem {
@@ -34,6 +35,22 @@ const getIcon = (type: ActivityItem['type']) => {
     case 'node': return Server
     case 'alert': return AlertTriangle
     default: return Activity
+  }
+}
+
+const getActionBadge = (action: ActivityItem['action']) => {
+  switch (action) {
+    case 'created':
+    case 'success':
+      return <Badge variant="success" className="text-[10px] h-4.5 px-1.5 capitalize">{action}</Badge>
+    case 'deleted':
+    case 'error':
+      return <Badge variant="destructive" className="text-[10px] h-4.5 px-1.5 capitalize">{action}</Badge>
+    case 'scaled':
+    case 'updated':
+      return <Badge variant="info" className="text-[10px] h-4.5 px-1.5 capitalize">{action}</Badge>
+    default:
+      return <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 capitalize">{action}</Badge>
   }
 }
 
@@ -89,53 +106,51 @@ export function ActivityFeed() {
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
           <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            Activity Feed
+            <Activity className="size-4 text-emerald-500" />
+            Activity Stream
           </CardTitle>
-          <CardDescription>Real-time cluster events and updates</CardDescription>
+          <CardDescription>Real-time cluster audit log and lifecycle events</CardDescription>
         </div>
         <Button
           variant="outline"
           size="icon"
           onClick={refreshActivities}
           disabled={isRefreshing}
-          className="size-8 shrink-0"
+          className="size-8 shrink-0 rounded-lg"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2.5 max-h-80 overflow-y-auto">
+        <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
           {activities.map((activity) => {
             const Icon = getIcon(activity.type)
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-muted/30 hover:bg-muted/60 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors"
               >
-                <div className="p-1.5 rounded-md bg-muted text-foreground shrink-0 mt-0.5">
-                  <Icon className="h-3.5 w-3.5" />
+                <div className="p-2 rounded-lg bg-muted text-foreground shrink-0 mt-0.5 border border-border/50">
+                  <Icon className="size-3.5" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-xs text-foreground capitalize">
-                      {activity.action}
-                    </span>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1">
-                      {activity.type}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {getActionBadge(activity.action)}
+                    <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-mono text-muted-foreground">
+                      {activity.namespace}
                     </Badge>
                   </div>
-                  <p className="text-xs font-mono text-muted-foreground truncate">
+                  <p className="text-xs font-semibold text-foreground font-mono truncate">
                     {activity.resource}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
                     {activity.message}
                   </p>
                 </div>
                 
-                <div className="flex items-center gap-1 shrink-0 text-[10px] text-muted-foreground">
-                  <Clock className="h-3 w-3" />
+                <div className="flex items-center gap-1 shrink-0 text-[10px] text-muted-foreground font-mono">
+                  <Clock className="size-3" />
                   <span>{formatTimeAgo(activity.timestamp)}</span>
                 </div>
               </div>

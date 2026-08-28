@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ import {
   Container, 
   MoreHorizontal,
   AlertTriangle,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   RefreshCw,
   Search,
@@ -27,7 +27,9 @@ import {
   FileCode2,
   Trash2,
   Download,
-  Eye
+  Eye,
+  Layers,
+  Cpu
 } from "lucide-react"
 
 export default function PodsPage() {
@@ -185,20 +187,35 @@ export default function PodsPage() {
     if (selectedPods.size === filteredPods.length) {
       setSelectedPods(new Set())
     } else {
-      setSelectedPods(new Set(filteredPods.map(pod => `${pod.namespace}:${pod.name}`)))
+      setSelectedPods(new Set(filteredPods.map(pod => `${pod.namespace}:${pod.name}:${pod.node || ''}`)))
     }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'running':
-        return <Badge variant="default" className="text-xs gap-1"><CheckCircle className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="success" className="text-xs gap-1 py-0.5">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Running
+          </Badge>
+        )
       case 'pending':
-        return <Badge variant="secondary" className="text-xs gap-1"><Clock className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="warning" className="text-xs gap-1 py-0.5">
+            <Clock className="size-3" />
+            Pending
+          </Badge>
+        )
       case 'failed':
       case 'crashloopbackoff':
       case 'error':
-        return <Badge variant="destructive" className="text-xs gap-1"><AlertTriangle className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="destructive" className="text-xs gap-1 py-0.5">
+            <AlertTriangle className="size-3" />
+            {status}
+          </Badge>
+        )
       default:
         return <Badge variant="outline" className="text-xs">{status || 'Unknown'}</Badge>
     }
@@ -224,99 +241,103 @@ export default function PodsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Container className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Container className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Pods</h1>
-                <p className="text-muted-foreground text-sm">Live container instances, health checks, metrics, and terminal log stream</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Pods</h1>
+                <p className="text-muted-foreground text-xs">Live container instances, health checks, terminal log stream, and interactive restarts</p>
               </div>
             </div>
           </div>
+          
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setAutoRefresh(!autoRefresh)}
+              className={autoRefresh ? "border-primary text-primary" : ""}
             >
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Live' : 'Auto Refresh'}
+              <RefreshCw className={`size-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+              {autoRefresh ? 'Live Streaming' : 'Auto Refresh'}
             </Button>
             <Button variant="outline" size="sm" onClick={exportPodData}>
-              <Download className="h-3.5 w-3.5 mr-2" />
+              <Download className="size-3.5 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={fetchPods}>
-              <RefreshCw className="h-3.5 w-3.5 mr-2" />
+            <Button size="sm" onClick={fetchPods}>
+              <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Pods</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Container className="h-4 w-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Pods</CardTitle>
+              <div className="p-2 rounded-xl bg-muted text-foreground border border-border/50">
+                <Container className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{pods.length}</div>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{pods.length}</div>
               <p className="text-xs text-muted-foreground mt-1">Across all namespaces</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Running</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Healthy Running</CardTitle>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <CheckCircle2 className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{runningPods}</div>
-              <p className="text-xs text-muted-foreground mt-1">Healthy containers</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{runningPods}</div>
+              <p className="text-xs text-muted-foreground mt-1">Active container workloads</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Failed / CrashLoop</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Failed / CrashLoop</CardTitle>
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                <AlertTriangle className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-destructive">{failedPods}</div>
-              <p className="text-xs text-muted-foreground mt-1">Require attention</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 font-mono">{failedPods}</div>
+              <p className="text-xs text-muted-foreground mt-1">Require diagnostics</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Restarts</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Zap className="h-4 w-4 text-amber-500" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Restarts</CardTitle>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Zap className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{totalRestarts}</div>
-              <p className="text-xs text-muted-foreground mt-1">Lifecycle events</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{totalRestarts}</div>
+              <p className="text-xs text-muted-foreground mt-1">Lifecycle restart events</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <Card>
-          <CardHeader className="p-4 pb-3">
+        {/* Filter and Table Card */}
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search pods..."
-                  className="pl-9 h-9"
+                  placeholder="Search pods by name or namespace..."
+                  className="pl-9 h-8.5"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -324,7 +345,7 @@ export default function PodsPage() {
 
               <div className="flex items-center gap-2">
                 <select
-                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+                  className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
                   value={selectedNamespace}
                   onChange={(e) => setSelectedNamespace(e.target.value)}
                 >
@@ -335,14 +356,14 @@ export default function PodsPage() {
                 </select>
 
                 <select
-                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+                  className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <option value="all">All Status</option>
-                  <option value="running">Running</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
+                  <option value="all">All Statuses</option>
+                  <option value="running">Running Only</option>
+                  <option value="pending">Pending Only</option>
+                  <option value="failed">Failed / CrashLoop</option>
                 </select>
 
                 {selectedPods.size > 0 && (
@@ -350,9 +371,9 @@ export default function PodsPage() {
                     variant="destructive" 
                     size="sm" 
                     onClick={bulkDeletePods}
-                    className="h-9 px-3"
+                    className="h-8.5 px-3 shadow-xs"
                   >
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    <Trash2 className="size-3.5 mr-1.5" />
                     Delete ({selectedPods.size})
                   </Button>
                 )}
@@ -377,18 +398,18 @@ export default function PodsPage() {
                   <TableHead>Restarts</TableHead>
                   <TableHead>Node</TableHead>
                   <TableHead>IP Address</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right pr-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPods.map((pod) => {
-                  const podKey = `${pod.namespace}:${pod.name}`
+                {filteredPods.map((pod, idx) => {
+                  const podKey = `${pod.namespace}:${pod.name}:${pod.node || idx}`
                   const isSelected = selectedPods.has(podKey)
                   
                   return (
                     <TableRow
                       key={podKey}
-                      className={isSelected ? 'bg-muted/50' : ''}
+                      className={isSelected ? 'bg-muted/60' : ''}
                     >
                       <TableCell className="text-center">
                         <Checkbox 
@@ -398,18 +419,20 @@ export default function PodsPage() {
                       </TableCell>
                       <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Container className="h-4 w-4 text-muted-foreground" />
-                          <span>{pod.name}</span>
+                          <Container className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{pod.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{pod.namespace}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs font-mono">{pod.namespace}</Badge>
+                      </TableCell>
                       <TableCell>{getStatusBadge(pod.status)}</TableCell>
-                      <TableCell className="font-mono text-xs">{pod.ready}</TableCell>
+                      <TableCell className="font-mono text-xs font-medium">{pod.ready}</TableCell>
                       <TableCell className="font-mono text-xs font-semibold">{pod.restarts}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{pod.node}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{pod.ip}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
@@ -421,28 +444,29 @@ export default function PodsPage() {
                                 containers: pod.containers || [{ name: 'main' }]
                               })
                             }
-                            className="h-8 text-xs"
+                            className="h-7.5 text-xs shadow-xs"
                           >
-                            <Terminal className="h-3.5 w-3.5 mr-1" /> Logs
+                            <Terminal className="size-3.5 mr-1" /> Logs
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setDetailsDialog({ open: true, pod })}>
-                                <Eye className="h-4 w-4 mr-2" /> View Details
+                                <Eye className="size-3.5 mr-2" /> View Details
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, name: pod.name, namespace: pod.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => restartPod(pod)}>
-                                <RefreshCw className="h-4 w-4 mr-2" /> Restart Pod
+                                <RefreshCw className="size-3.5 mr-2" /> Restart Pod
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive" onClick={() => deletePod(pod)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete Pod
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem variant="destructive" onClick={() => deletePod(pod)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete Pod
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -479,44 +503,47 @@ export default function PodsPage() {
           <DialogContent className="max-w-xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Container className="h-4 w-4 text-primary" />
-                Pod Details: {detailsDialog.pod?.name}
+                <Container className="size-4.5 text-primary" />
+                <span>Pod Details:</span>
+                <span className="font-mono text-primary">{detailsDialog.pod?.name}</span>
               </DialogTitle>
               <DialogDescription>
-                Namespace: {detailsDialog.pod?.namespace} | Status: {detailsDialog.pod?.status}
+                Namespace: <span className="font-mono">{detailsDialog.pod?.namespace}</span> • Status: {detailsDialog.pod?.status}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-3 py-2 text-sm">
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-lg border bg-muted/40">
+            <div className="space-y-3.5 py-1 text-xs">
+              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl border border-border/70 bg-muted/30">
                 <div>
-                  <span className="text-muted-foreground text-xs uppercase font-medium">Node</span>
-                  <p className="font-semibold">{detailsDialog.pod?.node}</p>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold tracking-wider">Host Node</span>
+                  <p className="font-semibold text-xs font-mono mt-0.5">{detailsDialog.pod?.node}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-xs uppercase font-medium">IP</span>
-                  <p className="font-semibold font-mono">{detailsDialog.pod?.ip}</p>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold tracking-wider">Pod IP</span>
+                  <p className="font-semibold text-xs font-mono mt-0.5">{detailsDialog.pod?.ip}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-xs uppercase font-medium">Restarts</span>
-                  <p className="font-semibold">{detailsDialog.pod?.restarts}</p>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold tracking-wider">Restarts</span>
+                  <p className="font-semibold text-xs font-mono mt-0.5">{detailsDialog.pod?.restarts}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground text-xs uppercase font-medium">Creation</span>
-                  <p className="font-semibold">{detailsDialog.pod?.createdAt || '-'}</p>
+                  <span className="text-muted-foreground text-[10px] uppercase font-semibold tracking-wider">Creation Time</span>
+                  <p className="font-semibold text-xs font-mono mt-0.5">{detailsDialog.pod?.createdAt || '-'}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-semibold text-xs uppercase text-muted-foreground mb-2">Containers</h4>
-                <div className="space-y-1.5">
+                <h4 className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                  Containers ({detailsDialog.pod?.containers?.length || 1})
+                </h4>
+                <div className="space-y-2">
                   {detailsDialog.pod?.containers?.map((c, i) => (
-                    <div key={i} className="flex items-center justify-between p-2.5 rounded-md border">
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-card/60">
                       <div>
-                        <div className="font-medium text-sm">{c.name}</div>
-                        <div className="text-xs font-mono text-muted-foreground">{c.image}</div>
+                        <div className="font-semibold text-xs font-mono text-foreground">{c.name}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{c.image}</div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant={c.ready ? 'success' : 'destructive'} className="text-[10px]">
                         {c.ready ? 'Ready' : 'Not Ready'}
                       </Badge>
                     </div>
@@ -525,8 +552,8 @@ export default function PodsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t">
-              <Button variant="outline" onClick={() => setDetailsDialog(prev => ({ ...prev, open: false }))}>
+            <div className="flex justify-end pt-2 border-t border-border/60">
+              <Button variant="outline" size="sm" onClick={() => setDetailsDialog(prev => ({ ...prev, open: false }))}>
                 Close
               </Button>
             </div>

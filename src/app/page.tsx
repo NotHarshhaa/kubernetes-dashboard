@@ -18,10 +18,14 @@ import {
   Shield,
   Eye,
   ArrowUpRight,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   AlertTriangle,
-  Network
+  Network,
+  RefreshCw,
+  TrendingUp,
+  Layers,
+  Zap
 } from "lucide-react"
 
 export default function Home() {
@@ -33,30 +37,30 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [isDemoMode, setIsDemoMode] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const [info, podsData, nodesData, servicesData] = await Promise.all([
-          apiClient.getClusterInfo(),
-          apiClient.getPods(),
-          apiClient.getNodes(),
-          apiClient.getServices()
-        ])
-        
-        setClusterInfo(info)
-        setPods(podsData)
-        setNodes(nodesData)
-        setServices(servicesData)
-        
-        setIsDemoMode(info.name === 'demo-cluster')
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch cluster data')
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const [info, podsData, nodesData, servicesData] = await Promise.all([
+        apiClient.getClusterInfo(),
+        apiClient.getPods(),
+        apiClient.getNodes(),
+        apiClient.getServices()
+      ])
+      
+      setClusterInfo(info)
+      setPods(podsData)
+      setNodes(nodesData)
+      setServices(servicesData)
+      
+      setIsDemoMode(info.name === 'demo-cluster')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch cluster data')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [])
 
@@ -64,143 +68,216 @@ export default function Home() {
     switch (status.toLowerCase()) {
       case 'running':
       case 'ready':
-        return <Badge variant="default" className="text-xs gap-1"><CheckCircle className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="success" className="text-xs gap-1 py-0.5">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {status}
+          </Badge>
+        )
       case 'pending':
-        return <Badge variant="secondary" className="text-xs gap-1"><Clock className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="warning" className="text-xs gap-1 py-0.5">
+            <Clock className="size-3" />
+            {status}
+          </Badge>
+        )
       case 'failed':
       case 'notready':
-        return <Badge variant="destructive" className="text-xs gap-1"><AlertTriangle className="w-3 h-3" />{status}</Badge>
+        return (
+          <Badge variant="destructive" className="text-xs gap-1 py-0.5">
+            <AlertTriangle className="size-3" />
+            {status}
+          </Badge>
+        )
       default:
         return <Badge variant="outline" className="text-xs">{status}</Badge>
     }
   }
 
-  const MetricCard = ({ title, value, subtitle, icon, trend }: {
-    title: string
-    value: string | number
-    subtitle: string
-    icon: React.ReactNode
-    trend?: 'up' | 'down' | 'neutral'
-  }) => {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-          <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
-          <div className="p-2 rounded-lg bg-muted text-foreground">
-            {icon}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold tracking-tight text-foreground">{value}</div>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <span>{subtitle}</span>
-            {trend && (
-              <span className={`ml-2 flex items-center ${trend === 'up' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                {trend === 'up' ? '↑' : '↓'}
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  const runningPodsCount = pods.filter(p => p.status === 'Running').length
+  const readyNodesCount = nodes.filter(n => n.status === 'Ready').length
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-6 pb-12">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Header Banner */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl border border-border/80 bg-gradient-to-r from-card via-card/90 to-muted/30 shadow-xs">
             <div>
-              <div className="flex items-center gap-2.5">
-                <Shield className="h-6 w-6 text-primary" />
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  Cluster Overview
-                </h1>
-                {isDemoMode && (
-                  <Badge variant="outline" className="text-xs">
-                    Demo Environment
-                  </Badge>
-                )}
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                  <Shield className="size-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground">
+                      Cluster Overview
+                    </h1>
+                    {isDemoMode && (
+                      <Badge variant="secondary" className="text-[11px] font-semibold">
+                        Demo Environment
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Kubernetes v1.28.2 • 4 active nodes • {runningPodsCount}/{pods.length || 8} healthy pods running
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Real-time metrics, health diagnostics, and cluster operational state
-              </p>
             </div>
+            
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                <Activity className="h-3.5 w-3.5 mr-2" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={fetchData}
+                className="shadow-xs"
+              >
+                <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh State
               </Button>
             </div>
           </div>
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <MetricCard
-              title="Nodes"
-              value={clusterInfo?.nodes || 0}
-              subtitle="Active cluster nodes"
-              icon={<Server className="h-4 w-4" />}
-              trend="up"
-            />
-            <MetricCard
-              title="Pods"
-              value={clusterInfo?.pods || pods.length}
-              subtitle={`${pods.filter(p => p.status === 'Running').length} healthy running`}
-              icon={<Container className="h-4 w-4" />}
-              trend="up"
-            />
-            <MetricCard
-              title="Services"
-              value={clusterInfo?.services || services.length}
-              subtitle="Cluster endpoints"
-              icon={<Network className="h-4 w-4" />}
-              trend="neutral"
-            />
-            <MetricCard
-              title="Namespaces"
-              value={clusterInfo?.namespaces || 4}
-              subtitle="Isolation partitions"
-              icon={<Database className="h-4 w-4" />}
-              trend="neutral"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <Card className="hover:border-primary/40 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Compute Nodes
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                  <Server className="size-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                    {clusterInfo?.nodes || nodes.length || 4}
+                  </div>
+                  <Badge variant="success" className="text-[10px] h-4.5 px-1.5 font-semibold">
+                    {readyNodesCount || 3} Schedulable
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <span>32 Core compute pool</span>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/40 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Container Pods
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  <Container className="size-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                    {clusterInfo?.pods || pods.length}
+                  </div>
+                  <Badge variant="success" className="text-[10px] h-4.5 px-1.5 font-semibold">
+                    {runningPodsCount} Running
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <span>Across all namespace zones</span>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/40 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Network Services
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                  <Network className="size-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                    {clusterInfo?.services || services.length || 5}
+                  </div>
+                  <Badge variant="purple" className="text-[10px] h-4.5 px-1.5 font-semibold">
+                    Ingress Ready
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <span>ClusterIP & LoadBalancers</span>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/40 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Namespaces
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Layers className="size-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                    {clusterInfo?.namespaces || 4}
+                  </div>
+                  <Badge variant="warning" className="text-[10px] h-4.5 px-1.5 font-semibold">
+                    Isolated
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <span>RBAC boundary partitions</span>
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Quick Actions */}
           <QuickActions />
 
-          {/* Charts */}
+          {/* Resource Telemetry Charts */}
           <ResourceCharts />
 
-          {/* Recent Resources & Activity Feed */}
+          {/* Recent Resources & Activity Stream */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card className="lg:col-span-2">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">Recent Pods</CardTitle>
-                    <CardDescription>Latest container runtime activity</CardDescription>
-                  </div>
-                  <Button variant="ghost" size="sm" asChild className="text-xs">
-                    <a href="/pods">View All <ArrowUpRight className="h-3.5 w-3.5 ml-1" /></a>
-                  </Button>
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Container className="size-4 text-primary" />
+                    Active Pods
+                  </CardTitle>
+                  <CardDescription>Latest container runtime status and host nodes</CardDescription>
                 </div>
+                <Button variant="ghost" size="sm" asChild className="text-xs">
+                  <a href="/pods">View All <ArrowUpRight className="size-3.5 ml-1" /></a>
+                </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {pods.slice(0, 5).map((pod) => (
+                <div className="space-y-2.5">
+                  {pods.slice(0, 5).map((pod, idx) => (
                     <div
-                      key={`${pod.namespace}-${pod.name}`}
-                      className="flex items-center justify-between p-2.5 rounded-lg border bg-muted/30 hover:bg-muted/60 transition-colors"
+                      key={`${pod.namespace}-${pod.name}-${pod.node || idx}`}
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/40 transition-all duration-150"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-md bg-muted text-foreground">
-                          <Container className="h-4 w-4" />
+                        <div className="p-2 rounded-lg bg-muted text-foreground border border-border/50">
+                          <Container className="size-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-foreground">{pod.name}</p>
-                          <p className="text-xs text-muted-foreground">{pod.namespace} • Node: {pod.node}</p>
+                          <p className="font-semibold text-xs text-foreground font-mono">{pod.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Badge variant="outline" className="text-[10px] px-1.5 h-4 font-mono">
+                              {pod.namespace}
+                            </Badge>
+                            <span className="text-[11px] text-muted-foreground font-mono">Node: {pod.node}</span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">

@@ -9,11 +9,12 @@ import {
   Cpu, 
   HardDrive, 
   MemoryStick, 
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  RefreshCw,
-  Server
+  TrendingUp, 
+  TrendingDown, 
+  Minus, 
+  RefreshCw, 
+  Server,
+  Activity
 } from "lucide-react"
 
 interface ResourceMetric {
@@ -77,7 +78,7 @@ const mockNodeResources: NodeResource[] = [
 const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
   switch (trend) {
     case 'up': return <TrendingUp className="size-3 text-emerald-500" />
-    case 'down': return <TrendingDown className="size-3 text-destructive" />
+    case 'down': return <TrendingDown className="size-3 text-rose-500" />
     case 'stable': return <Minus className="size-3 text-muted-foreground" />
   }
 }
@@ -118,16 +119,16 @@ export function ResourceCharts() {
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
           <CardTitle className="text-base flex items-center gap-2">
-            <Server className="size-4 text-primary" />
+            <Server className="size-4 text-sky-500" />
             Cluster Resource Allocation
           </CardTitle>
-          <CardDescription>Compute, memory, and disk usage across nodes</CardDescription>
+          <CardDescription>Live compute, memory, and disk telemetry across active nodes</CardDescription>
         </div>
         <div className="flex items-center gap-2">
           <select 
             value={selectedNode} 
             onChange={(e) => setSelectedNode(e.target.value)}
-            className="h-8 px-2.5 rounded-md border border-input bg-background text-foreground text-xs"
+            className="h-8 px-2.5 rounded-lg border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-primary outline-none"
           >
             <option value="all">All Nodes</option>
             {nodeResources.map(node => (
@@ -139,7 +140,7 @@ export function ResourceCharts() {
             size="icon"
             onClick={refreshData}
             disabled={isRefreshing}
-            className="size-8"
+            className="size-8 rounded-lg"
           >
             <RefreshCw className={`size-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
@@ -147,35 +148,35 @@ export function ResourceCharts() {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Aggregated cluster averages */}
-        <div className="grid grid-cols-3 gap-3 p-3 rounded-lg border bg-muted/30">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl border border-border/70 bg-muted/30">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1">
-                <Cpu className="size-3" /> CPU
+              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+                <Cpu className="size-3.5 text-primary" /> CPU Capacity
               </span>
-              <span className="font-bold text-foreground">{avgCpu}%</span>
+              <span className="font-bold text-foreground font-mono">{avgCpu}%</span>
             </div>
-            <Progress value={avgCpu} className="h-1.5" />
+            <Progress value={avgCpu} className="h-2" indicatorClassName={avgCpu > 80 ? "bg-rose-500" : "bg-primary"} />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1">
-                <MemoryStick className="size-3" /> Memory
+              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+                <MemoryStick className="size-3.5 text-sky-500" /> Memory Pool
               </span>
-              <span className="font-bold text-foreground">{avgMemory}%</span>
+              <span className="font-bold text-foreground font-mono">{avgMemory}%</span>
             </div>
-            <Progress value={avgMemory} className="h-1.5" />
+            <Progress value={avgMemory} className="h-2" indicatorClassName={avgMemory > 80 ? "bg-amber-500" : "bg-sky-500"} />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground font-medium flex items-center gap-1">
-                <HardDrive className="size-3" /> Storage
+              <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+                <HardDrive className="size-3.5 text-violet-500" /> Storage Volume
               </span>
-              <span className="font-bold text-foreground">{avgStorage}%</span>
+              <span className="font-bold text-foreground font-mono">{avgStorage}%</span>
             </div>
-            <Progress value={avgStorage} className="h-1.5" />
+            <Progress value={avgStorage} className="h-2" indicatorClassName="bg-violet-500" />
           </div>
         </div>
 
@@ -184,12 +185,15 @@ export function ResourceCharts() {
           {filteredNodes.map((node) => (
             <div 
               key={node.name}
-              className="p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors space-y-2.5"
+              className="p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/30 transition-all space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-xs text-foreground">{node.name}</span>
-                  <Badge variant={node.status === 'Ready' ? 'default' : 'destructive'} className="text-[10px] h-4 px-1">
+                  <span className="font-semibold text-xs text-foreground font-mono">{node.name}</span>
+                  <Badge 
+                    variant={node.status === 'Ready' ? 'success' : 'destructive'} 
+                    className="text-[10px] h-4.5 px-2"
+                  >
                     {node.status}
                   </Badge>
                 </div>
@@ -198,7 +202,7 @@ export function ResourceCharts() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1">
@@ -206,7 +210,7 @@ export function ResourceCharts() {
                     </span>
                     <span className="font-mono text-foreground font-semibold">{Math.round(node.cpu.percentage)}%</span>
                   </div>
-                  <Progress value={node.cpu.percentage} className="h-1" />
+                  <Progress value={node.cpu.percentage} className="h-1.5" />
                 </div>
 
                 <div className="space-y-1">
@@ -216,7 +220,7 @@ export function ResourceCharts() {
                     </span>
                     <span className="font-mono text-foreground font-semibold">{Math.round(node.memory.percentage)}%</span>
                   </div>
-                  <Progress value={node.memory.percentage} className="h-1" />
+                  <Progress value={node.memory.percentage} className="h-1.5" indicatorClassName="bg-sky-500" />
                 </div>
 
                 <div className="space-y-1">
@@ -226,7 +230,7 @@ export function ResourceCharts() {
                     </span>
                     <span className="font-mono text-foreground font-semibold">{Math.round(node.storage.percentage)}%</span>
                   </div>
-                  <Progress value={node.storage.percentage} className="h-1" />
+                  <Progress value={node.storage.percentage} className="h-1.5" indicatorClassName="bg-violet-500" />
                 </div>
               </div>
             </div>

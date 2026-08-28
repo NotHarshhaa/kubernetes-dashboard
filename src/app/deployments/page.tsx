@@ -18,7 +18,7 @@ import {
   MoreHorizontal,
   RefreshCw,
   Search,
-  CheckCircle,
+  CheckCircle2,
   AlertTriangle,
   Clock,
   Zap,
@@ -26,7 +26,8 @@ import {
   Download,
   RotateCcw,
   Sliders,
-  FileCode2
+  FileCode2,
+  Layers
 } from "lucide-react"
 
 export default function DeploymentsPage() {
@@ -191,11 +192,26 @@ export default function DeploymentsPage() {
 
   const getStatusBadge = (d: Deployment) => {
     if (d.readyReplicas === d.replicas && d.replicas > 0) {
-      return <Badge variant="default" className="text-xs gap-1"><CheckCircle className="w-3 h-3" />Ready</Badge>
+      return (
+        <Badge variant="success" className="text-xs gap-1 py-0.5">
+          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Ready
+        </Badge>
+      )
     } else if (d.readyReplicas > 0) {
-      return <Badge variant="secondary" className="text-xs gap-1"><Clock className="w-3 h-3" />Progressing</Badge>
+      return (
+        <Badge variant="warning" className="text-xs gap-1 py-0.5">
+          <Clock className="size-3" />
+          Progressing
+        </Badge>
+      )
     } else {
-      return <Badge variant="destructive" className="text-xs gap-1"><AlertTriangle className="w-3 h-3" />Not Ready</Badge>
+      return (
+        <Badge variant="destructive" className="text-xs gap-1 py-0.5">
+          <AlertTriangle className="size-3" />
+          Not Ready
+        </Badge>
+      )
     }
   }
 
@@ -219,99 +235,103 @@ export default function DeploymentsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Database className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Database className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Deployments</h1>
-                <p className="text-muted-foreground text-sm">Scale, rolling restarts, replica management, and container rollout strategies</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Deployments</h1>
+                <p className="text-muted-foreground text-xs">Stateless workloads, rolling rollout restarts, horizontal replica scaling, and revision history</p>
               </div>
             </div>
           </div>
+          
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setAutoRefresh(!autoRefresh)}
+              className={autoRefresh ? "border-primary text-primary" : ""}
             >
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`size-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
               {autoRefresh ? 'Live' : 'Auto Refresh'}
             </Button>
             <Button variant="outline" size="sm" onClick={exportDeploymentData}>
-              <Download className="h-3.5 w-3.5 mr-2" />
+              <Download className="size-3.5 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={fetchDeployments}>
-              <RefreshCw className="h-3.5 w-3.5 mr-2" />
+            <Button size="sm" onClick={fetchDeployments}>
+              <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Deployments</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Database className="h-4 w-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Deployments</CardTitle>
+              <div className="p-2 rounded-xl bg-muted text-foreground border border-border/50">
+                <Database className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{deployments.length}</div>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{deployments.length}</div>
               <p className="text-xs text-muted-foreground mt-1">Across all namespaces</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ready / Healthy</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ready / Healthy</CardTitle>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <CheckCircle2 className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{readyDeployments}</div>
-              <p className="text-xs text-muted-foreground mt-1">Fully deployed</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{readyDeployments}</div>
+              <p className="text-xs text-muted-foreground mt-1">Fully provisioned replicas</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Progressing</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Clock className="h-4 w-4 text-amber-500" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">In Rollout</CardTitle>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Clock className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{progressingDeployments}</div>
-              <p className="text-xs text-muted-foreground mt-1">In rollout phase</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 font-mono">{progressingDeployments}</div>
+              <p className="text-xs text-muted-foreground mt-1">Active rollout progression</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Replicas</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Zap className="h-4 w-4 text-primary" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Replicas</CardTitle>
+              <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Zap className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{totalReplicas}</div>
-              <p className="text-xs text-muted-foreground mt-1">Pods provisioned</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{totalReplicas}</div>
+              <p className="text-xs text-muted-foreground mt-1">Desired pod allocations</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <Card>
-          <CardHeader className="p-4 pb-3">
+        {/* Main Table Card */}
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search deployments..."
-                  className="pl-9 h-9"
+                  className="pl-9 h-8.5"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -319,7 +339,7 @@ export default function DeploymentsPage() {
 
               <div className="flex items-center gap-2">
                 <select
-                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+                  className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
                   value={selectedNamespace}
                   onChange={(e) => setSelectedNamespace(e.target.value)}
                 >
@@ -330,12 +350,12 @@ export default function DeploymentsPage() {
                 </select>
 
                 <select
-                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+                  className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <option value="all">All Status</option>
-                  <option value="ready">Ready</option>
+                  <option value="all">All Statuses</option>
+                  <option value="ready">Ready (100%)</option>
                   <option value="progressing">Progressing</option>
                   <option value="notready">Not Ready</option>
                 </select>
@@ -345,9 +365,9 @@ export default function DeploymentsPage() {
                     variant="destructive" 
                     size="sm" 
                     onClick={handleBulkDelete}
-                    className="h-9 px-3"
+                    className="h-8.5 px-3 shadow-xs"
                   >
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    <Trash2 className="size-3.5 mr-1.5" />
                     Delete ({selectedDeployments.size})
                   </Button>
                 )}
@@ -371,7 +391,7 @@ export default function DeploymentsPage() {
                   <TableHead>Replicas</TableHead>
                   <TableHead>Container Images</TableHead>
                   <TableHead>Age</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right pr-4">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -382,7 +402,7 @@ export default function DeploymentsPage() {
                   return (
                     <TableRow
                       key={depKey}
-                      className={isSelected ? 'bg-muted/50' : ''}
+                      className={isSelected ? 'bg-muted/60' : ''}
                     >
                       <TableCell className="text-center">
                         <Checkbox 
@@ -392,21 +412,23 @@ export default function DeploymentsPage() {
                       </TableCell>
                       <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 text-muted-foreground" />
-                          <span>{d.name}</span>
+                          <Database className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{d.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{d.namespace}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs font-mono">{d.namespace}</Badge>
+                      </TableCell>
                       <TableCell>{getStatusBadge(d)}</TableCell>
                       <TableCell>
-                        <span className="font-mono text-sm font-semibold">{d.readyReplicas}/{d.replicas}</span>
+                        <span className="font-mono text-xs font-semibold">{d.readyReplicas}/{d.replicas}</span>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground max-w-[200px] truncate" title={d.images.join(', ')}>
+                      <TableCell className="font-mono text-xs text-muted-foreground max-w-[220px] truncate" title={d.images.join(', ')}>
                         {d.images.join(', ')}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{d.age}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
@@ -417,26 +439,26 @@ export default function DeploymentsPage() {
                                 replicas: d.replicas
                               })
                             }
-                            className="h-8 text-xs"
+                            className="h-7.5 text-xs shadow-xs"
                           >
-                            <Sliders className="h-3.5 w-3.5 mr-1" /> Scale
+                            <Sliders className="size-3.5 mr-1" /> Scale
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon-sm" className="size-7.5 rounded-lg p-0">
+                                <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleRestartDeployment(d)}>
-                                <RotateCcw className="h-4 w-4 mr-2" /> Rolling Restart
+                                <RotateCcw className="size-3.5 mr-2" /> Rolling Restart
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, name: d.name, namespace: d.namespace })}>
-                                <FileCode2 className="h-4 w-4 mr-2" /> View YAML
+                                <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteDeployment(d)}>
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete Deployment
+                              <DropdownMenuItem variant="destructive" onClick={() => handleDeleteDeployment(d)}>
+                                <Trash2 className="size-3.5 mr-2" /> Delete Deployment
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -455,25 +477,27 @@ export default function DeploymentsPage() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Sliders className="h-4 w-4 text-primary" />
-                Scale Deployment: {scaleDialog.deployment?.name}
+                <Sliders className="size-4.5 text-primary" />
+                <span>Scale Deployment:</span>
+                <span className="font-mono text-primary">{scaleDialog.deployment?.name}</span>
               </DialogTitle>
               <DialogDescription>
-                Adjust desired replicas for {scaleDialog.deployment?.namespace}
+                Adjust desired replica count for namespace <span className="font-mono">{scaleDialog.deployment?.namespace}</span>
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-3">
-              <div className="flex items-center justify-between text-sm font-medium">
-                <span>Target Replicas:</span>
-                <span className="text-xl font-bold text-primary">{scaleDialog.replicas}</span>
+            <div className="space-y-4 py-2">
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-muted/30">
+                <span className="text-xs font-semibold text-muted-foreground uppercase">Target Replicas</span>
+                <span className="text-2xl font-bold text-primary font-mono">{scaleDialog.replicas}</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, replicas: Math.max(0, prev.replicas - 1) }))}
+                  className="size-8"
                 >
                   -
                 </Button>
@@ -487,19 +511,36 @@ export default function DeploymentsPage() {
                 />
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, replicas: prev.replicas + 1 }))}
+                  className="size-8"
                 >
                   +
                 </Button>
               </div>
+
+              {/* Quick Stepper Presets */}
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className="text-[11px] text-muted-foreground mr-1">Presets:</span>
+                {[0, 1, 2, 3, 5, 10].map(count => (
+                  <Button
+                    key={count}
+                    variant={scaleDialog.replicas === count ? "default" : "outline"}
+                    size="xs"
+                    onClick={() => setScaleDialog(prev => ({ ...prev, replicas: count }))}
+                    className="font-mono"
+                  >
+                    {count}
+                  </Button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button variant="outline" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))}>
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
+              <Button variant="outline" size="sm" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))}>
                 Cancel
               </Button>
-              <Button onClick={handleScaleDeployment}>
+              <Button size="sm" onClick={handleScaleDeployment}>
                 Apply Scale
               </Button>
             </div>

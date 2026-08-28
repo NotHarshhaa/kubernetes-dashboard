@@ -97,19 +97,20 @@ export function PodLogsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-6">
-        <DialogHeader className="border-b pb-3">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-5">
+        <DialogHeader className="border-b border-border/60 pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Terminal className="h-4 w-4 text-primary" />
-                <span>Pod Logs:</span>
+                <Terminal className="size-4.5 text-primary" />
+                <span>Live Pod Logs:</span>
                 <span className="font-mono text-primary">{podName}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2">
-                <span>Namespace: <strong className="text-foreground">{namespace}</strong></span>
+                <span>Namespace: <strong className="text-foreground font-mono">{namespace}</strong></span>
                 <span>•</span>
-                <Badge variant="outline" className="text-[11px] h-4 px-1.5">
+                <Badge variant="success" className="text-[10px] h-4.5 px-2">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
                   Live Stream
                 </Badge>
               </DialogDescription>
@@ -119,12 +120,12 @@ export function PodLogsDialog({
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Container:</span>
                 <Select value={selectedContainer} onValueChange={setSelectedContainer}>
-                  <SelectTrigger className="h-8 w-36 text-xs">
+                  <SelectTrigger className="h-8.5 w-36 text-xs">
                     <SelectValue placeholder="Select container" />
                   </SelectTrigger>
                   <SelectContent>
                     {containers.map(c => (
-                      <SelectItem key={c.name} value={c.name} className="text-xs">
+                      <SelectItem key={c.name} value={c.name} className="text-xs font-mono">
                         {c.name}
                       </SelectItem>
                     ))}
@@ -134,14 +135,14 @@ export function PodLogsDialog({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
-                placeholder="Filter logs..."
+                placeholder="Filter output log lines..."
                 value={filterQuery}
                 onChange={e => setFilterQuery(e.target.value)}
-                className="h-8 pl-8 text-xs"
+                className="h-8 pl-8 text-xs font-mono"
               />
             </div>
 
@@ -150,57 +151,57 @@ export function PodLogsDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => setAutoRefresh(!autoRefresh)}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs shadow-xs"
               >
-                <RefreshCw className={`h-3 w-3 mr-1.5 ${autoRefresh || loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`size-3.5 mr-1.5 ${autoRefresh || loading ? 'animate-spin' : ''}`} />
                 {autoRefresh ? 'Streaming' : 'Follow'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs shadow-xs"
               >
-                {copied ? <Check className="h-3 w-3 mr-1 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1" />}
+                {copied ? <Check className="size-3.5 mr-1 text-emerald-500" /> : <Copy className="size-3.5 mr-1" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs shadow-xs"
               >
-                <Download className="h-3 w-3 mr-1" />
+                <Download className="size-3.5 mr-1" />
                 Download
               </Button>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-[350px] max-h-[50vh] mt-2 rounded-lg border bg-muted/50 p-3 font-mono text-xs overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-[350px] max-h-[50vh] mt-2 rounded-xl border border-border/80 bg-zinc-950 text-zinc-100 p-4 font-mono text-xs overflow-hidden flex flex-col shadow-inner">
           <ScrollArea className="flex-1 w-full h-full pr-2" ref={scrollRef}>
             {filteredLogs.trim() ? (
-              <pre className="text-foreground whitespace-pre-wrap break-all leading-relaxed select-text font-mono">
+              <pre className="text-zinc-200 whitespace-pre-wrap break-all leading-relaxed select-text font-mono">
                 {filteredLogs}
               </pre>
             ) : (
-              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
-                <Terminal className="h-6 w-6 animate-pulse" />
-                <p className="text-xs">{filterQuery ? 'No log lines match filter.' : 'Waiting for log output...'}</p>
+              <div className="flex flex-col items-center justify-center h-48 text-zinc-500 gap-2">
+                <Terminal className="size-6 animate-pulse text-zinc-400" />
+                <p className="text-xs">{filterQuery ? 'No log lines match filter.' : 'Waiting for live stdout/stderr log output...'}</p>
               </div>
             )}
           </ScrollArea>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
+        <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs text-muted-foreground">
           <div>
-            Showing <strong className="text-foreground">{filteredLogs.split('\n').filter(Boolean).length}</strong> lines
+            Showing <strong className="text-foreground font-mono">{filteredLogs.split('\n').filter(Boolean).length}</strong> log lines
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="text-xs h-7"
+            className="text-xs h-7.5"
           >
             Close
           </Button>

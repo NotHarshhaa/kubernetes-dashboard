@@ -67,20 +67,20 @@ export function YamlViewerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6">
-        <DialogHeader className="border-b pb-3">
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-5">
+        <DialogHeader className="border-b border-border/60 pb-3">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <FileCode2 className="h-4 w-4 text-primary" />
+                <FileCode2 className="size-4.5 text-primary" />
                 <span>Resource Manifest:</span>
                 <span className="font-mono text-primary">{resourceName}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                <Badge variant="outline" className="text-[11px] h-4 px-1.5">
+                <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-mono">
                   {resourceKind}
                 </Badge>
-                <span>Namespace: <strong className="text-foreground">{namespace}</strong></span>
+                {namespace && <span>Namespace: <strong className="text-foreground font-mono">{namespace}</strong></span>}
               </DialogDescription>
             </div>
 
@@ -89,38 +89,38 @@ export function YamlViewerDialog({
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs shadow-xs"
               >
-                {copied ? <Check className="h-3 w-3 mr-1 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1" />}
+                {copied ? <Check className="size-3.5 mr-1 text-emerald-500" /> : <Copy className="size-3.5 mr-1" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs shadow-xs"
               >
-                <Download className="h-3 w-3 mr-1" />
+                <Download className="size-3.5 mr-1" />
                 Download
               </Button>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-[320px] max-h-[50vh] mt-2 rounded-lg border bg-muted/40 p-3 font-mono text-xs overflow-hidden">
+        <div className="flex-1 min-h-[320px] max-h-[50vh] mt-2 rounded-xl border border-border/80 bg-zinc-950 text-zinc-100 p-4 font-mono text-xs overflow-hidden shadow-inner">
           <ScrollArea className="h-full w-full pr-2">
-            <pre className="text-foreground whitespace-pre-wrap leading-relaxed select-text font-mono">
+            <pre className="text-zinc-200 whitespace-pre-wrap leading-relaxed select-text font-mono">
               {yamlContent}
             </pre>
           </ScrollArea>
         </div>
 
-        <div className="flex justify-end pt-2 border-t">
+        <div className="flex justify-end pt-2 border-t border-border/60">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="text-xs h-7"
+            className="text-xs h-7.5"
           >
             Close
           </Button>

@@ -5,20 +5,16 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { apiClient, Pod, Node } from "@/lib/api-client"
 import { useToast } from "@/contexts/toast-context"
 import { 
   Activity, 
   Cpu, 
-  HardDrive, 
   MemoryStick, 
   RefreshCw, 
-  CheckCircle, 
-  AlertTriangle, 
+  CheckCircle2, 
   Download, 
-  Bell, 
   Network, 
   Server
 } from "lucide-react"
@@ -118,22 +114,26 @@ export default function MonitoringPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Activity className="size-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Activity className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Cluster Monitoring</h1>
-                <p className="text-muted-foreground text-sm">Real-time resource utilization, telemetry charts, and health indicators</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Cluster Monitoring</h1>
+                <p className="text-muted-foreground text-xs">Real-time resource utilization, dynamic telemetry time-series, and node infrastructure health</p>
               </div>
             </div>
           </div>
+          
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setAutoRefresh(!autoRefresh)}
+              className={autoRefresh ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5" : ""}
             >
               <RefreshCw className={`size-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Live Stream' : 'Paused'}
+              {autoRefresh ? 'Live Stream Active' : 'Stream Paused'}
             </Button>
             <Button variant="outline" size="sm" onClick={exportData}>
               <Download className="size-3.5 mr-2" />
@@ -143,60 +143,60 @@ export default function MonitoringPage() {
         </div>
 
         {/* Global Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Cluster CPU Usage</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Cpu className="size-4 text-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cluster CPU Usage</CardTitle>
+              <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Cpu className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{latestCpu}%</div>
-              <Progress value={latestCpu} className="h-1.5 mt-2" />
-              <p className="text-xs text-muted-foreground mt-1.5">4 Nodes • {readyNodes} Schedulable</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{latestCpu}%</div>
+              <Progress value={latestCpu} className="h-2 mt-2" />
+              <p className="text-xs text-muted-foreground mt-1.5 font-mono">4 Nodes • {readyNodes} Schedulable</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Memory Allocation</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <MemoryStick className="size-4 text-primary" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Memory Allocation</CardTitle>
+              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                <MemoryStick className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{latestMemory}%</div>
-              <Progress value={latestMemory} className="h-1.5 mt-2" />
-              <p className="text-xs text-muted-foreground mt-1.5">38.4 GB Allocated / 64 GB Total</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-sky-600 dark:text-sky-400 font-mono">{latestMemory}%</div>
+              <Progress value={latestMemory} className="h-2 mt-2" indicatorClassName="bg-sky-500" />
+              <p className="text-xs text-muted-foreground mt-1.5 font-mono">38.4 GB Allocated / 64 GB Total</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Network I/O Throughput</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Network className="size-4 text-primary" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Network Throughput</CardTitle>
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                <Network className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{latestNetwork} MB/s</div>
-              <Progress value={Math.min(100, (latestNetwork / 200) * 100)} className="h-1.5 mt-2" />
-              <p className="text-xs text-muted-foreground mt-1.5">Ingress & Pod East-West Traffic</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-violet-600 dark:text-violet-400 font-mono">{latestNetwork} MB/s</div>
+              <Progress value={Math.min(100, (latestNetwork / 200) * 100)} className="h-2 mt-2" indicatorClassName="bg-violet-500" />
+              <p className="text-xs text-muted-foreground mt-1.5 font-mono">Ingress & East-West Traffic</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Pod Health</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <CheckCircle className="size-4 text-emerald-500" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Pod Health</CardTitle>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <CheckCircle2 className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{runningPods} / {pods.length}</div>
-              <Progress value={pods.length > 0 ? (runningPods / pods.length) * 100 : 100} className="h-1.5 mt-2" />
-              <p className="text-xs text-muted-foreground mt-1.5">Running healthy workloads</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{runningPods} / {pods.length || 8}</div>
+              <Progress value={pods.length > 0 ? (runningPods / pods.length) * 100 : 100} className="h-2 mt-2" indicatorClassName="bg-emerald-500" />
+              <p className="text-xs text-muted-foreground mt-1.5 font-mono">Healthy workload uptime</p>
             </CardContent>
           </Card>
         </div>
@@ -221,16 +221,16 @@ export default function MonitoringPage() {
                         <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--muted-foreground)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="var(--muted-foreground)" stopOpacity={0} />
+                        <stop offset="5%" stopColor="var(--color-sky-500, #38bdf8)" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="var(--color-sky-500, #38bdf8)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                     <XAxis dataKey="time" tick={{ fontSize: 10 }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} unit="%" />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }} />
                     <Area type="monotone" dataKey="cpu" name="CPU Usage (%)" stroke="var(--primary)" strokeWidth={2} fillOpacity={1} fill="url(#cpuGrad)" />
-                    <Area type="monotone" dataKey="memory" name="Memory Usage (%)" stroke="var(--muted-foreground)" strokeWidth={1.5} fillOpacity={1} fill="url(#memGrad)" />
+                    <Area type="monotone" dataKey="memory" name="Memory Usage (%)" stroke="#38bdf8" strokeWidth={1.5} fillOpacity={1} fill="url(#memGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -240,10 +240,10 @@ export default function MonitoringPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Network className="size-4 text-primary" />
+                <Network className="size-4 text-violet-500" />
                 Network Traffic Rate (MB/s)
               </CardTitle>
-              <CardDescription>Aggregate network I/O per second</CardDescription>
+              <CardDescription>Aggregate network packet throughput</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-64 w-full">
@@ -252,8 +252,8 @@ export default function MonitoringPage() {
                     <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                     <XAxis dataKey="time" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} unit="M" />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderRadius: '8px', border: '1px solid var(--border)' }} />
-                    <Bar dataKey="network" name="Network (MB/s)" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderRadius: '12px', border: '1px solid var(--border)' }} />
+                    <Bar dataKey="network" name="Network (MB/s)" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -265,38 +265,38 @@ export default function MonitoringPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Server className="size-4 text-primary" />
-              Node Infrastructure Performance
+              <Server className="size-4 text-sky-500" />
+              Node Infrastructure Telemetry
             </CardTitle>
-            <CardDescription>Current hardware telemetry per cluster node</CardDescription>
+            <CardDescription>Current hardware resource limits per cluster node</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {nodes.map(node => (
-              <div key={node.name} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border bg-card gap-3">
+              <div key={node.name} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-border/70 bg-card/60 gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-muted text-foreground shrink-0">
-                    <Server className="size-4" />
+                  <div className="p-2 rounded-lg bg-muted text-foreground border border-border/50 shrink-0">
+                    <Server className="size-4 text-primary" />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-foreground">{node.name}</div>
-                    <div className="text-xs text-muted-foreground">{node.roles.join(', ')} • {node.internalIP}</div>
+                    <div className="font-semibold text-xs text-foreground font-mono">{node.name}</div>
+                    <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{node.roles.join(', ')} • {node.internalIP}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs font-mono">
                   <div>
-                    <span className="text-muted-foreground text-[10px] block">CPU</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-semibold block">CPU</span>
                     <span>{node.allocatableCPU} / {node.cpuCapacity}c</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-[10px] block">Memory</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-semibold block">Memory</span>
                     <span>{node.allocatableMemory} / {node.memoryCapacity}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground text-[10px] block">Pods</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-semibold block">Pods</span>
                     <span>{node.podsCapacity} max</span>
                   </div>
-                  <Badge variant={node.status === 'Ready' ? 'default' : 'destructive'} className="text-xs">
+                  <Badge variant={node.status === 'Ready' ? 'success' : 'destructive'} className="text-xs">
                     {node.status}
                   </Badge>
                 </div>

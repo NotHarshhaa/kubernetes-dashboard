@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 # ------------------------------------------------------------
 # 1. Base Image with Security & Runtime Dependencies
 # ------------------------------------------------------------
@@ -6,17 +8,20 @@ RUN apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
 # ------------------------------------------------------------
-# 2. Install Dependencies (Cached Layer)
+# 2. Install Dependencies (Fast Native Cross-Build with npm cache)
 # ------------------------------------------------------------
-FROM base AS deps
+FROM --platform=$BUILDPLATFORM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --prefer-offline --no-audit
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --ignore-scripts
 
 # ------------------------------------------------------------
-# 3. Build the Application
+# 3. Build Application (Fast Native Cross-Build with Next.js cache)
 # ------------------------------------------------------------
-FROM base AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -24,7 +29,9 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/app/.next/cache \
+    npm run build
 
 # ------------------------------------------------------------
 # 4. Production Runner (Minimal Attack Surface & Non-Root User)

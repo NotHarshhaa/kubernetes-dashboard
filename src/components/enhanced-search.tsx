@@ -1,11 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { 
   Search, 
-  Command, 
-  Clock, 
   Container, 
   Network, 
   Database, 
@@ -13,7 +11,10 @@ import {
   Activity,
   X,
   Boxes,
-  KeyRound
+  KeyRound,
+  Layers,
+  Settings,
+  ArrowRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,8 +29,6 @@ interface SearchItem {
   icon: React.ComponentType<{ className?: string }>
   url: string
   keywords: string[]
-  recent?: boolean
-  trending?: boolean
 }
 
 const searchData: SearchItem[] = [
@@ -44,8 +43,8 @@ const searchData: SearchItem[] = [
   },
   {
     id: "2",
-    title: "Pods & Logs",
-    description: "Manage container instances and live streaming terminal logs",
+    title: "Pods & Terminal Logs",
+    description: "Container instances, real-time logs stream, and diagnostics",
     category: "Resources",
     icon: Container,
     url: "/pods",
@@ -54,7 +53,7 @@ const searchData: SearchItem[] = [
   {
     id: "3", 
     title: "Deployments",
-    description: "Application scale and rolling restart management",
+    description: "Horizontal scaling and rolling zero-downtime restarts",
     category: "Workloads",
     icon: Database,
     url: "/deployments",
@@ -81,7 +80,7 @@ const searchData: SearchItem[] = [
   {
     id: "6",
     title: "Cluster Nodes",
-    description: "Nodes compute capacity, cordoning, and drain controls",
+    description: "Compute capacity, hardware conditions, and cordoning",
     category: "Infrastructure",
     icon: Server,
     url: "/nodes",
@@ -89,12 +88,30 @@ const searchData: SearchItem[] = [
   },
   {
     id: "7",
+    title: "Namespaces",
+    description: "Tenancy boundaries, resource quotas, and access scopes",
+    category: "Tenancy",
+    icon: Layers,
+    url: "/namespaces",
+    keywords: ["namespaces", "quotas", "tenants", "isolation"]
+  },
+  {
+    id: "8",
     title: "Monitoring & Metrics",
     description: "Live CPU, memory usage telemetry, and cluster alerts",
     category: "Monitoring",
     icon: Activity,
     url: "/monitoring",
     keywords: ["monitoring", "metrics", "alerts", "telemetry"]
+  },
+  {
+    id: "9",
+    title: "Cluster Settings",
+    description: "Alert triggers, API tokens, audit logs, and language",
+    category: "Settings",
+    icon: Settings,
+    url: "/settings",
+    keywords: ["settings", "preferences", "tokens", "alerts"]
   }
 ]
 
@@ -184,20 +201,20 @@ export function EnhancedSearch() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search resources, pods, services..."
-          className="h-8 pl-8 pr-12 text-xs"
+          className="h-8.5 pl-8.5 pr-12 text-xs rounded-lg"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query ? (
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-xs"
               onClick={() => setQuery("")}
               className="size-5 p-0 text-muted-foreground hover:text-foreground"
             >
               <X className="size-3" />
             </Button>
           ) : (
-            <kbd className="hidden sm:inline-flex items-center px-1 text-[10px] font-mono text-muted-foreground bg-muted border rounded">
+            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted border border-border/60 rounded-md">
               ⌘K
             </kbd>
           )}
@@ -205,7 +222,10 @@ export function EnhancedSearch() {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 rounded-lg border bg-popover text-popover-foreground shadow-md z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border/80 bg-popover/95 text-popover-foreground shadow-2xl backdrop-blur-md z-50 overflow-hidden duration-150">
+          <div className="p-1.5 border-b border-border/50 text-[10px] uppercase font-bold tracking-wider text-muted-foreground px-3">
+            Quick Navigation & Resources
+          </div>
           <div className="max-h-80 overflow-y-auto p-1.5 space-y-1">
             {results.length > 0 ? (
               results.map((item, index) => {
@@ -216,27 +236,27 @@ export function EnhancedSearch() {
                     key={item.id}
                     onClick={() => handleSelect(item)}
                     className={cn(
-                      "w-full flex items-center justify-between p-2 rounded-md text-left text-xs transition-colors",
-                      isSelected ? "bg-accent text-accent-foreground" : "hover:bg-muted"
+                      "w-full flex items-center justify-between p-2.5 rounded-lg text-left text-xs transition-colors duration-150 cursor-pointer",
+                      isSelected ? "bg-primary text-primary-foreground font-medium shadow-xs" : "hover:bg-muted/70 text-foreground"
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="p-1 rounded-md bg-muted text-foreground shrink-0">
-                        <Icon className="size-3.5" />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn("p-1.5 rounded-md shrink-0", isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-primary border border-border/50")}>
+                        <Icon className="size-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-foreground truncate">{item.title}</div>
-                        <div className="text-[11px] text-muted-foreground truncate">{item.description}</div>
+                        <div className="font-semibold truncate">{item.title}</div>
+                        <div className={cn("text-[11px] truncate", isSelected ? "text-primary-foreground/80" : "text-muted-foreground")}>{item.description}</div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0 ml-2">
+                    <Badge variant={isSelected ? "secondary" : "outline"} className="text-[10px] h-4.5 px-1.5 shrink-0 ml-2 font-mono">
                       {item.category}
                     </Badge>
                   </button>
                 )
               })
             ) : (
-              <div className="p-4 text-center text-xs text-muted-foreground">
+              <div className="p-5 text-center text-xs text-muted-foreground">
                 No matching resources found for &quot;{query}&quot;
               </div>
             )}

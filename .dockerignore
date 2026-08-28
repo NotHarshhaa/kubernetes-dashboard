@@ -1,46 +1,52 @@
-# Dependencies
+# Dependencies & Package Managers
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# Next.js
+# Next.js Build Outputs
 .next/
 out/
 build/
+dist/
 
-# Misc
-.DS_Store
-*.pem
-
-# Debug
-npm debug.log*
-.env*
-
-# Local env files
-.env*.local
-.env
-
-# Vercel
-.vercel
-
-# TypeScript
+# TypeScript & Source Maps
 *.tsbuildinfo
 next-env.d.ts
 
-# Git
+# Environment & Local Secrets
+.env
+.env*.local
+.env.production
+.env.development
+*.pem
+*.key
+
+# Git & CI/CD Configs
 .git
 .gitignore
 .github
 
-# Documentation
-README.md
-LICENSE
-.md
+# Kubernetes & Local Scripts
+k8s/
+scripts/
 
-# IDE
+# Documentation & Readmes
+*.md
+LICENSE
+
+# IDE & Editor files
 .vscode
 .idea
+*.swp
+*.swo
 
-# OS
+# OS Temporary Files
+.DS_Store
 Thumbs.db
+
+# Agent & Brain Cache
+.agents/
+brain/
+scratch/

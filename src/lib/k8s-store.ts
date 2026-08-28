@@ -804,8 +804,9 @@ class K8sStore {
     for (const ds of this.daemonSets) {
       for (let i = 0; i < this.nodes.length; i++) {
         const node = this.nodes[i].name
+        const nodeSuffix = node.replace(/^k8s-/, '')
         newPods.push({
-          name: `${ds.name}-${node.split('-').pop()}`,
+          name: `${ds.name}-${nodeSuffix}`,
           namespace: ds.namespace,
           status: 'Running',
           phase: 'Running',

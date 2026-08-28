@@ -112,7 +112,7 @@ export default function ConfigPage() {
     const textToCopy = isSecret ? decodeBase64(val) : val
     navigator.clipboard.writeText(textToCopy)
     setCopiedKey(key)
-    success(`Copied value for key ${key}`)
+    success(`Copied value for key: ${key}`)
     setTimeout(() => setCopiedKey(null), 2000)
   }
 
@@ -142,14 +142,16 @@ export default function ConfigPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <KeyRound className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <KeyRound className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
                   Config & Secrets
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                  Manage ConfigMaps, environment configurations, and secure TLS / opaque secrets
+                <p className="text-muted-foreground text-xs">
+                  Application configuration profiles, environment ConfigMaps, and encrypted TLS / opaque Secret storage
                 </p>
               </div>
             </div>
@@ -157,64 +159,83 @@ export default function ConfigPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
               size="sm"
               onClick={fetchData}
             >
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total ConfigMaps</span>
-            <div className="text-2xl font-bold text-foreground mt-1">{configMaps.length}</div>
-            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <FileText className="h-3.5 w-3.5" />
-              {configMaps.reduce((acc, c) => acc + Object.keys(c.data || {}).length, 0)} total keys
-            </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total ConfigMaps</CardTitle>
+              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                <FileText className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{configMaps.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {configMaps.reduce((acc, c) => acc + Object.keys(c.data || {}).length, 0)} total key values
+              </p>
+            </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Secrets</span>
-            <div className="text-2xl font-bold text-foreground mt-1">{secrets.length}</div>
-            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5" />
-              Base64 encrypted
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Secrets</CardTitle>
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                <Shield className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{secrets.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Base64 encrypted vault</p>
+            </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Namespaces</span>
-            <div className="text-2xl font-bold text-foreground mt-1">{namespaces.length}</div>
-            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Layers className="h-3.5 w-3.5" /> Isolation zones
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Namespaces</CardTitle>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Layers className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{namespaces.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Isolation partitions</p>
+            </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">TLS Certificates</span>
-            <div className="text-2xl font-bold text-foreground mt-1">
-              {secrets.filter(s => s.type.includes('tls')).length}
-            </div>
-            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-              <Lock className="h-3.5 w-3.5" /> TLS credentials
-            </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">TLS Certificates</CardTitle>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Lock className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                {secrets.filter(s => s.type.includes('tls')).length}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">TLS security keys</p>
+            </CardContent>
           </Card>
         </div>
 
         {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border bg-card">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl border border-border/80 bg-card shadow-xs">
           <div className="relative flex-1 w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by config or secret name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-9 h-9"
+              className="pl-9 h-8.5"
             />
           </div>
 
@@ -222,7 +243,7 @@ export default function ConfigPage() {
             <select
               value={selectedNamespace}
               onChange={e => setSelectedNamespace(e.target.value)}
-              className="h-9 px-3 rounded-md text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-8.5 px-3 rounded-lg text-xs border border-input bg-background text-foreground outline-none focus:ring-1 focus:ring-primary shadow-xs"
             >
               <option value="all">All Namespaces</option>
               {namespaces.map(ns => (
@@ -236,18 +257,18 @@ export default function ConfigPage() {
 
         {/* Tabs for ConfigMaps & Secrets */}
         <Tabs defaultValue="configmaps" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 w-72 h-auto p-1">
-            <TabsTrigger value="configmaps">
+          <TabsList className="grid grid-cols-2 w-80 h-auto p-1">
+            <TabsTrigger value="configmaps" className="font-semibold">
               ConfigMaps ({filteredConfigMaps.length})
             </TabsTrigger>
-            <TabsTrigger value="secrets">
+            <TabsTrigger value="secrets" className="font-semibold">
               Secrets ({filteredSecrets.length})
             </TabsTrigger>
           </TabsList>
 
           {/* ConfigMaps Tab */}
           <TabsContent value="configmaps">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -255,7 +276,7 @@ export default function ConfigPage() {
                     <TableHead>Namespace</TableHead>
                     <TableHead>Keys / Data Entries</TableHead>
                     <TableHead>Age</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,17 +284,17 @@ export default function ConfigPage() {
                     const keys = Object.keys(c.data || {})
                     return (
                       <TableRow key={`${c.namespace}-${c.name}`}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-semibold">
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-semibold">{c.name}</span>
+                            <FileText className="size-4 text-muted-foreground" />
+                            <span className="font-mono text-xs">{c.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="outline" className="text-xs">{c.namespace}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs font-mono">{c.namespace}</Badge></TableCell>
                         <TableCell>
-                          <div className="flex flex-wrap gap-1 max-w-md">
+                          <div className="flex flex-wrap gap-1.5 max-w-md">
                             {keys.map(k => (
-                              <Badge key={k} variant="secondary" className="text-xs font-mono">
+                              <Badge key={k} variant="secondary" className="text-[10px] font-mono">
                                 {k}
                               </Badge>
                             ))}
@@ -281,31 +302,33 @@ export default function ConfigPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{c.age}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
+                        <TableCell className="text-right pr-4">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => setInspectItem({ open: true, kind: 'ConfigMap', name: c.name, namespace: c.namespace, data: c.data })}
-                              className="h-8 text-xs"
+                              className="h-7.5 text-xs shadow-xs"
                             >
-                              <Eye className="h-3.5 w-3.5 mr-1" /> View Data
+                              <Eye className="size-3.5 mr-1" /> View Data
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon-sm"
                               variant="ghost"
                               onClick={() => setYamlDialog({ open: true, kind: 'ConfigMap', name: c.name, namespace: c.namespace })}
-                              className="h-8 w-8 p-0"
+                              className="size-7.5 rounded-lg"
+                              title="View YAML"
                             >
-                              <FileCode2 className="h-3.5 w-3.5" />
+                              <FileCode2 className="size-3.5" />
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon-sm"
                               variant="ghost"
                               onClick={() => handleDelete('ConfigMap', c.name, c.namespace)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              className="size-7.5 rounded-lg text-rose-600 hover:text-rose-600 hover:bg-rose-500/10"
+                              title="Delete ConfigMap"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="size-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -319,7 +342,7 @@ export default function ConfigPage() {
 
           {/* Secrets Tab */}
           <TabsContent value="secrets">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -328,7 +351,7 @@ export default function ConfigPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Encrypted Keys</TableHead>
                     <TableHead>Age</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,22 +359,22 @@ export default function ConfigPage() {
                     const keys = Object.keys(s.data || {})
                     return (
                       <TableRow key={`${s.namespace}-${s.name}`}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-semibold">
                           <div className="flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-semibold">{s.name}</span>
+                            <Lock className="size-4 text-muted-foreground" />
+                            <span className="font-mono text-xs">{s.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="outline" className="text-xs">{s.namespace}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs font-mono">{s.namespace}</Badge></TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="text-xs font-mono">
+                          <Badge variant="purple" className="text-[10px] font-mono">
                             {s.type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-wrap gap-1 max-w-md">
+                          <div className="flex flex-wrap gap-1.5 max-w-md">
                             {keys.map(k => (
-                              <Badge key={k} variant="secondary" className="text-xs font-mono">
+                              <Badge key={k} variant="secondary" className="text-[10px] font-mono">
                                 {k}
                               </Badge>
                             ))}
@@ -359,31 +382,33 @@ export default function ConfigPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{s.age}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
+                        <TableCell className="text-right pr-4">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => setInspectItem({ open: true, kind: 'Secret', name: s.name, namespace: s.namespace, data: s.data, type: s.type })}
-                              className="h-8 text-xs"
+                              className="h-7.5 text-xs shadow-xs"
                             >
-                              <Eye className="h-3.5 w-3.5 mr-1" /> Reveal Keys
+                              <Eye className="size-3.5 mr-1" /> Reveal Keys
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon-sm"
                               variant="ghost"
                               onClick={() => setYamlDialog({ open: true, kind: 'Secret', name: s.name, namespace: s.namespace })}
-                              className="h-8 w-8 p-0"
+                              className="size-7.5 rounded-lg"
+                              title="View YAML"
                             >
-                              <FileCode2 className="h-3.5 w-3.5" />
+                              <FileCode2 className="size-3.5" />
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon-sm"
                               variant="ghost"
                               onClick={() => handleDelete('Secret', s.name, s.namespace)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              className="size-7.5 rounded-lg text-rose-600 hover:text-rose-600 hover:bg-rose-500/10"
+                              title="Delete Secret"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="size-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -399,52 +424,51 @@ export default function ConfigPage() {
         {/* Inspect Key-Value Dialog */}
         <Dialog open={inspectItem.open} onOpenChange={open => setInspectItem(prev => ({ ...prev, open }))}>
           <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-            <DialogHeader className="border-b pb-3">
-              <DialogTitle className="text-base flex items-center gap-2">
-                {inspectItem.kind === 'Secret' ? <Lock className="h-4 w-4 text-primary" /> : <FileText className="h-4 w-4 text-primary" />}
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {inspectItem.kind === 'Secret' ? <Lock className="size-4.5 text-violet-500" /> : <FileText className="size-4.5 text-primary" />}
                 <span>{inspectItem.kind}:</span>
                 <span className="font-mono text-primary">{inspectItem.name}</span>
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Namespace: {inspectItem.namespace} {inspectItem.type && `• Type: ${inspectItem.type}`}
+              <DialogDescription>
+                Namespace: <span className="font-mono">{inspectItem.namespace}</span> {inspectItem.type && `• Type: ${inspectItem.type}`}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto py-3 space-y-3">
+            <div className="flex-1 overflow-y-auto py-2 space-y-3">
               {Object.entries(inspectItem.data || {}).map(([key, val]) => {
                 const isSecret = inspectItem.kind === 'Secret'
                 const isRevealed = Boolean(revealedSecrets[key])
-                const displayValue = isSecret && !isRevealed ? '••••••••••••••••' : isSecret ? decodeBase64(val) : val
+                const displayValue = isSecret && !isRevealed ? '••••••••••••••••••••••••••••' : isSecret ? decodeBase64(val) : val
 
                 return (
-                  <div key={key} className="p-3 rounded-lg border bg-muted/40 space-y-2">
+                  <div key={key} className="p-3.5 rounded-xl border border-border/70 bg-muted/20 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded">
+                      <span className="text-xs font-mono font-bold bg-muted px-2.5 py-1 rounded-md border border-border/50">
                         {key}
                       </span>
                       <div className="flex items-center gap-1.5">
                         {isSecret && (
                           <Button
-                            size="sm"
+                            size="xs"
                             variant="ghost"
                             onClick={() => toggleReveal(key)}
-                            className="h-7 px-2 text-xs"
                           >
-                            {isRevealed ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+                            {isRevealed ? <EyeOff className="size-3 mr-1" /> : <Eye className="size-3 mr-1" />}
                             {isRevealed ? 'Hide' : 'Reveal'}
                           </Button>
                         )}
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="outline"
                           onClick={() => handleCopyValue(key, val, isSecret)}
-                          className="h-7 px-2 text-xs"
+                          className="shadow-xs"
                         >
-                          {copiedKey === key ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                          {copiedKey === key ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
                         </Button>
                       </div>
                     </div>
-                    <div className="p-2.5 bg-background border rounded-md overflow-x-auto">
+                    <div className="p-3 bg-background border border-border/60 rounded-lg overflow-x-auto">
                       <pre className="font-mono text-xs text-foreground whitespace-pre-wrap break-all">
                         {displayValue}
                       </pre>
@@ -454,8 +478,8 @@ export default function ConfigPage() {
               })}
             </div>
 
-            <div className="flex justify-end pt-2 border-t">
-              <Button variant="outline" onClick={() => setInspectItem(prev => ({ ...prev, open: false }))}>
+            <div className="flex justify-end pt-2 border-t border-border/60">
+              <Button variant="outline" size="sm" onClick={() => setInspectItem(prev => ({ ...prev, open: false }))}>
                 Close
               </Button>
             </div>

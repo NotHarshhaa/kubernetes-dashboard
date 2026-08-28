@@ -13,13 +13,15 @@ import { useToast } from "@/contexts/toast-context"
 import { YamlViewerDialog } from "@/components/yaml-viewer-dialog"
 import { 
   Network, 
-  RefreshCw,
-  Search,
-  Globe,
-  Lock,
-  Trash2,
-  Copy,
-  FileCode2
+  RefreshCw, 
+  Search, 
+  Globe, 
+  Lock, 
+  Trash2, 
+  Copy, 
+  FileCode2,
+  ShieldCheck,
+  Check
 } from "lucide-react"
 
 export default function ServicesPage() {
@@ -31,6 +33,7 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [activeTab, setActiveTab] = useState("services")
+  const [copiedText, setCopiedText] = useState<string | null>(null)
 
   const [yamlDialog, setYamlDialog] = useState<{
     open: boolean
@@ -80,19 +83,36 @@ export default function ServicesPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+    setCopiedText(text)
     success('Copied to clipboard')
+    setTimeout(() => setCopiedText(null), 2000)
   }
 
   const getTypeBadge = (type: string) => {
     switch (type.toLowerCase()) {
       case 'clusterip':
-        return <Badge variant="default" className="text-xs gap-1"><Lock className="w-3 h-3" />{type}</Badge>
+        return (
+          <Badge variant="info" className="text-xs gap-1 py-0.5 font-mono">
+            <Lock className="size-3" />
+            {type}
+          </Badge>
+        )
       case 'nodeport':
-        return <Badge variant="secondary" className="text-xs gap-1"><Network className="w-3 h-3" />{type}</Badge>
+        return (
+          <Badge variant="purple" className="text-xs gap-1 py-0.5 font-mono">
+            <Network className="size-3" />
+            {type}
+          </Badge>
+        )
       case 'loadbalancer':
-        return <Badge variant="outline" className="text-xs gap-1"><Globe className="w-3 h-3" />{type}</Badge>
+        return (
+          <Badge variant="success" className="text-xs gap-1 py-0.5 font-mono">
+            <Globe className="size-3" />
+            {type}
+          </Badge>
+        )
       default:
-        return <Badge variant="outline" className="text-xs">{type}</Badge>
+        return <Badge variant="outline" className="text-xs font-mono">{type}</Badge>
     }
   }
 
@@ -118,93 +138,96 @@ export default function ServicesPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <Network className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Network className="size-5" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Services & Ingress</h1>
-                <p className="text-muted-foreground text-sm">Manage network routing, LoadBalancers, ClusterIPs, NodePorts, and Ingress hosts</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Services & Ingress</h1>
+                <p className="text-muted-foreground text-xs">Internal microservice networking, external LoadBalancers, NodePorts, and Ingress routing rules</p>
               </div>
             </div>
           </div>
+          
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={fetchData}>
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <Button size="sm" onClick={fetchData}>
+              <RefreshCw className={`size-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Services</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Network className="h-4 w-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Services</CardTitle>
+              <div className="p-2 rounded-xl bg-muted text-foreground border border-border/50">
+                <Network className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{services.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Cluster networking</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{services.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Cluster networking endpoints</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">ClusterIP</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Lock className="h-4 w-4" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">ClusterIP</CardTitle>
+              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                <Lock className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{clusterIPCount}</div>
-              <p className="text-xs text-muted-foreground mt-1">Internal endpoints</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-sky-600 dark:text-sky-400 font-mono">{clusterIPCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">Internal routing endpoints</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">LoadBalancers</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Globe className="h-4 w-4" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">LoadBalancers</CardTitle>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Globe className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{loadBalancerCount}</div>
-              <p className="text-xs text-muted-foreground mt-1">External endpoints</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{loadBalancerCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">External public endpoints</p>
             </CardContent>
           </Card>
 
-          <Card className="p-4">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ingresses</CardTitle>
-              <div className="p-1.5 rounded-md bg-muted">
-                <Network className="h-4 w-4" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ingress Gateways</CardTitle>
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                <ShieldCheck className="size-4" />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-2xl font-bold text-foreground">{ingresses.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Route rules</p>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground font-mono">{ingresses.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">HTTP/HTTPS route hosts</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border bg-card">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl border border-border/80 bg-card shadow-xs">
           <div className="relative flex-1 w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search by name or namespace..."
-              className="pl-9 h-9"
+              placeholder="Search by service name or namespace..."
+              className="pl-9 h-8.5"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
-              className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+              className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
               value={selectedNamespace}
               onChange={(e) => setSelectedNamespace(e.target.value)}
             >
@@ -215,7 +238,7 @@ export default function ServicesPage() {
             </select>
 
             <select
-              className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
+              className="h-8.5 px-3 border border-input rounded-lg bg-background text-foreground text-xs outline-none focus:ring-1 focus:ring-primary shadow-xs"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
             >
@@ -229,18 +252,18 @@ export default function ServicesPage() {
 
         {/* Tabs for Services & Ingresses */}
         <Tabs defaultValue="services" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 w-72 h-auto p-1">
-            <TabsTrigger value="services">
+          <TabsList className="grid grid-cols-2 w-80 h-auto p-1">
+            <TabsTrigger value="services" className="font-semibold">
               Services ({filteredServices.length})
             </TabsTrigger>
-            <TabsTrigger value="ingresses">
+            <TabsTrigger value="ingresses" className="font-semibold">
               Ingresses ({filteredIngresses.length})
             </TabsTrigger>
           </TabsList>
 
           {/* Services Tab */}
           <TabsContent value="services">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -249,9 +272,9 @@ export default function ServicesPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Cluster IP</TableHead>
                     <TableHead>External Endpoints</TableHead>
-                    <TableHead>Ports</TableHead>
+                    <TableHead>Target Ports</TableHead>
                     <TableHead>Age</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -259,53 +282,57 @@ export default function ServicesPage() {
                     <TableRow key={`${svc.namespace}-${svc.name}`}>
                       <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Network className="h-4 w-4 text-muted-foreground" />
-                          <span>{svc.name}</span>
+                          <Network className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{svc.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{svc.namespace}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs font-mono">{svc.namespace}</Badge>
+                      </TableCell>
                       <TableCell>{getTypeBadge(svc.type)}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-muted-foreground">{svc.clusterIP}</span>
+                        <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                          <span>{svc.clusterIP}</span>
                           {svc.clusterIP !== 'None' && (
-                            <Button size="sm" variant="ghost" onClick={() => copyToClipboard(svc.clusterIP)} className="h-6 w-6 p-0">
-                              <Copy className="h-3 w-3" />
+                            <Button size="icon-xs" variant="ghost" onClick={() => copyToClipboard(svc.clusterIP)} className="size-6 p-0">
+                              {copiedText === svc.clusterIP ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
                             </Button>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         {svc.externalIPs.length > 0 ? (
-                          <div className="flex items-center gap-1 font-mono text-xs">
+                          <div className="flex items-center gap-1.5 font-mono text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                             <span>{svc.externalIPs.join(', ')}</span>
-                            <Button size="sm" variant="ghost" onClick={() => copyToClipboard(svc.externalIPs[0])} className="h-6 w-6 p-0">
-                              <Copy className="h-3 w-3" />
+                            <Button size="icon-xs" variant="ghost" onClick={() => copyToClipboard(svc.externalIPs[0])} className="size-6 p-0">
+                              {copiedText === svc.externalIPs[0] ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">-</span>
+                          <span className="text-xs text-muted-foreground font-mono">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{svc.ports}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{svc.age}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
-                            size="sm"
-                            variant="ghost"
+                            size="icon-sm"
+                            variant="outline"
                             onClick={() => setYamlDialog({ open: true, kind: 'Service', name: svc.name, namespace: svc.namespace })}
-                            className="h-8 w-8 p-0"
+                            className="size-7.5 rounded-lg shadow-xs"
+                            title="View YAML"
                           >
-                            <FileCode2 className="h-3.5 w-3.5" />
+                            <FileCode2 className="size-3.5" />
                           </Button>
                           <Button
-                            size="sm"
+                            size="icon-sm"
                             variant="ghost"
                             onClick={() => handleDelete('Service', svc.name, svc.namespace)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            className="size-7.5 rounded-lg text-rose-600 hover:text-rose-600 hover:bg-rose-500/10"
+                            title="Delete Service"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="size-3.5" />
                           </Button>
                         </div>
                       </TableCell>
@@ -318,17 +345,17 @@ export default function ServicesPage() {
 
           {/* Ingresses Tab */}
           <TabsContent value="ingresses">
-            <Card>
+            <Card className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ingress Name</TableHead>
                     <TableHead>Namespace</TableHead>
                     <TableHead>Hosts</TableHead>
-                    <TableHead>Paths & Backends</TableHead>
-                    <TableHead>TLS</TableHead>
+                    <TableHead>Routing Paths & Backends</TableHead>
+                    <TableHead>TLS Security</TableHead>
                     <TableHead>Age</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,11 +363,13 @@ export default function ServicesPage() {
                     <TableRow key={`${ing.namespace}-${ing.name}`}>
                       <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                          <span>{ing.name}</span>
+                          <Globe className="size-4 text-muted-foreground" />
+                          <span className="font-mono text-xs">{ing.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{ing.namespace}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs font-mono">{ing.namespace}</Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           {ing.hosts.map(h => (
@@ -351,37 +380,41 @@ export default function ServicesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-0.5 text-xs font-mono text-muted-foreground">
+                        <div className="space-y-1 text-xs font-mono text-muted-foreground">
                           {ing.paths.map((p, i) => (
-                            <div key={i}>
-                              <span className="text-primary font-semibold">{p.path}</span> → {p.backend}:{p.port}
+                            <div key={i} className="flex items-center gap-1.5">
+                              <span className="text-primary font-semibold">{p.path}</span>
+                              <span>→</span>
+                              <Badge variant="outline" className="text-[10px]">{p.backend}:{p.port}</Badge>
                             </div>
                           ))}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={ing.tls ? 'default' : 'secondary'} className="text-xs">
-                          {ing.tls ? 'TLS' : 'None'}
+                        <Badge variant={ing.tls ? 'success' : 'secondary'} className="text-xs">
+                          {ing.tls ? 'TLS Enabled' : 'Plain HTTP'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{ing.age}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
-                            size="sm"
-                            variant="ghost"
+                            size="icon-sm"
+                            variant="outline"
                             onClick={() => setYamlDialog({ open: true, kind: 'Ingress', name: ing.name, namespace: ing.namespace })}
-                            className="h-8 w-8 p-0"
+                            className="size-7.5 rounded-lg shadow-xs"
+                            title="View YAML"
                           >
-                            <FileCode2 className="h-3.5 w-3.5" />
+                            <FileCode2 className="size-3.5" />
                           </Button>
                           <Button
-                            size="sm"
+                            size="icon-sm"
                             variant="ghost"
                             onClick={() => handleDelete('Ingress', ing.name, ing.namespace)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            className="size-7.5 rounded-lg text-rose-600 hover:text-rose-600 hover:bg-rose-500/10"
+                            title="Delete Ingress"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="size-3.5" />
                           </Button>
                         </div>
                       </TableCell>
