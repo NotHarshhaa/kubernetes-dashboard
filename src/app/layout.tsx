@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ToastProvider } from "@/contexts/toast-context";
 import { Toaster } from "react-hot-toast";
+import { cn } from "@/lib/utils";
+
+const instrumentSans = Instrument_Sans({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,22 +32,26 @@ export const viewport: Viewport = {
   themeColor: "#326ce5",
 };
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", instrumentSans.variable)}>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ToastProvider>
-          <AuthProvider>
-            <LanguageProvider>
-              {children}
-            </LanguageProvider>
-          </AuthProvider>
-        </ToastProvider>
-        <Toaster position="top-right" />
+        <TooltipProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <LanguageProvider>
+                {children}
+              </LanguageProvider>
+            </AuthProvider>
+          </ToastProvider>
+          <Toaster position="top-right" />
+        </TooltipProvider>
       </body>
     </html>
   );

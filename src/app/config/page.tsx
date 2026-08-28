@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { motion } from "framer-motion"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/contexts/toast-context"
 import { apiClient, ConfigMap, Secret } from "@/lib/api-client"
 import { YamlViewerDialog } from "@/components/yaml-viewer-dialog"
@@ -26,8 +24,6 @@ import {
   RefreshCw,
   Trash2,
   FileCode2,
-  Database,
-  Plus,
   Shield,
   Layers
 } from "lucide-react"
@@ -124,7 +120,6 @@ export default function ConfigPage() {
     setRevealedSecrets(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Filter items
   const filterList = <T extends { name: string; namespace: string }>(list: T[]) => {
     return list.filter(item => {
       const matchSearch =
@@ -143,97 +138,91 @@ export default function ConfigPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8 pb-12">
+      <div className="space-y-6 pb-12">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/20 text-white">
-              <KeyRound className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Config & Secrets
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
-                Manage ConfigMaps, environment configurations, and secure TLS / opaque secrets
-              </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <KeyRound className="h-6 w-6 text-primary" />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                  Config & Secrets
+                </h1>
+                <p className="text-muted-foreground text-sm">
+                  Manage ConfigMaps, environment configurations, and secure TLS / opaque secrets
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={fetchData}
-              className="rounded-xl border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin text-teal-500' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total ConfigMaps</span>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{configMaps.length}</div>
-            <div className="text-xs text-teal-600 font-medium mt-1 flex items-center gap-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card className="p-4">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total ConfigMaps</span>
+            <div className="text-2xl font-bold text-foreground mt-1">{configMaps.length}</div>
+            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
               <FileText className="h-3.5 w-3.5" />
               {configMaps.reduce((acc, c) => acc + Object.keys(c.data || {}).length, 0)} total keys
             </div>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Secrets</span>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{secrets.length}</div>
-            <div className="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+          <Card className="p-4">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Secrets</span>
+            <div className="text-2xl font-bold text-foreground mt-1">{secrets.length}</div>
+            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
               <Shield className="h-3.5 w-3.5" />
-              Encrypted / Base64 encoded
+              Base64 encrypted
             </div>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Namespaces</span>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{namespaces.length}</div>
-            <div className="text-xs text-blue-600 font-medium mt-1 flex items-center gap-1">
-              <Layers className="h-3.5 w-3.5" /> Across isolation zones
+          <Card className="p-4">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Namespaces</span>
+            <div className="text-2xl font-bold text-foreground mt-1">{namespaces.length}</div>
+            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
+              <Layers className="h-3.5 w-3.5" /> Isolation zones
             </div>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">TLS Certificates</span>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
+          <Card className="p-4">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">TLS Certificates</span>
+            <div className="text-2xl font-bold text-foreground mt-1">
               {secrets.filter(s => s.type.includes('tls')).length}
             </div>
-            <div className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1">
-              <Lock className="h-3.5 w-3.5" /> TLS credentials configured
+            <div className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
+              <Lock className="h-3.5 w-3.5" /> TLS credentials
             </div>
           </Card>
         </div>
 
         {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/60 dark:border-slate-800/60 backdrop-blur shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg border bg-card">
           <div className="relative flex-1 w-full sm:max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by config or secret name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-700/80 text-sm"
+              className="pl-9 h-9"
             />
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
               value={selectedNamespace}
               onChange={e => setSelectedNamespace(e.target.value)}
-              className="px-4 py-2 h-10 rounded-xl text-sm font-medium border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              className="h-9 px-3 rounded-md text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="all">All Namespaces</option>
               {namespaces.map(ns => (
@@ -246,21 +235,21 @@ export default function ConfigPage() {
         </div>
 
         {/* Tabs for ConfigMaps & Secrets */}
-        <Tabs defaultValue="configmaps" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 w-72 p-1 bg-slate-200/60 dark:bg-slate-800/60 backdrop-blur rounded-2xl">
-            <TabsTrigger value="configmaps" className="rounded-xl py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
+        <Tabs defaultValue="configmaps" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid grid-cols-2 w-72 h-auto p-1">
+            <TabsTrigger value="configmaps">
               ConfigMaps ({filteredConfigMaps.length})
             </TabsTrigger>
-            <TabsTrigger value="secrets" className="rounded-xl py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
+            <TabsTrigger value="secrets">
               Secrets ({filteredSecrets.length})
             </TabsTrigger>
           </TabsList>
 
           {/* ConfigMaps Tab */}
           <TabsContent value="configmaps">
-            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+            <Card>
               <Table>
-                <TableHeader className="bg-slate-50/80 dark:bg-slate-800/50">
+                <TableHeader>
                   <TableRow>
                     <TableHead>ConfigMap Name</TableHead>
                     <TableHead>Namespace</TableHead>
@@ -273,32 +262,32 @@ export default function ConfigPage() {
                   {filteredConfigMaps.map(c => {
                     const keys = Object.keys(c.data || {})
                     return (
-                      <TableRow key={`${c.namespace}-${c.name}`} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                      <TableRow key={`${c.namespace}-${c.name}`}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                            <span className="text-slate-900 dark:text-white font-semibold">{c.name}</span>
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-semibold">{c.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="secondary" className="text-xs">{c.namespace}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs">{c.namespace}</Badge></TableCell>
                         <TableCell>
-                          <div className="flex flex-wrap gap-1.5 max-w-md">
+                          <div className="flex flex-wrap gap-1 max-w-md">
                             {keys.map(k => (
-                              <Badge key={k} variant="outline" className="text-xs font-mono bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                              <Badge key={k} variant="secondary" className="text-xs font-mono">
                                 {k}
                               </Badge>
                             ))}
-                            {keys.length === 0 && <span className="text-xs text-slate-400">Empty</span>}
+                            {keys.length === 0 && <span className="text-xs text-muted-foreground">Empty</span>}
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs text-slate-500">{c.age}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{c.age}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => setInspectItem({ open: true, kind: 'ConfigMap', name: c.name, namespace: c.namespace, data: c.data })}
-                              className="h-8 text-xs rounded-lg text-teal-700 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-950/30 border-teal-500/30"
+                              className="h-8 text-xs"
                             >
                               <Eye className="h-3.5 w-3.5 mr-1" /> View Data
                             </Button>
@@ -306,7 +295,7 @@ export default function ConfigPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => setYamlDialog({ open: true, kind: 'ConfigMap', name: c.name, namespace: c.namespace })}
-                              className="h-8 text-xs rounded-lg"
+                              className="h-8 w-8 p-0"
                             >
                               <FileCode2 className="h-3.5 w-3.5" />
                             </Button>
@@ -314,7 +303,7 @@ export default function ConfigPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDelete('ConfigMap', c.name, c.namespace)}
-                              className="h-8 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -330,9 +319,9 @@ export default function ConfigPage() {
 
           {/* Secrets Tab */}
           <TabsContent value="secrets">
-            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+            <Card>
               <Table>
-                <TableHeader className="bg-slate-50/80 dark:bg-slate-800/50">
+                <TableHeader>
                   <TableRow>
                     <TableHead>Secret Name</TableHead>
                     <TableHead>Namespace</TableHead>
@@ -346,37 +335,37 @@ export default function ConfigPage() {
                   {filteredSecrets.map(s => {
                     const keys = Object.keys(s.data || {})
                     return (
-                      <TableRow key={`${s.namespace}-${s.name}`} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                      <TableRow key={`${s.namespace}-${s.name}`}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                            <span className="text-slate-900 dark:text-white font-semibold">{s.name}</span>
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-semibold">{s.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="secondary" className="text-xs">{s.namespace}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs">{s.namespace}</Badge></TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-xs font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                          <Badge variant="secondary" className="text-xs font-mono">
                             {s.type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-wrap gap-1.5 max-w-md">
+                          <div className="flex flex-wrap gap-1 max-w-md">
                             {keys.map(k => (
-                              <Badge key={k} variant="outline" className="text-xs font-mono bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                              <Badge key={k} variant="secondary" className="text-xs font-mono">
                                 {k}
                               </Badge>
                             ))}
-                            {keys.length === 0 && <span className="text-xs text-slate-400">Empty</span>}
+                            {keys.length === 0 && <span className="text-xs text-muted-foreground">Empty</span>}
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs text-slate-500">{s.age}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{s.age}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => setInspectItem({ open: true, kind: 'Secret', name: s.name, namespace: s.namespace, data: s.data, type: s.type })}
-                              className="h-8 text-xs rounded-lg text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30 border-emerald-500/30"
+                              className="h-8 text-xs"
                             >
                               <Eye className="h-3.5 w-3.5 mr-1" /> Reveal Keys
                             </Button>
@@ -384,7 +373,7 @@ export default function ConfigPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => setYamlDialog({ open: true, kind: 'Secret', name: s.name, namespace: s.namespace })}
-                              className="h-8 text-xs rounded-lg"
+                              className="h-8 w-8 p-0"
                             >
                               <FileCode2 className="h-3.5 w-3.5" />
                             </Button>
@@ -392,7 +381,7 @@ export default function ConfigPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDelete('Secret', s.name, s.namespace)}
-                              className="h-8 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -409,70 +398,64 @@ export default function ConfigPage() {
 
         {/* Inspect Key-Value Dialog */}
         <Dialog open={inspectItem.open} onOpenChange={open => setInspectItem(prev => ({ ...prev, open }))}>
-          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6 rounded-2xl">
-            <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                    {inspectItem.kind === 'Secret' ? <Lock className="h-5 w-5 text-emerald-500" /> : <FileText className="h-5 w-5 text-teal-500" />}
-                    <span>{inspectItem.kind}:</span>
-                    <span className="font-mono text-teal-600 dark:text-teal-400">{inspectItem.name}</span>
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-slate-500 mt-1">
-                    Namespace: {inspectItem.namespace} {inspectItem.type && `• Type: ${inspectItem.type}`}
-                  </DialogDescription>
-                </div>
-              </div>
+          <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+            <DialogHeader className="border-b pb-3">
+              <DialogTitle className="text-base flex items-center gap-2">
+                {inspectItem.kind === 'Secret' ? <Lock className="h-4 w-4 text-primary" /> : <FileText className="h-4 w-4 text-primary" />}
+                <span>{inspectItem.kind}:</span>
+                <span className="font-mono text-primary">{inspectItem.name}</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                Namespace: {inspectItem.namespace} {inspectItem.type && `• Type: ${inspectItem.type}`}
+              </DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-hidden py-4 space-y-4">
-              <div className="space-y-3">
-                {Object.entries(inspectItem.data || {}).map(([key, val]) => {
-                  const isSecret = inspectItem.kind === 'Secret'
-                  const isRevealed = Boolean(revealedSecrets[key])
-                  const displayValue = isSecret && !isRevealed ? '••••••••••••••••' : isSecret ? decodeBase64(val) : val
+            <div className="flex-1 overflow-y-auto py-3 space-y-3">
+              {Object.entries(inspectItem.data || {}).map(([key, val]) => {
+                const isSecret = inspectItem.kind === 'Secret'
+                const isRevealed = Boolean(revealedSecrets[key])
+                const displayValue = isSecret && !isRevealed ? '••••••••••••••••' : isSecret ? decodeBase64(val) : val
 
-                  return (
-                    <div key={key} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded">
-                          {key}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {isSecret && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => toggleReveal(key)}
-                              className="h-7 px-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                            >
-                              {isRevealed ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                              {isRevealed ? 'Hide' : 'Reveal'}
-                            </Button>
-                          )}
+                return (
+                  <div key={key} className="p-3 rounded-lg border bg-muted/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded">
+                        {key}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {isSecret && (
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleCopyValue(key, val, isSecret)}
-                            className="h-7 px-2 text-xs rounded-lg"
+                            variant="ghost"
+                            onClick={() => toggleReveal(key)}
+                            className="h-7 px-2 text-xs"
                           >
-                            {copiedKey === key ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            {isRevealed ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+                            {isRevealed ? 'Hide' : 'Reveal'}
                           </Button>
-                        </div>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-black/50 border border-slate-200/60 dark:border-slate-800 rounded-lg overflow-x-auto">
-                        <pre className="font-mono text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-all">
-                          {displayValue}
-                        </pre>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCopyValue(key, val, isSecret)}
+                          className="h-7 px-2 text-xs"
+                        >
+                          {copiedKey === key ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                        </Button>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                    <div className="p-2.5 bg-background border rounded-md overflow-x-auto">
+                      <pre className="font-mono text-xs text-foreground whitespace-pre-wrap break-all">
+                        {displayValue}
+                      </pre>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
-              <Button variant="outline" onClick={() => setInspectItem(prev => ({ ...prev, open: false }))} className="rounded-xl">
+            <div className="flex justify-end pt-2 border-t">
+              <Button variant="outline" onClick={() => setInspectItem(prev => ({ ...prev, open: false }))}>
                 Close
               </Button>
             </div>

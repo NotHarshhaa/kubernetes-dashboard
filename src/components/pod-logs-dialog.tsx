@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/contexts/toast-context"
-import { Terminal, RefreshCw, Download, Search, Copy, Check, Filter } from "lucide-react"
+import { Terminal, RefreshCw, Download, Search, Copy, Check } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 
 interface PodLogsDialogProps {
@@ -97,33 +97,32 @@ export function PodLogsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[88vh] flex flex-col p-6 rounded-2xl bg-slate-950 text-slate-100 border-slate-800 shadow-2xl">
-        <DialogHeader className="border-b border-slate-800 pb-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-6">
+        <DialogHeader className="border-b pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <DialogTitle className="text-xl font-bold flex items-center gap-2 text-white">
-                <Terminal className="h-5 w-5 text-emerald-400" />
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-primary" />
                 <span>Pod Logs:</span>
-                <span className="font-mono text-emerald-400">{podName}</span>
+                <span className="font-mono text-primary">{podName}</span>
               </DialogTitle>
-              <DialogDescription className="text-slate-400 text-sm flex items-center gap-3">
-                <span>Namespace: <strong className="text-slate-300">{namespace}</strong></span>
+              <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2">
+                <span>Namespace: <strong className="text-foreground">{namespace}</strong></span>
                 <span>•</span>
-                <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 bg-emerald-500/10 text-xs">
+                <Badge variant="outline" className="text-[11px] h-4 px-1.5">
                   Live Stream
                 </Badge>
               </DialogDescription>
             </div>
 
-            {/* Container Selector */}
             {containers.length > 1 && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Container:</span>
+                <span className="text-xs text-muted-foreground">Container:</span>
                 <Select value={selectedContainer} onValueChange={setSelectedContainer}>
-                  <SelectTrigger className="h-9 w-44 bg-slate-900 border-slate-700 text-slate-200 text-xs">
+                  <SelectTrigger className="h-8 w-36 text-xs">
                     <SelectValue placeholder="Select container" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-700 text-slate-200">
+                  <SelectContent>
                     {containers.map(c => (
                       <SelectItem key={c.name} value={c.name} className="text-xs">
                         {c.name}
@@ -135,78 +134,73 @@ export function PodLogsDialog({
             )}
           </div>
 
-          {/* Controls Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
-            <div className="relative flex-1 min-w-[200px] max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder="Filter logs (e.g. error, warn, GET)..."
+                placeholder="Filter logs..."
                 value={filterQuery}
                 onChange={e => setFilterQuery(e.target.value)}
-                className="h-8 pl-9 pr-3 text-xs bg-slate-900/90 border-slate-700 text-slate-200 rounded-lg placeholder:text-slate-500 focus-visible:ring-emerald-500/30"
+                className="h-8 pl-8 text-xs"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setAutoRefresh(!autoRefresh)}
-                className={`h-8 px-3 text-xs border-slate-700 rounded-lg ${
-                  autoRefresh ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'
-                }`}
+                className="h-8 px-2.5 text-xs"
               >
-                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${autoRefresh || loading ? 'animate-spin' : ''}`} />
-                {autoRefresh ? 'Streaming' : 'Follow Logs'}
+                <RefreshCw className={`h-3 w-3 mr-1.5 ${autoRefresh || loading ? 'animate-spin' : ''}`} />
+                {autoRefresh ? 'Streaming' : 'Follow'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                className="h-8 px-3 text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700 rounded-lg"
+                className="h-8 px-2.5 text-xs"
               >
-                {copied ? <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 mr-1.5" />}
+                {copied ? <Check className="h-3 w-3 mr-1 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
-                className="h-8 px-3 text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700 rounded-lg"
+                className="h-8 px-2.5 text-xs"
               >
-                <Download className="h-3.5 w-3.5 mr-1.5" />
+                <Download className="h-3 w-3 mr-1" />
                 Download
               </Button>
             </div>
           </div>
         </DialogHeader>
 
-        {/* Log Viewer Content */}
-        <div className="flex-1 min-h-[380px] max-h-[55vh] mt-4 rounded-xl border border-slate-800/80 bg-black/70 p-4 font-mono text-xs overflow-hidden flex flex-col">
-          <ScrollArea className="flex-1 w-full h-full pr-3" ref={scrollRef}>
+        <div className="flex-1 min-h-[350px] max-h-[50vh] mt-2 rounded-lg border bg-muted/50 p-3 font-mono text-xs overflow-hidden flex flex-col">
+          <ScrollArea className="flex-1 w-full h-full pr-2" ref={scrollRef}>
             {filteredLogs.trim() ? (
-              <pre className="text-slate-300 whitespace-pre-wrap break-all leading-relaxed select-text font-mono">
+              <pre className="text-foreground whitespace-pre-wrap break-all leading-relaxed select-text font-mono">
                 {filteredLogs}
               </pre>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-slate-500 gap-2">
-                <Terminal className="h-8 w-8 text-slate-600 animate-pulse" />
-                <p>{filterQuery ? 'No log lines match your filter expression.' : 'Waiting for log output from container...'}</p>
+              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
+                <Terminal className="h-6 w-6 animate-pulse" />
+                <p className="text-xs">{filterQuery ? 'No log lines match filter.' : 'Waiting for log output...'}</p>
               </div>
             )}
           </ScrollArea>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs text-slate-400">
+        <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
           <div>
-            Showing <strong className="text-slate-200">{filteredLogs.split('\n').filter(Boolean).length}</strong> lines
-            {filterQuery && ` (filtered from ${logs.split('\n').filter(Boolean).length} total)`}
+            Showing <strong className="text-foreground">{filteredLogs.split('\n').filter(Boolean).length}</strong> lines
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="text-slate-400 hover:text-white hover:bg-slate-800 text-xs rounded-lg"
+            className="text-xs h-7"
           >
             Close
           </Button>

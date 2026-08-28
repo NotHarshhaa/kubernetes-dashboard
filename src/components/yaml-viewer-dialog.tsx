@@ -67,60 +67,60 @@ export function YamlViewerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-6 rounded-2xl bg-slate-950 text-slate-100 border-slate-800 shadow-2xl">
-        <DialogHeader className="border-b border-slate-800 pb-4">
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6">
+        <DialogHeader className="border-b pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-xl font-bold flex items-center gap-2 text-white">
-                <FileCode2 className="h-5 w-5 text-blue-400" />
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <FileCode2 className="h-4 w-4 text-primary" />
                 <span>Resource Manifest:</span>
-                <span className="font-mono text-blue-400">{resourceName}</span>
+                <span className="font-mono text-primary">{resourceName}</span>
               </DialogTitle>
-              <DialogDescription className="text-slate-400 text-sm flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="border-blue-500/40 text-blue-400 bg-blue-500/10 text-xs">
+              <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                <Badge variant="outline" className="text-[11px] h-4 px-1.5">
                   {resourceKind}
                 </Badge>
-                <span>Namespace: <strong className="text-slate-300">{namespace}</strong></span>
+                <span>Namespace: <strong className="text-foreground">{namespace}</strong></span>
               </DialogDescription>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                className="h-8 px-3 text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700 rounded-lg"
+                className="h-8 px-2.5 text-xs"
               >
-                {copied ? <Check className="h-3.5 w-3.5 mr-1.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 mr-1.5" />}
+                {copied ? <Check className="h-3 w-3 mr-1 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
-                className="h-8 px-3 text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700 rounded-lg"
+                className="h-8 px-2.5 text-xs"
               >
-                <Download className="h-3.5 w-3.5 mr-1.5" />
+                <Download className="h-3 w-3 mr-1" />
                 Download
               </Button>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-[360px] max-h-[55vh] mt-4 rounded-xl border border-slate-800/80 bg-black/60 p-4 font-mono text-xs overflow-hidden">
-          <ScrollArea className="h-full w-full pr-3">
-            <pre className="text-emerald-300 whitespace-pre-wrap leading-relaxed select-text font-mono">
+        <div className="flex-1 min-h-[320px] max-h-[50vh] mt-2 rounded-lg border bg-muted/40 p-3 font-mono text-xs overflow-hidden">
+          <ScrollArea className="h-full w-full pr-2">
+            <pre className="text-foreground whitespace-pre-wrap leading-relaxed select-text font-mono">
               {yamlContent}
             </pre>
           </ScrollArea>
         </div>
 
-        <div className="flex justify-end pt-3 border-t border-slate-800">
+        <div className="flex justify-end pt-2 border-t">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="text-slate-400 hover:text-white hover:bg-slate-800 text-xs rounded-lg"
+            className="text-xs h-7"
           >
             Close
           </Button>

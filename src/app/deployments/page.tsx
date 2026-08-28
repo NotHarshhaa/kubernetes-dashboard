@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { motion } from "framer-motion"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,9 +26,7 @@ import {
   Download,
   RotateCcw,
   Sliders,
-  FileCode2,
-  Layers,
-  ArrowUpRight
+  FileCode2
 } from "lucide-react"
 
 export default function DeploymentsPage() {
@@ -194,11 +191,11 @@ export default function DeploymentsPage() {
 
   const getStatusBadge = (d: Deployment) => {
     if (d.readyReplicas === d.replicas && d.replicas > 0) {
-      return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400"><CheckCircle className="w-3 h-3 mr-1" />Ready</Badge>
+      return <Badge variant="default" className="text-xs gap-1"><CheckCircle className="w-3 h-3" />Ready</Badge>
     } else if (d.readyReplicas > 0) {
-      return <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400"><Clock className="w-3 h-3 mr-1" />Progressing</Badge>
+      return <Badge variant="secondary" className="text-xs gap-1"><Clock className="w-3 h-3" />Progressing</Badge>
     } else {
-      return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400"><AlertTriangle className="w-3 h-3 mr-1" />Not Ready</Badge>
+      return <Badge variant="destructive" className="text-xs gap-1"><AlertTriangle className="w-3 h-3" />Not Ready</Badge>
     }
   }
 
@@ -218,112 +215,111 @@ export default function DeploymentsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8 pb-12">
+      <div className="space-y-6 pb-12">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-        >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Deployments</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Scale, rolling restarts, replica management, and container rollout strategies</p>
+            <div className="flex items-center gap-2.5">
+              <Database className="h-6 w-6 text-primary" />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Deployments</h1>
+                <p className="text-muted-foreground text-sm">Scale, rolling restarts, replica management, and container rollout strategies</p>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`rounded-xl ${autoRefresh ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30' : ''}`}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Streaming' : 'Auto Refresh'}
+              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+              {autoRefresh ? 'Live' : 'Auto Refresh'}
             </Button>
-            <Button variant="outline" size="sm" onClick={exportDeploymentData} className="rounded-xl">
-              <Download className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={exportDeploymentData}>
+              <Download className="h-3.5 w-3.5 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={fetchDeployments} className="rounded-xl">
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={fetchDeployments}>
+              <RefreshCw className="h-3.5 w-3.5 mr-2" />
               Refresh
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card className="p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Deployments</CardTitle>
-              <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/20 text-blue-600">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Deployments</CardTitle>
+              <div className="p-1.5 rounded-md bg-muted">
                 <Database className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{deployments.length}</div>
-              <p className="text-xs text-slate-500 mt-1 font-medium">Across all namespaces</p>
+              <div className="text-2xl font-bold text-foreground">{deployments.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Across all namespaces</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4">
+          <Card className="p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ready / Healthy</CardTitle>
-              <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600">
-                <CheckCircle className="h-4 w-4" />
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ready / Healthy</CardTitle>
+              <div className="p-1.5 rounded-md bg-muted">
+                <CheckCircle className="h-4 w-4 text-emerald-500" />
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="text-2xl font-bold text-emerald-600">{readyDeployments}</div>
-              <p className="text-xs text-slate-500 mt-1 font-medium">Fully deployed</p>
+              <div className="text-2xl font-bold text-foreground">{readyDeployments}</div>
+              <p className="text-xs text-muted-foreground mt-1">Fully deployed</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4">
+          <Card className="p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Progressing</CardTitle>
-              <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/20 text-amber-600">
-                <Clock className="h-4 w-4" />
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Progressing</CardTitle>
+              <div className="p-1.5 rounded-md bg-muted">
+                <Clock className="h-4 w-4 text-amber-500" />
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="text-2xl font-bold text-amber-600">{progressingDeployments}</div>
-              <p className="text-xs text-slate-500 mt-1 font-medium">In rollout phase</p>
+              <div className="text-2xl font-bold text-foreground">{progressingDeployments}</div>
+              <p className="text-xs text-muted-foreground mt-1">In rollout phase</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-2xl p-4">
+          <Card className="p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
-              <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Replicas</CardTitle>
-              <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/20 text-orange-600">
-                <Zap className="h-4 w-4" />
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Replicas</CardTitle>
+              <div className="p-1.5 rounded-md bg-muted">
+                <Zap className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="text-2xl font-bold text-orange-600">{totalReplicas}</div>
-              <p className="text-xs text-slate-500 mt-1 font-medium">Pods provisioned</p>
+              <div className="text-2xl font-bold text-foreground">{totalReplicas}</div>
+              <p className="text-xs text-muted-foreground mt-1">Pods provisioned</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Card className="border-0 shadow-xl rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur overflow-hidden">
-          <CardHeader className="p-6 pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Card>
+          <CardHeader className="p-4 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search deployments..."
-                  className="pl-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-sm"
+                  className="pl-9 h-9"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <select
-                  className="px-3 py-2 h-10 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm"
+                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
                   value={selectedNamespace}
                   onChange={(e) => setSelectedNamespace(e.target.value)}
                 >
@@ -334,7 +330,7 @@ export default function DeploymentsPage() {
                 </select>
 
                 <select
-                  className="px-3 py-2 h-10 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm"
+                  className="h-9 px-3 border border-input rounded-md bg-background text-foreground text-sm"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -349,9 +345,9 @@ export default function DeploymentsPage() {
                     variant="destructive" 
                     size="sm" 
                     onClick={handleBulkDelete}
-                    className="rounded-xl h-10 px-3 bg-red-600 hover:bg-red-700 text-white"
+                    className="h-9 px-3"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
                     Delete ({selectedDeployments.size})
                   </Button>
                 )}
@@ -361,9 +357,9 @@ export default function DeploymentsPage() {
 
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-50/80 dark:bg-slate-800/50">
+              <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 text-center">
+                  <TableHead className="w-10 text-center">
                     <Checkbox 
                       checked={selectedDeployments.size === filteredDeployments.length && filteredDeployments.length > 0}
                       onCheckedChange={selectAll}
@@ -386,7 +382,7 @@ export default function DeploymentsPage() {
                   return (
                     <TableRow
                       key={depKey}
-                      className={`hover:bg-slate-50/60 dark:hover:bg-slate-800/40 ${isSelected ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}
+                      className={isSelected ? 'bg-muted/50' : ''}
                     >
                       <TableCell className="text-center">
                         <Checkbox 
@@ -394,21 +390,21 @@ export default function DeploymentsPage() {
                           onCheckedChange={() => toggleSelection(depKey)}
                         />
                       </TableCell>
-                      <TableCell className="font-semibold text-slate-900 dark:text-white">
+                      <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
-                          <Database className="h-4 w-4 text-orange-500" />
+                          <Database className="h-4 w-4 text-muted-foreground" />
                           <span>{d.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="secondary" className="text-xs">{d.namespace}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs">{d.namespace}</Badge></TableCell>
                       <TableCell>{getStatusBadge(d)}</TableCell>
                       <TableCell>
                         <span className="font-mono text-sm font-semibold">{d.readyReplicas}/{d.replicas}</span>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-slate-500 max-w-[200px] truncate" title={d.images.join(', ')}>
+                      <TableCell className="font-mono text-xs text-muted-foreground max-w-[200px] truncate" title={d.images.join(', ')}>
                         {d.images.join(', ')}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">{d.age}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{d.age}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
@@ -421,13 +417,13 @@ export default function DeploymentsPage() {
                                 replicas: d.replicas
                               })
                             }
-                            className="h-8 text-xs rounded-lg"
+                            className="h-8 text-xs"
                           >
                             <Sliders className="h-3.5 w-3.5 mr-1" /> Scale
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -439,7 +435,7 @@ export default function DeploymentsPage() {
                                 <FileCode2 className="h-4 w-4 mr-2" /> View YAML
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteDeployment(d)}>
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteDeployment(d)}>
                                 <Trash2 className="h-4 w-4 mr-2" /> Delete Deployment
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -456,10 +452,10 @@ export default function DeploymentsPage() {
 
         {/* Scale Dialog */}
         <Dialog open={scaleDialog.open} onOpenChange={open => setScaleDialog(prev => ({ ...prev, open }))}>
-          <DialogContent className="max-w-md rounded-2xl">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Sliders className="h-5 w-5 text-orange-500" />
+                <Sliders className="h-4 w-4 text-primary" />
                 Scale Deployment: {scaleDialog.deployment?.name}
               </DialogTitle>
               <DialogDescription>
@@ -467,17 +463,17 @@ export default function DeploymentsPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-3">
               <div className="flex items-center justify-between text-sm font-medium">
                 <span>Target Replicas:</span>
-                <span className="text-2xl font-bold text-orange-600">{scaleDialog.replicas}</span>
+                <span className="text-xl font-bold text-primary">{scaleDialog.replicas}</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, replicas: Math.max(0, prev.replicas - 1) }))}
-                  className="rounded-xl"
                 >
                   -
                 </Button>
@@ -487,23 +483,23 @@ export default function DeploymentsPage() {
                   max="20"
                   value={scaleDialog.replicas}
                   onChange={e => setScaleDialog(prev => ({ ...prev, replicas: parseInt(e.target.value) || 0 }))}
-                  className="flex-1 accent-orange-500 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                  className="flex-1 accent-primary h-2 bg-muted rounded-lg cursor-pointer"
                 />
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setScaleDialog(prev => ({ ...prev, replicas: prev.replicas + 1 }))}
-                  className="rounded-xl"
                 >
                   +
                 </Button>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))} className="rounded-xl">
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="outline" onClick={() => setScaleDialog(prev => ({ ...prev, open: false }))}>
                 Cancel
               </Button>
-              <Button onClick={handleScaleDeployment} className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl">
+              <Button onClick={handleScaleDeployment}>
                 Apply Scale
               </Button>
             </div>

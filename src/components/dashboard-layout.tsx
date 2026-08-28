@@ -1,47 +1,60 @@
 "use client"
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { EnhancedSearch } from "@/components/enhanced-search"
+import * as React from "react"
+import { usePathname } from "next/navigation"
 import { 
   Activity, 
   Container, 
   Database, 
   Home, 
-  Menu, 
   Network, 
   Settings, 
-  X,
-  Server,
-  Shield,
-  ChevronLeft,
-  ChevronRight,
-  Bell,
+  Server, 
+  Shield, 
+  Layers, 
+  Boxes, 
+  KeyRound, 
+  Bell, 
   LogOut,
-  Layers,
-  Boxes,
-  KeyRound,
-  FileCode2,
-  LucideIcon
+  LucideIcon 
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/contexts/toast-context"
-import { usePathname } from "next/navigation"
+import { EnhancedSearch } from "@/components/enhanced-search"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
-const navigation = [
-  { name: "Overview", href: "/", icon: Home, description: "Cluster at a glance", color: "from-blue-500 to-blue-600" },
-  { name: "Workloads", href: "/workloads", icon: Boxes, description: "All controllers & workloads", color: "from-amber-500 to-orange-600" },
-  { name: "Pods", href: "/pods", icon: Container, description: "Container instances & logs", color: "from-green-500 to-green-600" },
-  { name: "Deployments", href: "/deployments", icon: Database, description: "Scale & rolling updates", color: "from-orange-500 to-orange-600" },
-  { name: "Services & Ingress", href: "/services", icon: Network, description: "Network routing & ports", color: "from-purple-500 to-purple-600" },
-  { name: "Config & Secrets", href: "/config", icon: KeyRound, description: "ConfigMaps & credentials", color: "from-emerald-500 to-teal-600" },
-  { name: "Nodes", href: "/nodes", icon: Server, description: "Cluster nodes & resources", color: "from-cyan-500 to-cyan-600" },
-  { name: "Namespaces", href: "/namespaces", icon: Layers, description: "Resource isolation", color: "from-indigo-500 to-indigo-600" },
-  { name: "Monitoring", href: "/monitoring", icon: Activity, description: "Metrics & live alerts", color: "from-pink-500 to-pink-600" },
-  { name: "Settings", href: "/settings", icon: Settings, description: "Cluster configuration", color: "from-slate-500 to-slate-600" },
+const mainNavItems = [
+  { name: "Overview", href: "/", icon: Home },
+  { name: "Workloads", href: "/workloads", icon: Boxes },
+  { name: "Pods", href: "/pods", icon: Container },
+  { name: "Deployments", href: "/deployments", icon: Database },
+  { name: "Services & Ingress", href: "/services", icon: Network },
+  { name: "Config & Secrets", href: "/config", icon: KeyRound },
+  { name: "Nodes", href: "/nodes", icon: Server },
+  { name: "Namespaces", href: "/namespaces", icon: Layers },
+]
+
+const secondaryNavItems = [
+  { name: "Monitoring", href: "/monitoring", icon: Activity },
+  { name: "Settings", href: "/settings", icon: Settings },
 ]
 
 interface DashboardLayoutProps {
@@ -49,244 +62,144 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
   const { signOut } = useAuth()
-  const { success, info } = useToast()
+  const { success } = useToast()
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
 
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
-  
   const handleLogout = () => {
     signOut()
     success("Successfully logged out")
-    // The protected route will automatically redirect to sign-in page
-  }
-
-  const NavItem = ({ item }: { item: typeof navigation[0] }) => {
-    const isActive = pathname === item.href
-    const Icon = item.icon as LucideIcon
-    
-    return (
-      <a
-        href={item.href}
-        className={cn(
-          "group relative flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
-          isActive
-            ? "bg-gradient-to-r " + item.color + " text-white shadow-lg scale-[1.02]"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
-          sidebarCollapsed ? "justify-center px-3" : "justify-between"
-        )}
-        title={sidebarCollapsed ? item.name : undefined}
-      >
-        <div className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
-          isActive 
-            ? "bg-white/20 shadow-inner" 
-            : "bg-slate-100 group-hover:bg-slate-200 dark:bg-slate-800 dark:group-hover:bg-slate-700"
-        )}>
-          <Icon className={cn(
-            "h-5 w-5 transition-all duration-200",
-            isActive ? "text-white" : "text-slate-600 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
-          )} />
-        </div>
-        {!sidebarCollapsed && (
-          <div className="ml-3 flex-1">
-            <div className={cn(
-              "font-medium transition-all duration-200",
-              isActive ? "text-white" : "text-slate-900 dark:text-white"
-            )}>
-              {item.name}
-            </div>
-            <div className={cn(
-              "text-xs transition-all duration-200",
-              isActive ? "text-white/80" : "text-slate-500 dark:text-slate-400"
-            )}>
-              {item.description}
-            </div>
-          </div>
-        )}
-        {isActive && !sidebarCollapsed && (
-          <div className="absolute right-2 h-2 w-2 rounded-full bg-white animate-pulse" />
-        )}
-      </a>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Mobile sidebar */}
-      <div className={cn(
-        "fixed inset-0 z-50 lg:hidden",
-        sidebarOpen ? "block" : "hidden"
-      )}>
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-72 flex-col bg-white dark:bg-slate-900 shadow-xl">
-          <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm bg-white/90 dark:bg-slate-900/90">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">K8s Dashboard</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Cluster Management</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)} className="rounded-lg">
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <nav className="flex-1 space-y-2 px-3 py-6">
-            {navigation.map((item) => (
-              <NavItem key={item.name} item={item} />
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Desktop sidebar */}
-      <div className={cn(
-        "hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:bg-white/95 lg:border-r lg:border-slate-200/50 dark:lg:bg-slate-900/95 dark:lg:border-slate-700/50 lg:backdrop-blur-sm transition-all duration-300",
-        sidebarCollapsed ? "lg:w-20" : "lg:w-80"
-      )}>
-        <div className={cn(
-          "flex h-20 items-center border-b border-slate-200/50 dark:border-slate-700/50 transition-all duration-300",
-          sidebarCollapsed ? "px-4 justify-center" : "px-6 justify-between"
-        )}>
-          <div className={cn(
-            "flex items-center space-x-3 transition-all duration-300",
-            sidebarCollapsed ? "" : ""
-          )}>
-            <div 
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg transition-all duration-300 relative",
-                sidebarCollapsed && "cursor-pointer hover:scale-110"
-              )}
-              onClick={() => sidebarCollapsed && setSidebarCollapsed(false)}
-              title="Expand sidebar"
-            >
-              <Shield className="h-6 w-6 text-white" />
-              {sidebarCollapsed && (
-                <div className="absolute -right-1 -top-1 h-3 w-3 bg-blue-500 rounded-full flex items-center justify-center">
-                  <ChevronRight className="h-2 w-2 text-white" />
-                </div>
-              )}
-            </div>
-            {!sidebarCollapsed && (
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">K8s Dashboard</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Cluster Management</p>
-              </div>
-            )}
-          </div>
-          {!sidebarCollapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title="Collapse sidebar"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-        <nav className={cn(
-          "flex-1 space-y-2 px-3 py-6 transition-all duration-300",
-          sidebarCollapsed ? "px-2 py-6 space-y-4" : ""
-        )}>
-          {navigation.map((item) => (
-            <NavItem key={item.name} item={item} />
-          ))}
-        </nav>
-        <div className="border-t border-slate-200/50 dark:border-slate-700/50 p-4 backdrop-blur-sm bg-white/50 dark:bg-slate-800/50">
-          <div className={cn(
-            "flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-all duration-300 relative",
-            sidebarCollapsed ? "justify-center" : ""
-          )}>
-            <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700">
-              <AvatarImage src="/avatars/01.png" alt="User" />
-              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">CA</AvatarFallback>
-            </Avatar>
-            {!sidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Cluster Admin</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">admin@k8s.local</p>
-                {isDemoMode && (
-                  <div className="mt-1">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                      Demo Mode
-                    </span>
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar variant="inset" collapsible="icon">
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild>
+                <a href="/">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <Shield className="size-4" />
                   </div>
-                )}
-              </div>
-            )}
-            {!sidebarCollapsed && (
-              <div className="flex items-center space-x-2">
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">K8s Dashboard</span>
+                    <span className="truncate text-xs text-muted-foreground">Cluster Management</span>
+                  </div>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Cluster Resources</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {mainNavItems.map((item) => {
+                  const Icon = item.icon as LucideIcon
+                  const isActive = pathname === item.href
+                  return (
+                    <SidebarMenuItem key={item.name}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
+                        <a href={item.href}>
+                          <Icon className="size-4" />
+                          <span>{item.name}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Operations & System</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {secondaryNavItems.map((item) => {
+                  const Icon = item.icon as LucideIcon
+                  const isActive = pathname === item.href
+                  return (
+                    <SidebarMenuItem key={item.name}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
+                        <a href={item.href}>
+                          <Icon className="size-4" />
+                          <span>{item.name}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-sidebar-accent/50">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Avatar className="size-7">
+                    <AvatarImage src="/avatars/01.png" alt="Admin" />
+                    <AvatarFallback className="text-xs">CA</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate text-xs font-medium">Cluster Admin</span>
+                    <span className="truncate text-[10px] text-muted-foreground">admin@k8s.local</span>
+                  </div>
+                </div>
                 <Button 
                   variant="ghost" 
-                  size="sm" 
-                  className="rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                  size="icon" 
+                  className="size-7 text-muted-foreground hover:text-foreground"
                   onClick={handleLogout}
                   title="Sign out"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="size-3.5" />
                 </Button>
               </div>
-            )}
-            {sidebarCollapsed && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="absolute -top-1 -right-1 h-6 w-6 p-0 rounded-full bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/40"
-                onClick={handleLogout}
-                title="Sign out"
-              >
-                <LogOut className="h-3 w-3 text-red-600 dark:text-red-400" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
 
-      {/* Main content */}
-      <div className={cn(
-        "transition-all duration-300",
-        sidebarCollapsed ? "lg:pl-20" : "lg:pl-80"
-      )}>
-        <div className="sticky top-0 z-40 flex h-20 items-center gap-x-4 border-b border-slate-200/50 bg-white/90 backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-900/90 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden rounded-lg"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex flex-1 items-center">
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          
+          <div className="flex flex-1 items-center justify-between gap-4">
+            <div className="flex-1 max-w-md">
               <EnhancedSearch />
             </div>
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <Button variant="ghost" size="sm" className="relative rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></span>
+
+            <div className="flex items-center gap-3">
+              {isDemoMode && (
+                <Badge variant="secondary" className="text-xs">
+                  Demo Mode
+                </Badge>
+              )}
+              <Button variant="ghost" size="icon" className="size-8 relative text-muted-foreground hover:text-foreground">
+                <Bell className="size-4" />
+                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
               </Button>
-              <Badge variant="outline" className="border-green-600 text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg px-3 py-1">
-                <div className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+              <Badge variant="outline" className="h-7 px-2.5 text-xs font-medium gap-1.5 border-border">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
                 Connected
               </Badge>
             </div>
           </div>
-        </div>
+        </header>
 
-        <main className="py-6">
-          <div className="px-4 sm:px-6 lg:px-8">
-            {children}
-          </div>
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

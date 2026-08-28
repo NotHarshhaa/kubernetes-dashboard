@@ -1,18 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
-  Play, 
-  Pause, 
   RefreshCw, 
-  Download, 
-  Upload, 
   Terminal,
-  Settings,
   AlertTriangle,
   CheckCircle,
   Zap,
@@ -79,7 +72,7 @@ export function QuickActions() {
     {
       id: 'cleanup-resources',
       title: 'Cleanup Resources',
-      description: 'Remove unused resources',
+      description: 'Remove unused completed resources',
       icon: AlertTriangle,
       action: () => handleCleanupResources(),
       status: 'warning'
@@ -97,7 +90,7 @@ export function QuickActions() {
       const response = await fetch('/api/actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'restart-deployment' })
+        body: JSON.stringify({ action: 'restart-deployment', params: { deployment: 'frontend-app' } })
       })
       
       const result = await response.json()
@@ -128,29 +121,11 @@ export function QuickActions() {
   }
 
   const handleScaleDeployment = () => {
-    info('Opening scale deployment dialog...')
+    window.location.href = '/workloads'
   }
 
-  const handleViewLogs = async () => {
-    try {
-      const response = await fetch('/api/actions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'view-logs' })
-      })
-      
-      const result = await response.json()
-      
-      if (result.success) {
-        info('Opening logs viewer...')
-        // In a real implementation, you'd navigate to a logs page
-        console.log('Logs data:', result.data)
-      } else {
-        showError(result.message)
-      }
-    } catch (error) {
-      showError('Failed to retrieve logs')
-    }
+  const handleViewLogs = () => {
+    window.location.href = '/pods'
   }
 
   const handleBackupCluster = async () => {
@@ -276,93 +251,64 @@ export function QuickActions() {
     }
   }
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case 'success': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      case 'warning': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-      case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-      case 'info': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400'
-    }
-  }
-
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'success': return <CheckCircle className="h-3 w-3" />
-      case 'warning': return <AlertTriangle className="h-3 w-3" />
-      case 'error': return <AlertTriangle className="h-3 w-3" />
-      case 'info': return <Container className="h-3 w-3" />
+      case 'success': return <CheckCircle className="h-3 w-3 text-emerald-500" />
+      case 'warning': return <AlertTriangle className="h-3 w-3 text-amber-500" />
+      case 'error': return <AlertTriangle className="h-3 w-3 text-destructive" />
+      case 'info': return <Container className="h-3 w-3 text-primary" />
       default: return null
     }
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Zap className="h-5 w-5 text-purple-600" />
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Zap className="h-4 w-4 text-primary" />
           Quick Actions
         </CardTitle>
         <CardDescription>Common cluster management operations</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {actions.map((action, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {actions.map((action) => {
             const Icon = action.icon
             return (
-              <motion.div
+              <Card
                 key={action.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={action.action}
               >
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={action.action}>
-                  <CardContent className="p-3">
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                        <Icon className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                      </div>
-                      <div className="w-full">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                          <h3 className="font-medium text-sm">{action.title}</h3>
-                          {action.status && (
-                            <Badge className={getStatusColor(action.status)}>
-                              {getStatusIcon(action.status)}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                          {action.description}
-                        </p>
-                        {action.loading && (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
-                            <span className="text-xs text-slate-600 dark:text-slate-400">Processing...</span>
-                          </div>
+                <CardContent className="p-3">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className="p-2 rounded-md bg-muted text-foreground">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="w-full">
+                      <div className="flex items-center justify-center gap-1.5 mb-1">
+                        <h3 className="font-medium text-sm text-foreground">{action.title}</h3>
+                        {action.status && (
+                          <Badge variant="outline" className="text-xs px-1.5 h-4">
+                            {getStatusIcon(action.status)}
+                          </Badge>
                         )}
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {action.description}
+                      </p>
+                      {action.loading && (
+                        <div className="flex items-center justify-center gap-1.5 mt-2">
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          <span className="text-xs text-muted-foreground">Processing...</span>
+                        </div>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                  </div>
+                </CardContent>
+              </Card>
             )
           })}
-        </div>
-        
-        <div className="mt-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100">
-                Quick Actions Tips
-              </h4>
-              <ul className="text-xs text-blue-800 dark:text-blue-200 mt-2 space-y-1">
-                <li>• Actions are performed on the selected namespace</li>
-                <li>• Some operations may require additional permissions</li>
-                <li>• Always review changes before applying to production</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>

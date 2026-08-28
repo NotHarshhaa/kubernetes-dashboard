@@ -2,23 +2,22 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
 import { 
   Search, 
   Command, 
   Clock, 
-  TrendingUp, 
   Container, 
   Network, 
   Database, 
   Server, 
   Activity,
   X,
-  ArrowRight,
-  Filter
+  Boxes,
+  KeyRound
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 interface SearchItem {
@@ -33,381 +32,217 @@ interface SearchItem {
   trending?: boolean
 }
 
-const mockSearchData: SearchItem[] = [
+const searchData: SearchItem[] = [
   {
     id: "1",
-    title: "Pod Management",
-    description: "View and manage container pods",
+    title: "Workloads Hub",
+    description: "Deployments, StatefulSets, DaemonSets, Jobs, CronJobs",
+    category: "Workloads",
+    icon: Boxes,
+    url: "/workloads",
+    keywords: ["workloads", "controllers", "deployments", "jobs", "cronjobs", "statefulsets", "daemonsets"]
+  },
+  {
+    id: "2",
+    title: "Pods & Logs",
+    description: "Manage container instances and live streaming terminal logs",
     category: "Resources",
     icon: Container,
     url: "/pods",
-    keywords: ["pods", "containers", "management"],
-    trending: true
+    keywords: ["pods", "containers", "logs", "instances"]
   },
   {
-    id: "2", 
-    title: "Service Discovery",
-    description: "Network services and endpoints",
-    category: "Networking",
-    icon: Network,
-    url: "/services",
-    keywords: ["services", "networking", "endpoints"]
-  },
-  {
-    id: "3",
-    title: "Deployment Status",
-    description: "Application deployments and replicas",
+    id: "3", 
+    title: "Deployments",
+    description: "Application scale and rolling restart management",
     category: "Workloads",
     icon: Database,
     url: "/deployments",
-    keywords: ["deployments", "applications", "replicas"]
+    keywords: ["deployments", "scaling", "rollout", "replicas"]
   },
   {
-    id: "4",
-    title: "Node Health",
-    description: "Cluster nodes and infrastructure",
-    category: "Infrastructure",
-    icon: Server,
-    url: "/nodes",
-    keywords: ["nodes", "infrastructure", "health"]
+    id: "4", 
+    title: "Services & Ingress",
+    description: "Network routing, ClusterIP, LoadBalancers, and Ingress hosts",
+    category: "Networking",
+    icon: Network,
+    url: "/services",
+    keywords: ["services", "networking", "ingress", "endpoints", "loadbalancer"]
   },
   {
     id: "5",
-    title: "Monitoring Dashboard",
-    description: "Metrics, logs and performance data",
+    title: "Config & Secrets",
+    description: "ConfigMaps, base64 credentials, and TLS certificates",
+    category: "Configuration",
+    icon: KeyRound,
+    url: "/config",
+    keywords: ["config", "configmaps", "secrets", "tls", "certificates", "environment"]
+  },
+  {
+    id: "6",
+    title: "Cluster Nodes",
+    description: "Nodes compute capacity, cordoning, and drain controls",
+    category: "Infrastructure",
+    icon: Server,
+    url: "/nodes",
+    keywords: ["nodes", "infrastructure", "cordon", "drain", "capacity"]
+  },
+  {
+    id: "7",
+    title: "Monitoring & Metrics",
+    description: "Live CPU, memory usage telemetry, and cluster alerts",
     category: "Monitoring",
     icon: Activity,
     url: "/monitoring",
-    keywords: ["monitoring", "metrics", "logs", "performance"],
-    recent: true
+    keywords: ["monitoring", "metrics", "alerts", "telemetry"]
   }
 ]
 
 export function EnhancedSearch() {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const [results, setResults] = useState<SearchItem[]>([])
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [isSearching, setIsSearching] = useState(false)
-  
+  const [results, setResults] = useState<SearchItem[]>(searchData)
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const router = useRouter()
-  const inputRef = useRef<HTMLInputElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  // Load recent searches from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('k8s-recent-searches')
-    if (saved) {
-      setRecentSearches(JSON.parse(saved))
-    }
-  }, [])
-
-  // Filter results based on query
-  const filterResults = useCallback((searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      return mockSearchData
-    }
-
-    const lowercaseQuery = searchQuery.toLowerCase()
-    return mockSearchData.filter(item => 
-      item.title.toLowerCase().includes(lowercaseQuery) ||
-      item.description.toLowerCase().includes(lowercaseQuery) ||
-      item.keywords.some(keyword => keyword.toLowerCase().includes(lowercaseQuery))
-    )
-  }, [])
-
-  // Update results when query changes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSearching(true)
-      const filtered = filterResults(query)
-      setResults(filtered)
-      setSelectedIndex(-1)
-      setIsSearching(false)
-    }, 150)
-
-    return () => clearTimeout(timer)
-  }, [query, filterResults])
-
-  // Handle keyboard navigation
+  // Keyboard shortcut Ctrl+K / Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault()
-          setSelectedIndex(prev => (prev + 1) % results.length)
-          break
-        case 'ArrowUp':
-          e.preventDefault()
-          setSelectedIndex(prev => prev <= 0 ? results.length - 1 : prev - 1)
-          break
-        case 'Enter':
-          e.preventDefault()
-          if (selectedIndex >= 0 && results[selectedIndex]) {
-            handleSelect(results[selectedIndex])
-          }
-          break
-        case 'Escape':
-          setIsOpen(false)
-          inputRef.current?.blur()
-          break
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, selectedIndex, results])
-
-  // Handle global keyboard shortcut (Cmd/Ctrl + K)
-  useEffect(() => {
-    const handleGlobalShortcut = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault()
         inputRef.current?.focus()
         setIsOpen(true)
+      } else if (e.key === "Escape") {
+        setIsOpen(false)
       }
     }
 
-    document.addEventListener('keydown', handleGlobalShortcut)
-    return () => document.removeEventListener('keydown', handleGlobalShortcut)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
   }, [])
 
-  // Close on click outside
+  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsOpen(false)
       }
     }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // Filter query
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults(searchData)
+    } else {
+      const q = query.toLowerCase()
+      setResults(
+        searchData.filter(item =>
+          item.title.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          item.category.toLowerCase().includes(q) ||
+          item.keywords.some(k => k.toLowerCase().includes(q))
+        )
+      )
+    }
+    setSelectedIndex(0)
+  }, [query])
+
   const handleSelect = (item: SearchItem) => {
-    // Add to recent searches
-    const newRecent = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5)
-    setRecentSearches(newRecent)
-    localStorage.setItem('k8s-recent-searches', JSON.stringify(newRecent))
-    
-    // Navigate to selected item
-    router.push(item.url)
     setIsOpen(false)
-    setQuery("")
+    router.push(item.url)
   }
 
-  const handleRecentSearch = (searchTerm: string) => {
-    setQuery(searchTerm)
-    inputRef.current?.focus()
-  }
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen) return
 
-  const clearRecentSearches = () => {
-    setRecentSearches([])
-    localStorage.removeItem('k8s-recent-searches')
-  }
-
-  const IconComponent = ({ item }: { item: SearchItem }) => {
-    const Icon = item.icon
-    return <Icon className="h-5 w-5" />
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setSelectedIndex(prev => (prev + 1) % results.length)
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setSelectedIndex(prev => (prev - 1 + results.length) % results.length)
+    } else if (e.key === "Enter" && results[selectedIndex]) {
+      e.preventDefault()
+      handleSelect(results[selectedIndex])
+    }
   }
 
   return (
-    <div ref={searchRef} className="relative flex-1">
+    <div ref={searchRef} className="relative w-full max-w-sm">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
-        <input
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Input
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={e => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="Search resources, pods, services..."
-          className={cn(
-            "w-full rounded-xl border border-slate-200/50 bg-slate-50/50 pl-12 pr-20 py-4 text-base text-slate-900 placeholder-slate-500",
-            "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-            "dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-white dark:placeholder-slate-400",
-            "transition-all duration-200",
-            isOpen && "ring-2 ring-blue-500/20 border-blue-500"
-          )}
+          className="h-8 pl-8 pr-12 text-xs"
         />
-        
-        {/* Keyboard shortcut hint */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-          {query && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {query ? (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => setQuery("")}
-              className="h-6 w-6 p-0 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+              className="size-5 p-0 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-3 w-3" />
+              <X className="size-3" />
             </Button>
+          ) : (
+            <kbd className="hidden sm:inline-flex items-center px-1 text-[10px] font-mono text-muted-foreground bg-muted border rounded">
+              ⌘K
+            </kbd>
           )}
-          <kbd className="hidden md:inline-flex items-center px-2 py-1 text-xs font-mono text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-600">
-            <Command className="h-3 w-3 mr-1" />
-            K
-          </kbd>
         </div>
       </div>
 
-      {/* Search Results Dropdown */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl z-50 overflow-hidden"
-          >
-            <div className="max-h-96 overflow-y-auto">
-              {/* Recent Searches */}
-              {!query && recentSearches.length > 0 && (
-                <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      <Clock className="h-4 w-4" />
-                      <span>Recent Searches</span>
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1.5 rounded-lg border bg-popover text-popover-foreground shadow-md z-50 overflow-hidden">
+          <div className="max-h-80 overflow-y-auto p-1.5 space-y-1">
+            {results.length > 0 ? (
+              results.map((item, index) => {
+                const Icon = item.icon
+                const isSelected = selectedIndex === index
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelect(item)}
+                    className={cn(
+                      "w-full flex items-center justify-between p-2 rounded-md text-left text-xs transition-colors",
+                      isSelected ? "bg-accent text-accent-foreground" : "hover:bg-muted"
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="p-1 rounded-md bg-muted text-foreground shrink-0">
+                        <Icon className="size-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium text-foreground truncate">{item.title}</div>
+                        <div className="text-[11px] text-muted-foreground truncate">{item.description}</div>
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearRecentSearches}
-                      className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {recentSearches.map((search, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleRecentSearch(search)}
-                        className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        {search}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Search Results */}
-              <div className="p-2">
-                {isSearching ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full" />
-                  </div>
-                ) : results.length > 0 ? (
-                  <div className="space-y-1">
-                    {results.map((item, index) => (
-                      <motion.button
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => handleSelect(item)}
-                        className={cn(
-                          "w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-all duration-150",
-                          "hover:bg-slate-100 dark:hover:bg-slate-800",
-                          selectedIndex === index && "bg-slate-100 dark:bg-slate-800 ring-1 ring-blue-500"
-                        )}
-                      >
-                        <div className={cn(
-                          "flex items-center justify-center w-10 h-10 rounded-lg",
-                          "bg-slate-100 dark:bg-slate-800"
-                        )}>
-                          <IconComponent item={item} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                            {item.trending && (
-                              <TrendingUp className="h-3 w-3 text-green-500" />
-                            )}
-                            {item.recent && (
-                              <Badge variant="secondary" className="text-xs">Recent</Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                            {item.description}
-                          </p>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-slate-400" />
-                      </motion.button>
-                    ))}
-                  </div>
-                ) : query ? (
-                  <div className="py-8 text-center">
-                    <Search className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No results found for "{query}"</p>
-                  </div>
-                ) : (
-                  <div className="py-4">
-                    <div className="flex items-center space-x-2 text-sm font-medium text-slate-600 dark:text-slate-400 mb-3 px-3">
-                      <Filter className="h-4 w-4" />
-                      <span>Quick Access</span>
-                    </div>
-                    <div className="space-y-1">
-                      {results.slice(0, 3).map((item, index) => (
-                        <motion.button
-                          key={item.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          onClick={() => handleSelect(item)}
-                          className="w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-all duration-150 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        >
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800">
-                            <IconComponent item={item} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium text-slate-900 dark:text-white truncate">
-                                {item.title}
-                              </span>
-                              {item.trending && (
-                                <TrendingUp className="h-3 w-3 text-green-500" />
-                              )}
-                            </div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                              {item.description}
-                            </p>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-slate-400" />
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0 ml-2">
+                      {item.category}
+                    </Badge>
+                  </button>
+                )
+              })
+            ) : (
+              <div className="p-4 text-center text-xs text-muted-foreground">
+                No matching resources found for &quot;{query}&quot;
               </div>
-            </div>
-
-            {/* Footer with keyboard hints */}
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-800 border-t border-slate-200/50 dark:border-slate-700/50">
-              <div className="flex items-center space-x-4 text-xs text-slate-500">
-                <div className="flex items-center space-x-1">
-                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-300 dark:border-slate-600">↑↓</kbd>
-                  <span>Navigate</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-300 dark:border-slate-600">↵</kbd>
-                  <span>Select</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border border-slate-300 dark:border-slate-600">esc</kbd>
-                  <span>Close</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
