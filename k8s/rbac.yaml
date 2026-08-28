@@ -9,15 +9,22 @@ kind: ClusterRole
 metadata:
   name: kubernetes-dashboard
 rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "nodes", "namespaces", "configmaps", "secrets"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["apps"]
-  resources: ["deployments", "replicasets"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["extensions"]
-  resources: ["deployments", "replicasets"]
-  verbs: ["get", "list", "watch"]
+  # Core Resources
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/status", "services", "nodes", "namespaces", "configmaps", "secrets", "events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Workload Apps
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/scale", "statefulsets", "statefulsets/scale", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Batch Workloads (Jobs & CronJobs)
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Networking
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -28,6 +35,6 @@ roleRef:
   kind: ClusterRole
   name: kubernetes-dashboard
 subjects:
-- kind: ServiceAccount
-  name: kubernetes-dashboard
-  namespace: default
+  - kind: ServiceAccount
+    name: kubernetes-dashboard
+    namespace: default

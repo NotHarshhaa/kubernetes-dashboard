@@ -1,44 +1,48 @@
-# Use Node.js 20 Alpine as base image
+# ------------------------------------------------------------
+# 1. Base Image with Security & Runtime Dependencies
+# ------------------------------------------------------------
 FROM node:20-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b27b9645d40d1a1c9ec1d8da#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# ------------------------------------------------------------
+# 2. Install Dependencies (Cached Layer)
+# ------------------------------------------------------------
+FROM base AS deps
+WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit
 
-# Rebuild the source code only when needed
+# ------------------------------------------------------------
+# 3. Build the Application
+# ------------------------------------------------------------
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application with optimizations
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
-# Production image, copy all the files and run next
+# ------------------------------------------------------------
+# 4. Production Runner (Minimal Attack Surface & Non-Root User)
+# ------------------------------------------------------------
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
+ENV HOSTNAME="0.0.0.0"
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create non-root system user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy the public folder
+# Copy static assets and standalone bundle
 COPY --from=builder /app/public ./public
-
-# Copy the standalone application
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
@@ -46,5 +50,10 @@ USER nextjs
 
 EXPOSE 3000
 
-# Start the application
+# Native healthcheck using Node.js
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e 'fetch("http://127.0.0.1:3000/api/cluster").then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))'
+
+# Use dumb-init to properly handle PID 1 signal forwarding (SIGTERM / SIGINT)
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "server.js"]
