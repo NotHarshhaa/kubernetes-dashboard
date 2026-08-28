@@ -170,6 +170,88 @@ export interface Namespace {
   }
 }
 
+export interface PersistentVolume {
+  name: string
+  capacity: string
+  accessModes: string[]
+  reclaimPolicy: 'Retain' | 'Delete' | 'Recycle'
+  status: 'Bound' | 'Available' | 'Released' | 'Failed'
+  claim: string
+  storageClass: string
+  age: string
+  volumeType: string
+}
+
+export interface PersistentVolumeClaim {
+  name: string
+  namespace: string
+  status: 'Bound' | 'Pending' | 'Lost'
+  volume: string
+  capacity: string
+  accessModes: string[]
+  storageClass: string
+  age: string
+  usedCapacity?: string
+}
+
+export interface StorageClass {
+  name: string
+  provisioner: string
+  reclaimPolicy: 'Delete' | 'Retain'
+  volumeBindingMode: string
+  allowVolumeExpansion: boolean
+  isDefault: boolean
+  age: string
+}
+
+export interface HelmRelease {
+  name: string
+  namespace: string
+  revision: number
+  updated: string
+  status: 'deployed' | 'failed' | 'pending-upgrade' | 'uninstalled'
+  chart: string
+  appVersion: string
+  description: string
+}
+
+export interface HelmChart {
+  name: string
+  version: string
+  appVersion: string
+  description: string
+  icon?: string
+  repository: string
+  installed?: boolean
+}
+
+export interface SecurityFinding {
+  id: string
+  category: 'Workload' | 'Network' | 'RBAC' | 'Configuration'
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+  title: string
+  resourceKind: string
+  resourceName: string
+  namespace: string
+  remediation: string
+  impact: string
+}
+
+export interface SecurityReport {
+  overallScore: number
+  grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
+  scannedResources: number
+  passedChecks: number
+  failedChecks: number
+  findings: SecurityFinding[]
+  categoryScores: {
+    workload: number
+    network: number
+    rbac: number
+    config: number
+  }
+}
+
 export interface ResourceEvent {
   id: string
   type: 'Normal' | 'Warning'
@@ -196,6 +278,11 @@ class K8sStore {
   private secrets: Secret[] = []
   private nodes: Node[] = []
   private namespaces: Namespace[] = []
+  private persistentVolumes: PersistentVolume[] = []
+  private persistentVolumeClaims: PersistentVolumeClaim[] = []
+  private storageClasses: StorageClass[] = []
+  private helmReleases: HelmRelease[] = []
+  private helmCharts: HelmChart[] = []
   private events: ResourceEvent[] = []
   private initialized = false
 
@@ -674,9 +761,9 @@ class K8sStore {
         namespace: 'production',
         type: 'Opaque',
         data: {
-          'DB_USER': 'cG9zdGdyZXM=', // postgres
-          'DB_PASSWORD': 'U3VwZXJTZWNyZXRQYXNzMjAyNCE=', // SuperSecretPass2024!
-          'DB_NAME': 'cHJvZHVjdGlvbl9kYg==' // production_db
+          'DB_USER': 'cG9zdGdyZXM=',
+          'DB_PASSWORD': 'U3VwZXJTZWNyZXRQYXNzMjAyNCE=',
+          'DB_NAME': 'cHJvZHVjdGlvbl9kYg=='
         },
         age: '25d'
       },
@@ -702,7 +789,254 @@ class K8sStore {
       }
     ]
 
-    // Generate Pods from Deployments, StatefulSets, DaemonSets, and standalone
+    // Storage: PVs, PVCs, StorageClasses
+    this.storageClasses = [
+      {
+        name: 'standard-gp3',
+        provisioner: 'ebs.csi.aws.com',
+        reclaimPolicy: 'Delete',
+        volumeBindingMode: 'WaitForFirstConsumer',
+        allowVolumeExpansion: true,
+        isDefault: true,
+        age: '45d'
+      },
+      {
+        name: 'fast-nvme-ssd',
+        provisioner: 'kubernetes.io/no-provisioner',
+        reclaimPolicy: 'Retain',
+        volumeBindingMode: 'Immediate',
+        allowVolumeExpansion: false,
+        isDefault: false,
+        age: '40d'
+      },
+      {
+        name: 'shared-nfs-store',
+        provisioner: 'nfs.csi.k8s.io',
+        reclaimPolicy: 'Retain',
+        volumeBindingMode: 'Immediate',
+        allowVolumeExpansion: true,
+        isDefault: false,
+        age: '30d'
+      }
+    ]
+
+    this.persistentVolumes = [
+      {
+        name: 'pv-postgres-data-01',
+        capacity: '100Gi',
+        accessModes: ['ReadWriteOnce'],
+        reclaimPolicy: 'Retain',
+        status: 'Bound',
+        claim: 'production/postgres-data-claim',
+        storageClass: 'fast-nvme-ssd',
+        age: '25d',
+        volumeType: 'Local SSD'
+      },
+      {
+        name: 'pv-redis-state-01',
+        capacity: '20Gi',
+        accessModes: ['ReadWriteOnce'],
+        reclaimPolicy: 'Delete',
+        status: 'Bound',
+        claim: 'production/redis-data-claim',
+        storageClass: 'standard-gp3',
+        age: '20d',
+        volumeType: 'AWS EBS gp3'
+      },
+      {
+        name: 'pv-shared-media-volume',
+        capacity: '500Gi',
+        accessModes: ['ReadWriteMany'],
+        reclaimPolicy: 'Retain',
+        status: 'Bound',
+        claim: 'production/media-assets-pvc',
+        storageClass: 'shared-nfs-store',
+        age: '18d',
+        volumeType: 'NFS Storage'
+      },
+      {
+        name: 'pv-elasticsearch-data-01',
+        capacity: '250Gi',
+        accessModes: ['ReadWriteOnce'],
+        reclaimPolicy: 'Delete',
+        status: 'Bound',
+        claim: 'monitoring/elasticsearch-pvc',
+        storageClass: 'standard-gp3',
+        age: '30d',
+        volumeType: 'AWS EBS gp3'
+      },
+      {
+        name: 'pv-backup-staging-01',
+        capacity: '50Gi',
+        accessModes: ['ReadWriteOnce'],
+        reclaimPolicy: 'Delete',
+        status: 'Available',
+        claim: '-',
+        storageClass: 'standard-gp3',
+        age: '10d',
+        volumeType: 'AWS EBS gp3'
+      }
+    ]
+
+    this.persistentVolumeClaims = [
+      {
+        name: 'postgres-data-claim',
+        namespace: 'production',
+        status: 'Bound',
+        volume: 'pv-postgres-data-01',
+        capacity: '100Gi',
+        accessModes: ['ReadWriteOnce'],
+        storageClass: 'fast-nvme-ssd',
+        age: '25d',
+        usedCapacity: '62.4Gi'
+      },
+      {
+        name: 'redis-data-claim',
+        namespace: 'production',
+        status: 'Bound',
+        volume: 'pv-redis-state-01',
+        capacity: '20Gi',
+        accessModes: ['ReadWriteOnce'],
+        storageClass: 'standard-gp3',
+        age: '20d',
+        usedCapacity: '8.1Gi'
+      },
+      {
+        name: 'media-assets-pvc',
+        namespace: 'production',
+        status: 'Bound',
+        volume: 'pv-shared-media-volume',
+        capacity: '500Gi',
+        accessModes: ['ReadWriteMany'],
+        storageClass: 'shared-nfs-store',
+        age: '18d',
+        usedCapacity: '142.6Gi'
+      },
+      {
+        name: 'elasticsearch-pvc',
+        namespace: 'monitoring',
+        status: 'Bound',
+        volume: 'pv-elasticsearch-data-01',
+        capacity: '250Gi',
+        accessModes: ['ReadWriteOnce'],
+        storageClass: 'standard-gp3',
+        age: '30d',
+        usedCapacity: '184.2Gi'
+      }
+    ]
+
+    // Helm Releases & Catalog
+    this.helmReleases = [
+      {
+        name: 'ingress-nginx',
+        namespace: 'kube-system',
+        revision: 3,
+        updated: new Date(Date.now() - 5 * 86400000).toISOString(),
+        status: 'deployed',
+        chart: 'ingress-nginx-4.9.0',
+        appVersion: 'v1.9.4',
+        description: 'Ingress controller for Kubernetes using NGINX'
+      },
+      {
+        name: 'cert-manager',
+        namespace: 'kube-system',
+        revision: 2,
+        updated: new Date(Date.now() - 10 * 86400000).toISOString(),
+        status: 'deployed',
+        chart: 'cert-manager-v1.13.3',
+        appVersion: 'v1.13.3',
+        description: 'Cloud native certificate management'
+      },
+      {
+        name: 'kube-prometheus-stack',
+        namespace: 'monitoring',
+        revision: 5,
+        updated: new Date(Date.now() - 2 * 86400000).toISOString(),
+        status: 'deployed',
+        chart: 'kube-prometheus-stack-55.5.0',
+        appVersion: 'v0.70.0',
+        description: 'Prometheus operator, Grafana dashboards and alertmanager'
+      },
+      {
+        name: 'redis-ha-cluster',
+        namespace: 'production',
+        revision: 1,
+        updated: new Date(Date.now() - 20 * 86400000).toISOString(),
+        status: 'deployed',
+        chart: 'redis-ha-4.24.4',
+        appVersion: '7.2.3',
+        description: 'Highly available Redis cluster with Sentinel'
+      }
+    ]
+
+    this.helmCharts = [
+      {
+        name: 'ingress-nginx',
+        version: '4.9.0',
+        appVersion: 'v1.9.4',
+        description: 'High-performance HTTP/HTTPS ingress reverse proxy',
+        repository: 'https://kubernetes.github.io/ingress-nginx',
+        installed: true
+      },
+      {
+        name: 'cert-manager',
+        version: 'v1.13.3',
+        appVersion: 'v1.13.3',
+        description: 'Automated TLS certificate renewal via Let\'s Encrypt / Vault',
+        repository: 'https://charts.jetstack.io',
+        installed: true
+      },
+      {
+        name: 'kube-prometheus-stack',
+        version: '55.5.0',
+        appVersion: 'v0.70.0',
+        description: 'Complete Kubernetes monitoring stack with Grafana dashboards',
+        repository: 'https://prometheus-community.github.io/helm-charts',
+        installed: true
+      },
+      {
+        name: 'argo-cd',
+        version: '5.53.0',
+        appVersion: 'v2.9.3',
+        description: 'Declarative GitOps continuous delivery tool for Kubernetes',
+        repository: 'https://argoproj.github.io/argo-helm',
+        installed: false
+      },
+      {
+        name: 'vault',
+        version: '0.27.0',
+        appVersion: '1.15.2',
+        description: 'HashiCorp Vault secret management and dynamic encryption keys',
+        repository: 'https://helm.releases.hashicorp.com',
+        installed: false
+      },
+      {
+        name: 'traefik',
+        version: '26.0.0',
+        appVersion: 'v2.10.7',
+        description: 'Modern cloud native HTTP reverse proxy and load balancer',
+        repository: 'https://traefik.github.io/charts',
+        installed: false
+      },
+      {
+        name: 'rabbitmq',
+        version: '12.8.0',
+        appVersion: '3.12.12',
+        description: 'Enterprise AMQP message broker and streaming cluster',
+        repository: 'https://charts.bitnami.com/bitnami',
+        installed: false
+      },
+      {
+        name: 'mongodb',
+        version: '14.4.0',
+        appVersion: '7.0.4',
+        description: 'Scalable NoSQL document database with replica set support',
+        repository: 'https://charts.bitnami.com/bitnami',
+        installed: false
+      }
+    ]
+
+    // Generate Pods
     this.regeneratePods()
 
     // Events
@@ -917,6 +1251,264 @@ class K8sStore {
       : this.events
   }
 
+  // --- Storage ---
+  getPersistentVolumes(): PersistentVolume[] {
+    return this.persistentVolumes
+  }
+
+  getPersistentVolumeClaims(namespace?: string): PersistentVolumeClaim[] {
+    return namespace && namespace !== 'all'
+      ? this.persistentVolumeClaims.filter(p => p.namespace === namespace)
+      : this.persistentVolumeClaims
+  }
+
+  getStorageClasses(): StorageClass[] {
+    return this.storageClasses
+  }
+
+  // --- Helm ---
+  getHelmReleases(namespace?: string): HelmRelease[] {
+    return namespace && namespace !== 'all'
+      ? this.helmReleases.filter(r => r.namespace === namespace)
+      : this.helmReleases
+  }
+
+  getHelmCharts(): HelmChart[] {
+    return this.helmCharts
+  }
+
+  installHelmChart(chartName: string, releaseName: string, namespace: string): HelmRelease {
+    const chart = this.helmCharts.find(c => c.name === chartName)
+    const newRelease: HelmRelease = {
+      name: releaseName || `${chartName}-app`,
+      namespace: namespace || 'default',
+      revision: 1,
+      updated: new Date().toISOString(),
+      status: 'deployed',
+      chart: `${chartName}-${chart?.version || '1.0.0'}`,
+      appVersion: chart?.appVersion || 'v1.0.0',
+      description: chart?.description || 'Installed via Helm Marketplace'
+    }
+
+    this.helmReleases.unshift(newRelease)
+    if (chart) chart.installed = true
+
+    this.events.unshift({
+      id: `evt-${Date.now()}`,
+      type: 'Normal',
+      reason: 'HelmInstall',
+      message: `Installed Helm chart ${chartName} as release ${newRelease.name} in ${namespace}`,
+      involvedObject: { kind: 'HelmRelease', name: newRelease.name, namespace },
+      timestamp: new Date().toISOString()
+    })
+
+    return newRelease
+  }
+
+  rollbackHelmRelease(releaseName: string, namespace: string, revision: number): boolean {
+    const rel = this.helmReleases.find(r => r.name === releaseName && r.namespace === namespace)
+    if (!rel) return false
+    rel.revision += 1
+    rel.updated = new Date().toISOString()
+    rel.status = 'deployed'
+
+    this.events.unshift({
+      id: `evt-${Date.now()}`,
+      type: 'Normal',
+      reason: 'HelmRollback',
+      message: `Rolled back release ${releaseName} to revision ${revision}`,
+      involvedObject: { kind: 'HelmRelease', name: releaseName, namespace },
+      timestamp: new Date().toISOString()
+    })
+    return true
+  }
+
+  uninstallHelmRelease(releaseName: string, namespace: string): boolean {
+    const len = this.helmReleases.length
+    this.helmReleases = this.helmReleases.filter(r => !(r.name === releaseName && r.namespace === namespace))
+    return this.helmReleases.length !== len
+  }
+
+  // --- Security & CIS Benchmark Scanner ---
+  getSecurityReport(): SecurityReport {
+    const findings: SecurityFinding[] = [
+      {
+        id: 'sec-1',
+        category: 'Workload',
+        severity: 'HIGH',
+        title: 'Container running without memory resource limits',
+        resourceKind: 'Deployment',
+        resourceName: 'staging-backend',
+        namespace: 'staging',
+        remediation: 'Set resources.limits.memory and resources.requests.memory in container spec',
+        impact: 'Pod may cause node memory exhaustion (OOMKill) affecting neighboring workloads.'
+      },
+      {
+        id: 'sec-2',
+        category: 'Workload',
+        severity: 'MEDIUM',
+        title: 'Container allowed root user privilege escalation',
+        resourceKind: 'Deployment',
+        resourceName: 'frontend-web',
+        namespace: 'production',
+        remediation: 'Add securityContext: { allowPrivilegeEscalation: false, runAsNonRoot: true }',
+        impact: 'Compromised container processes can escalate to root permissions.'
+      },
+      {
+        id: 'sec-3',
+        category: 'Network',
+        severity: 'MEDIUM',
+        title: 'Ingress endpoint lacks TLS encryption certificate',
+        resourceKind: 'Ingress',
+        resourceName: 'monitoring-ingress',
+        namespace: 'monitoring',
+        remediation: 'Configure TLS secret certificate in ingress spec.tls block',
+        impact: 'HTTP plain-text telemetry traffic exposed across public routes.'
+      },
+      {
+        id: 'sec-4',
+        category: 'RBAC',
+        severity: 'LOW',
+        title: 'Default ServiceAccount has automountServiceAccountToken enabled',
+        resourceKind: 'Namespace',
+        resourceName: 'default',
+        namespace: 'default',
+        remediation: 'Set automountServiceAccountToken: false on unused ServiceAccounts',
+        impact: 'API tokens automatically mounted into pods without explicit RBAC requirements.'
+      },
+      {
+        id: 'sec-5',
+        category: 'Configuration',
+        severity: 'LOW',
+        title: 'ConfigMap key loaded without hash versioning',
+        resourceKind: 'ConfigMap',
+        resourceName: 'app-settings',
+        namespace: 'production',
+        remediation: 'Use Kustomize configMapGenerator or immutable: true',
+        impact: 'Hot-reloads may lead to desynchronized application state across replicas.'
+      }
+    ]
+
+    return {
+      overallScore: 88,
+      grade: 'A',
+      scannedResources: 48,
+      passedChecks: 43,
+      failedChecks: 5,
+      findings,
+      categoryScores: {
+        workload: 85,
+        network: 90,
+        rbac: 92,
+        config: 86
+      }
+    }
+  }
+
+  // --- Interactive Terminal Exec Simulation ---
+  execCommand(podName: string, namespace: string, container: string = 'main', cmd: string): { output: string; exitCode: number } {
+    const c = cmd.trim().toLowerCase()
+    const time = new Date().toLocaleTimeString()
+
+    if (!c) {
+      return { output: '', exitCode: 0 }
+    }
+
+    if (c === 'clear') {
+      return { output: '__CLEAR__', exitCode: 0 }
+    }
+
+    if (c === 'help') {
+      return {
+        output: `Available shell diagnostics commands:\n  • ps aux           - View active processes in container\n  • top              - Inspect realtime container CPU/memory usage\n  • df -h            - Check mounted filesystems and volumes\n  • env              - List runtime environment variables\n  • netstat -tlpn    - Display open TCP/UDP network listening ports\n  • cat /etc/os-release - Inspect base container Linux OS\n  • curl <url>       - Test HTTP connectivity\n  • uname -a         - Print container kernel details\n  • clear            - Clear terminal buffer`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'ps aux' || c === 'ps') {
+      return {
+        output: `USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.2  0.8 112840 24800 ?        Ssl  12:00   0:04 node server.js\nnextjs      18  0.0  0.2  18420  4210 ?        S    12:01   0:00 dumb-init -- /app\nnextjs      42  0.0  0.1   8200  2100 pts/0    Ss   ${time}   0:00 /bin/sh`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'top') {
+      return {
+        output: `Mem: 24800K used, 512000K free, 8200K shrd, 1420K buff, 124800K cached\nCPU:   2.1% usr   1.2% sys   0.0% nic  96.7% idle   0.0% io   0.0% irq\nLoad average: 0.14 0.08 0.03 2/184 92\n\n  PID USER     STATUS   VSZ  PPID %CPU %MEM COMMAND\n    1 nextjs   S       112M     0  2.1  4.8 node server.js\n   42 nextjs   R       8200     1  0.0  0.2 top`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'df -h' || c === 'df') {
+      return {
+        output: `Filesystem                Size      Used Available Use% Mounted on\noverlay                 100.0G     24.2G     75.8G  24% /\ntmpfs                    64.0M         0     64.0M   0% /dev\ntmpfs                    15.5G         0     15.5G   0% /sys/fs/cgroup\n/dev/nvme0n1p1          100.0G     24.2G     75.8G  24% /etc/hosts\n/dev/nvme1n1             20.0G      8.1G     11.9G  41% /var/data`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'env') {
+      return {
+        output: `KUBERNETES_SERVICE_HOST=10.96.0.1\nKUBERNETES_SERVICE_PORT=443\nKUBERNETES_PORT=tcp://10.96.0.1:443\nNODE_ENV=production\nHOSTNAME=${podName}\nPORT=8080\nLOG_LEVEL=info\nAPP_NAMESPACE=${namespace}\nCONTAINER_NAME=${container}\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`,
+        exitCode: 0
+      }
+    }
+
+    if (c.startsWith('cat /etc/os-release') || c.startsWith('cat /etc/issue')) {
+      return {
+        output: `NAME="Alpine Linux"\nID=alpine\nVERSION_ID=3.20.0\nPRETTY_NAME="Alpine Linux v3.20"\nHOME_URL="https://alpinelinux.org/"\nBUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"`,
+        exitCode: 0
+      }
+    }
+
+    if (c.startsWith('cat /etc/resolv.conf')) {
+      return {
+        output: `search ${namespace}.svc.cluster.local svc.cluster.local cluster.local\nnameserver 10.96.0.10\noptions ndots:5`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'netstat -tlpn' || c === 'netstat') {
+      return {
+        output: `Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name\ntcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      1/node\ntcp        0      0 127.0.0.1:9090          0.0.0.0:*               LISTEN      1/node`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'uname -a') {
+      return {
+        output: `Linux ${podName} 5.15.0-91-generic #101-Ubuntu SMP Tue Nov 14 13:30:08 UTC 2023 x86_64 Linux`,
+        exitCode: 0
+      }
+    }
+
+    if (c === 'whoami') {
+      return { output: `nextjs (uid=1001, gid=1001)`, exitCode: 0 }
+    }
+
+    if (c === 'pwd') {
+      return { output: `/app`, exitCode: 0 }
+    }
+
+    if (c.startsWith('ls')) {
+      return {
+        output: `package.json  package-lock.json  public  server.js  .next  node_modules`,
+        exitCode: 0
+      }
+    }
+
+    if (c.startsWith('curl')) {
+      return {
+        output: `HTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 42\nDate: ${new Date().toUTCString()}\n\n{"status":"healthy","uptime":38420.5}`,
+        exitCode: 0
+      }
+    }
+
+    return {
+      output: `Executed: ${cmd}\n[stdout] Command completed successfully in container ${container} (pod: ${podName})`,
+      exitCode: 0
+    }
+  }
+
   // --- Mutating Actions ---
   scaleDeployment(name: string, namespace: string, replicas: number): boolean {
     const dep = this.deployments.find(d => d.name === name && d.namespace === namespace)
@@ -961,7 +1553,6 @@ class K8sStore {
     const dep = this.deployments.find(d => d.name === name && d.namespace === namespace)
     if (!dep) return false
     
-    // Increment restart count on its pods
     this.pods
       .filter(p => p.namespace === namespace && p.name.startsWith(name))
       .forEach(p => {
@@ -1059,6 +1650,10 @@ class K8sStore {
       this.configMaps = this.configMaps.filter(c => !(c.name === name && c.namespace === namespace))
     } else if (k === 'secret' || k === 'secrets') {
       this.secrets = this.secrets.filter(s => !(s.name === name && s.namespace === namespace))
+    } else if (k === 'persistentvolumeclaim' || k === 'pvc') {
+      this.persistentVolumeClaims = this.persistentVolumeClaims.filter(p => !(p.name === name && p.namespace === namespace))
+    } else if (k === 'persistentvolume' || k === 'pv') {
+      this.persistentVolumes = this.persistentVolumes.filter(p => p.name !== name)
     } else if (k === 'pod' || k === 'pods') {
       return this.deletePod(name, namespace)
     }
@@ -1137,7 +1732,6 @@ class K8sStore {
     if (!node) return false
     node.status = 'SchedulingDisabled'
 
-    // Move pods to other available nodes
     const otherNodes = this.nodes.filter(n => n.name !== name && n.status === 'Ready').map(n => n.name)
     if (otherNodes.length > 0) {
       this.pods.filter(p => p.node === name).forEach((p, idx) => {

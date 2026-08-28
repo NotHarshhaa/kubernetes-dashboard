@@ -1,6 +1,56 @@
-// Enhanced API Client for all Kubernetes Workloads and Resources
-export { type ClusterInfo, type Pod, type Deployment, type StatefulSet, type DaemonSet, type Job, type CronJob, type Service, type Ingress, type ConfigMap, type Secret, type Node, type Namespace, type ResourceEvent } from './k8s-store'
-import type { ClusterInfo, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Namespace, ResourceEvent } from './k8s-store'
+// Enhanced API Client for all Kubernetes Workloads, Storage, Helm, Security, and Terminal
+export {
+  type ClusterInfo,
+  type Pod,
+  type Deployment,
+  type StatefulSet,
+  type DaemonSet,
+  type Job,
+  type CronJob,
+  type Service,
+  type Ingress,
+  type ConfigMap,
+  type Secret,
+  type Node,
+  type Namespace,
+  type PersistentVolume,
+  type PersistentVolumeClaim,
+  type StorageClass,
+  type HelmRelease,
+  type HelmChart,
+  type SecurityFinding,
+  type SecurityReport,
+  type ResourceEvent
+} from './k8s-store'
+
+import type {
+  ClusterInfo,
+  Pod,
+  Deployment,
+  StatefulSet,
+  DaemonSet,
+  Job,
+  CronJob,
+  Service,
+  Ingress,
+  ConfigMap,
+  Secret,
+  Node,
+  Namespace,
+  PersistentVolume,
+  PersistentVolumeClaim,
+  StorageClass,
+  HelmRelease,
+  HelmChart,
+  SecurityReport,
+  ResourceEvent
+} from './k8s-store'
+
+export interface StorageData {
+  persistentVolumes: PersistentVolume[]
+  persistentVolumeClaims: PersistentVolumeClaim[]
+  storageClasses: StorageClass[]
+}
 
 export interface WorkloadSummary {
   deployments: Deployment[]
@@ -105,13 +155,13 @@ class ApiClient {
   }
 
   async getConfigMaps(namespace?: string): Promise<ConfigMap[]> {
-    const query = namespace && namespace !== 'all' ? `?type=configmaps&namespace=${encodeURIComponent(namespace)}` : '?type=configmaps'
-    return this.fetchJson<ConfigMap[]>(`/api/config${query}`)
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<ConfigMap[]>(`/api/config?kind=configmaps${query ? `&namespace=${encodeURIComponent(namespace!)}` : ''}`)
   }
 
   async getSecrets(namespace?: string): Promise<Secret[]> {
-    const query = namespace && namespace !== 'all' ? `?type=secrets&namespace=${encodeURIComponent(namespace)}` : '?type=secrets'
-    return this.fetchJson<Secret[]>(`/api/config${query}`)
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<Secret[]>(`/api/config?kind=secrets${query ? `&namespace=${encodeURIComponent(namespace!)}` : ''}`)
   }
 
   async getNodes(): Promise<Node[]> {
@@ -122,68 +172,138 @@ class ApiClient {
     return this.fetchJson<Namespace[]>('/api/namespaces')
   }
 
-  async getEvents(namespace?: string): Promise<ResourceEvent[]> {
+  // --- Storage API ---
+  async getStorageData(namespace?: string): Promise<StorageData> {
     const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
-    return this.fetchJson<ResourceEvent[]>(`/api/activities${query}`)
+    return this.fetchJson<StorageData>(`/api/storage${query}`)
   }
 
-  // --- Actions ---
-  async executeAction(action: string, params: Record<string, any> = {}): Promise<ActionResponse> {
-    return this.fetchJson<ActionResponse>('/api/actions', {
+  // --- Helm API ---
+  async getHelmReleases(namespace?: string): Promise<HelmRelease[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<HelmRelease[]>(`/api/helm?action=releases${query ? `&namespace=${encodeURIComponent(namespace!)}` : ''}`)
+  }
+
+  async getHelmCharts(): Promise<HelmChart[]> {
+    return this.fetchJson<HelmChart[]>('/api/helm?action=charts')
+  }
+
+  async installHelmChart(chartName: string, releaseName: string, namespace: string): Promise<HelmRelease> {
+    return this.fetchJson<HelmRelease>('/api/helm', {
       method: 'POST',
-      body: JSON.stringify({ action, params })
+      body: JSON.stringify({ action: 'install', chartName, releaseName, namespace })
     })
   }
 
+  async rollbackHelmRelease(releaseName: string, namespace: string, revision: number): Promise<ActionResponse> {
+    return this.fetchJson<ActionResponse>('/api/helm', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'rollback', releaseName, namespace, revision })
+    })
+  }
+
+  async uninstallHelmRelease(releaseName: string, namespace: string): Promise<ActionResponse> {
+    return this.fetchJson<ActionResponse>('/api/helm', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'uninstall', releaseName, namespace })
+    })
+  }
+
+  // --- Security & CIS Benchmark API ---
+  async getSecurityReport(): Promise<SecurityReport> {
+    return this.fetchJson<SecurityReport>('/api/security')
+  }
+
+  // --- Container Exec Terminal API ---
+  async execCommand(podName: string, namespace: string, container: string, command: string): Promise<{ output: string; exitCode: number }> {
+    return this.fetchJson<{ output: string; exitCode: number }>('/api/exec', {
+      method: 'POST',
+      body: JSON.stringify({ podName, namespace, container, command })
+    })
+  }
+
+  // --- Common Mutations ---
   async scaleDeployment(name: string, namespace: string, replicas: number): Promise<ActionResponse> {
-    return this.executeAction('scale-deployment', { deployment: name, namespace, replicas })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scale', resourceKind: 'Deployment', resourceName: name, namespace, replicas })
+    })
   }
 
   async scaleStatefulSet(name: string, namespace: string, replicas: number): Promise<ActionResponse> {
-    return this.executeAction('scale-statefulset', { statefulset: name, namespace, replicas })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scale', resourceKind: 'StatefulSet', resourceName: name, namespace, replicas })
+    })
   }
 
   async restartDeployment(name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('restart-deployment', { deployment: name, namespace })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'restart', resourceKind: 'Deployment', resourceName: name, namespace })
+    })
   }
 
   async restartDaemonSet(name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('restart-daemonset', { daemonset: name, namespace })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'restart', resourceKind: 'DaemonSet', resourceName: name, namespace })
+    })
   }
 
   async restartPod(name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('restart-pod', { pod: name, namespace })
-  }
-
-  async deleteResource(kind: string, name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('delete-resource', { kind, name, namespace })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'restart', resourceKind: 'Pod', resourceName: name, namespace })
+    })
   }
 
   async triggerCronJob(name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('trigger-cronjob', { cronjob: name, namespace })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'trigger', resourceKind: 'CronJob', resourceName: name, namespace })
+    })
   }
 
   async toggleCronJobSuspend(name: string, namespace: string): Promise<ActionResponse> {
-    return this.executeAction('toggle-cronjob-suspend', { cronjob: name, namespace })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'toggle-suspend', resourceKind: 'CronJob', resourceName: name, namespace })
+    })
   }
 
   async cordonNode(name: string, cordon: boolean): Promise<ActionResponse> {
-    return this.executeAction('cordon-node', { node: name, cordon })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: cordon ? 'cordon' : 'uncordon', resourceKind: 'Node', resourceName: name, namespace: '' })
+    })
   }
 
   async drainNode(name: string): Promise<ActionResponse> {
-    return this.executeAction('drain-node', { node: name })
+    return this.fetchJson<ActionResponse>('/api/actions', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'drain', resourceKind: 'Node', resourceName: name, namespace: '' })
+    })
+  }
+
+  async deleteResource(kind: string, name: string, namespace: string): Promise<ActionResponse> {
+    return this.fetchJson<ActionResponse>('/api/resources', {
+      method: 'DELETE',
+      body: JSON.stringify({ kind, name, namespace })
+    })
   }
 
   async getPodLogs(namespace: string, podName: string, container?: string): Promise<string> {
     const query = container ? `?container=${encodeURIComponent(container)}` : ''
-    const res = await this.fetchJson<{ logs: string }>(`/api/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/logs${query}`)
-    return res.logs
+    const res = await fetch(`/api/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/logs${query}`)
+    if (!res.ok) throw new Error('Failed to fetch pod logs')
+    return res.text()
   }
 
   async getResourceYaml(kind: string, name: string, namespace: string): Promise<string> {
-    const res = await this.executeAction('get-yaml', { kind, name, namespace })
-    return res.data?.yaml || ''
+    const res = await fetch(`/api/resources?kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}&namespace=${encodeURIComponent(namespace || '')}`)
+    if (!res.ok) throw new Error('Failed to fetch YAML')
+    return res.text()
   }
 }
 

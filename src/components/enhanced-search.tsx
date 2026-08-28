@@ -14,7 +14,12 @@ import {
   KeyRound,
   Layers,
   Settings,
-  ArrowRight
+  ArrowRight,
+  HardDrive,
+  Package,
+  ShieldCheck,
+  GitFork,
+  Terminal
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -79,6 +84,24 @@ const searchData: SearchItem[] = [
   },
   {
     id: "6",
+    title: "Storage & Persistent Volumes",
+    description: "PVs, PVCs, and StorageClasses capacity management",
+    category: "Storage",
+    icon: HardDrive,
+    url: "/storage",
+    keywords: ["storage", "pv", "pvc", "persistentvolume", "volumes", "storageclass", "ebs", "nfs"]
+  },
+  {
+    id: "7",
+    title: "Helm Hub & Catalog",
+    description: "Installed Helm releases and 1-click cloud-native charts",
+    category: "Packaging",
+    icon: Package,
+    url: "/helm",
+    keywords: ["helm", "charts", "releases", "marketplace", "install", "packages"]
+  },
+  {
+    id: "8",
     title: "Cluster Nodes",
     description: "Compute capacity, hardware conditions, and cordoning",
     category: "Infrastructure",
@@ -87,7 +110,7 @@ const searchData: SearchItem[] = [
     keywords: ["nodes", "infrastructure", "cordon", "drain", "capacity"]
   },
   {
-    id: "7",
+    id: "9",
     title: "Namespaces",
     description: "Tenancy boundaries, resource quotas, and access scopes",
     category: "Tenancy",
@@ -96,7 +119,34 @@ const searchData: SearchItem[] = [
     keywords: ["namespaces", "quotas", "tenants", "isolation"]
   },
   {
-    id: "8",
+    id: "10",
+    title: "Security & CIS Posture",
+    description: "Automated CIS benchmarks, vulnerability audits & hardening",
+    category: "Security",
+    icon: ShieldCheck,
+    url: "/security",
+    keywords: ["security", "cis", "benchmark", "compliance", "vulnerabilities", "audit", "rbac"]
+  },
+  {
+    id: "11",
+    title: "Architecture Topology Map",
+    description: "Visual dependency graph of Ingress, Services, Pods and Storage",
+    category: "Visualization",
+    icon: GitFork,
+    url: "/topology",
+    keywords: ["topology", "graph", "architecture", "visualization", "map", "dependencies"]
+  },
+  {
+    id: "12",
+    title: "Web Terminal",
+    description: "Interactive container shell execution with command history",
+    category: "Tools",
+    icon: Terminal,
+    url: "/terminal",
+    keywords: ["terminal", "shell", "exec", "sh", "bash", "console", "cli"]
+  },
+  {
+    id: "13",
     title: "Monitoring & Metrics",
     description: "Live CPU, memory usage telemetry, and cluster alerts",
     category: "Monitoring",
@@ -105,7 +155,7 @@ const searchData: SearchItem[] = [
     keywords: ["monitoring", "metrics", "alerts", "telemetry"]
   },
   {
-    id: "9",
+    id: "14",
     title: "Cluster Settings",
     description: "Alert triggers, API tokens, audit logs, and language",
     category: "Settings",

@@ -18,6 +18,11 @@ import {
   Bell, 
   LogOut,
   Sparkles,
+  HardDrive,
+  Package,
+  ShieldCheck,
+  GitFork,
+  Terminal,
   LucideIcon 
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -50,11 +55,16 @@ const mainNavItems = [
   { name: "Deployments", href: "/deployments", icon: Database },
   { name: "Services & Ingress", href: "/services", icon: Network },
   { name: "Config & Secrets", href: "/config", icon: KeyRound },
+  { name: "Storage & PVs", href: "/storage", icon: HardDrive },
+  { name: "Helm Hub", href: "/helm", icon: Package },
   { name: "Nodes", href: "/nodes", icon: Server },
   { name: "Namespaces", href: "/namespaces", icon: Layers },
 ]
 
 const secondaryNavItems = [
+  { name: "Security & CIS", href: "/security", icon: ShieldCheck },
+  { name: "Topology Map", href: "/topology", icon: GitFork },
+  { name: "Web Terminal", href: "/terminal", icon: Terminal },
   { name: "Monitoring", href: "/monitoring", icon: Activity },
   { name: "Settings", href: "/settings", icon: Settings },
 ]

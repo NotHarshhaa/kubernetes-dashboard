@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { apiClient, Pod } from "@/lib/api-client"
 import { useToast } from "@/contexts/toast-context"
 import { PodLogsDialog } from "@/components/pod-logs-dialog"
+import { PodExecDialog } from "@/components/pod-exec-dialog"
 import { YamlViewerDialog } from "@/components/yaml-viewer-dialog"
 import { 
   Container, 
@@ -44,6 +45,18 @@ export default function PodsPage() {
   
   // Interactive Dialogs
   const [logsDialog, setLogsDialog] = useState<{
+    open: boolean
+    podName: string
+    namespace: string
+    containers: { name: string; image?: string }[]
+  }>({
+    open: false,
+    podName: '',
+    namespace: 'default',
+    containers: []
+  })
+
+  const [execDialog, setExecDialog] = useState<{
     open: boolean
     podName: string
     namespace: string
@@ -458,6 +471,18 @@ export default function PodsPage() {
                               <DropdownMenuItem onClick={() => setDetailsDialog({ open: true, pod })}>
                                 <Eye className="size-3.5 mr-2" /> View Details
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setExecDialog({
+                                    open: true,
+                                    podName: pod.name,
+                                    namespace: pod.namespace,
+                                    containers: pod.containers || [{ name: 'main' }]
+                                  })
+                                }
+                              >
+                                <Terminal className="size-3.5 mr-2 text-emerald-500" /> Exec Shell
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setYamlDialog({ open: true, name: pod.name, namespace: pod.namespace })}>
                                 <FileCode2 className="size-3.5 mr-2" /> View YAML
                               </DropdownMenuItem>
@@ -487,6 +512,15 @@ export default function PodsPage() {
           podName={logsDialog.podName}
           namespace={logsDialog.namespace}
           containers={logsDialog.containers}
+        />
+
+        {/* Interactive Pod Exec Shell Dialog */}
+        <PodExecDialog
+          open={execDialog.open}
+          onOpenChange={open => setExecDialog(prev => ({ ...prev, open }))}
+          podName={execDialog.podName}
+          namespace={execDialog.namespace}
+          containers={execDialog.containers}
         />
 
         {/* YAML Dialog */}
