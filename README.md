@@ -6,7 +6,9 @@
 ![Docker Stars](https://img.shields.io/docker/stars/harshhaareddy/kubernetes-dashboard)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-A modern, production-grade Kubernetes dashboard built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **shadcn/ui**. Monitor, inspect, and manage multi-cluster Kubernetes environments with an intuitive, high-performance interface.
+> **An enterprise-ready, developer-first Kubernetes command center engineered for Platform Engineers, SREs, and DevOps teams.**
+>
+> This dashboard unifies multi-cluster fleet operations, real-time Metrics Server telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution. Eliminate tool sprawl, prevent configuration drift, and manage mission-critical cloud-native workloads with velocity and confidence.
 
 ---
 
