@@ -74,6 +74,55 @@ export interface ActionResponse {
   data?: any
 }
 
+export interface CustomResourceDefinitionItem {
+  name: string
+  group: string
+  version: string
+  kind: string
+  singularName: string
+  scope: 'Namespaced' | 'Cluster'
+  established: boolean
+  categories: string[]
+  creationTimestamp: string
+  instanceCount?: number
+}
+
+export interface GatewayItem {
+  name: string
+  namespace: string
+  gatewayClassName: string
+  listeners: {
+    name: string
+    port: number
+    protocol: string
+    routesCount?: number
+  }[]
+  addresses: string[]
+  status: 'Programmed' | 'Accepted' | 'Pending' | 'Error'
+  creationTimestamp: string
+}
+
+export interface HTTPRouteItem {
+  name: string
+  namespace: string
+  hostnames: string[]
+  parentGateways: string[]
+  rules: {
+    matches?: { path?: { type: string; value: string } }[]
+    backendRefs: { name: string; port: number; weight?: number }[]
+  }[]
+  status: 'Accepted' | 'Pending' | 'Degraded'
+  creationTimestamp: string
+}
+
+export interface ContextItem {
+  name: string
+  cluster: string
+  user: string
+  namespace?: string
+  isCurrent: boolean
+}
+
 class ApiClient {
   private baseUrl: string
 
@@ -83,10 +132,19 @@ class ApiClient {
 
   private async fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
+    const contextHeader: Record<string, string> = {}
+    if (typeof window !== 'undefined') {
+      const active = localStorage.getItem('k8s-context')
+      if (active) {
+        contextHeader['x-k8s-context'] = active
+      }
+    }
+
     const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...contextHeader,
         ...(options?.headers || {})
       }
     })
@@ -295,15 +353,54 @@ class ApiClient {
 
   async getPodLogs(namespace: string, podName: string, container?: string): Promise<string> {
     const query = container ? `?container=${encodeURIComponent(container)}` : ''
-    const res = await fetch(`/api/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/logs${query}`)
+    const headers: Record<string, string> = {}
+    if (typeof window !== 'undefined') {
+      const active = localStorage.getItem('k8s-context')
+      if (active) headers['x-k8s-context'] = active
+    }
+    const res = await fetch(`/api/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(podName)}/logs${query}`, { headers })
     if (!res.ok) throw new Error('Failed to fetch pod logs')
-    return res.text()
+    try {
+      const json = await res.json()
+      return json.logs || ''
+    } catch {
+      return res.text()
+    }
   }
 
   async getResourceYaml(kind: string, name: string, namespace: string): Promise<string> {
     const res = await fetch(`/api/resources?kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}&namespace=${encodeURIComponent(namespace || '')}`)
     if (!res.ok) throw new Error('Failed to fetch YAML')
     return res.text()
+  }
+
+  async getContexts(): Promise<{ currentContext: string; contexts: ContextItem[] }> {
+    return this.fetchJson<{ currentContext: string; contexts: ContextItem[] }>('/api/contexts')
+  }
+
+  async switchContext(context: string): Promise<{ success: boolean; currentContext: string; message: string }> {
+    const res = await this.fetchJson<{ success: boolean; currentContext: string; message: string }>('/api/contexts', {
+      method: 'POST',
+      body: JSON.stringify({ context })
+    })
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('k8s-context', context)
+    }
+    return res
+  }
+
+  async getCRDs(): Promise<CustomResourceDefinitionItem[]> {
+    return this.fetchJson<CustomResourceDefinitionItem[]>('/api/crds')
+  }
+
+  async getGateways(namespace?: string): Promise<GatewayItem[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<GatewayItem[]>(`/api/gateways${query}`)
+  }
+
+  async getHTTPRoutes(namespace?: string): Promise<HTTPRouteItem[]> {
+    const query = namespace && namespace !== 'all' ? `?type=routes&namespace=${encodeURIComponent(namespace)}` : '?type=routes'
+    return this.fetchJson<HTTPRouteItem[]>(`/api/gateways${query}`)
   }
 }
 

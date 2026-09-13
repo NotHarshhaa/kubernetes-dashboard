@@ -32,6 +32,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { apiClient, ContextItem } from "@/lib/api-client"
 import {
   SidebarProvider,
   Sidebar,
@@ -54,9 +56,11 @@ const mainNavItems = [
   { name: "Pods", href: "/pods", icon: Container },
   { name: "Deployments", href: "/deployments", icon: Database },
   { name: "Services & Ingress", href: "/services", icon: Network },
+  { name: "Gateway API", href: "/gateways", icon: GitFork },
+  { name: "Custom Resources", href: "/crds", icon: Package },
   { name: "Config & Secrets", href: "/config", icon: KeyRound },
   { name: "Storage & PVs", href: "/storage", icon: HardDrive },
-  { name: "Helm Hub", href: "/helm", icon: Package },
+  { name: "Helm Hub", href: "/helm", icon: Sparkles },
   { name: "Nodes", href: "/nodes", icon: Server },
   { name: "Namespaces", href: "/namespaces", icon: Layers },
 ]
@@ -78,6 +82,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { signOut } = useAuth()
   const { success } = useToast()
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
+
+  const [contexts, setContexts] = React.useState<ContextItem[]>([])
+  const [currentContext, setCurrentContext] = React.useState<string>('')
+  const [switchingContext, setSwitchingContext] = React.useState(false)
+
+  React.useEffect(() => {
+    apiClient.getContexts().then(res => {
+      setContexts(res.contexts)
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('k8s-context') : null
+      setCurrentContext(stored || res.currentContext)
+    }).catch(() => {})
+  }, [])
+
+  const handleContextChange = async (newContext: string) => {
+    if (newContext === currentContext || switchingContext) return
+    try {
+      setSwitchingContext(true)
+      await apiClient.switchContext(newContext)
+      setCurrentContext(newContext)
+      success(`Switched active cluster to ${newContext}`)
+      setTimeout(() => {
+        window.location.reload()
+      }, 400)
+    } catch {
+      // Keep state
+    } finally {
+      setSwitchingContext(false)
+    }
+  }
 
   const handleLogout = () => {
     signOut()
@@ -215,8 +248,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             <div className="flex items-center gap-2.5">
+              {/* Multi-Cluster Context Switcher */}
+              <div className="flex items-center">
+                <Select
+                  value={currentContext}
+                  onValueChange={handleContextChange}
+                  disabled={switchingContext}
+                >
+                  <SelectTrigger className="h-8 w-[180px] md:w-[210px] text-xs font-mono font-medium border-border/80 bg-background/50 hover:bg-muted/50 gap-1.5 shadow-none">
+                    <Server className="size-3.5 text-primary shrink-0" />
+                    <SelectValue placeholder={switchingContext ? "Switching..." : "Cluster Context"} />
+                  </SelectTrigger>
+                  <SelectContent align="end" className="w-[260px]">
+                    <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50 mb-1">
+                      KubeConfig Clusters
+                    </div>
+                    {contexts.map((ctx) => (
+                      <SelectItem key={ctx.name} value={ctx.name} className="text-xs">
+                        <div className="flex flex-col text-left">
+                          <span className="font-semibold text-foreground font-mono truncate">{ctx.name}</span>
+                          <span className="text-[10px] text-muted-foreground truncate">{ctx.cluster}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {isDemoMode && (
-                <Badge variant="secondary" className="text-[11px] font-semibold gap-1 py-0.5">
+                <Badge variant="secondary" className="text-[11px] font-semibold gap-1 py-0.5 hidden sm:inline-flex">
                   <Sparkles className="size-3 text-amber-500" />
                   Demo Mode
                 </Badge>
@@ -227,7 +287,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-rose-500 animate-pulse" />
               </Button>
               
-              <Badge variant="outline" className="h-7.5 px-2.5 text-xs font-medium gap-1.5 border-emerald-500/30 bg-emerald-500/5 text-foreground rounded-lg">
+              <Badge variant="outline" className="h-7.5 px-2.5 text-xs font-medium gap-1.5 border-emerald-500/30 bg-emerald-500/5 text-foreground rounded-lg hidden sm:inline-flex">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">Connected</span>
               </Badge>

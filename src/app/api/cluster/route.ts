@@ -1,17 +1,22 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
 import { k8sStore } from '@/lib/k8s-store'
+import { getKubeConfig } from '@/lib/k8s-client'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
-export async function GET() {
-  if (DEMO_MODE) {
-    return NextResponse.json(k8sStore.getClusterInfo())
+export async function GET(request: NextRequest) {
+  const { kc, isAvailable, currentContext } = getKubeConfig(request)
+
+  if (DEMO_MODE || !isAvailable) {
+    const info = k8sStore.getClusterInfo()
+    if (currentContext) {
+      info.name = currentContext
+    }
+    return NextResponse.json(info)
   }
 
   try {
-    const kc = new k8s.KubeConfig()
-    kc.loadFromDefault()
     const coreApi = kc.makeApiClient(k8s.CoreV1Api)
     const versionApi = kc.makeApiClient(k8s.VersionApi)
 

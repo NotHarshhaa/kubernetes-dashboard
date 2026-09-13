@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server'
 import * as k8s from '@kubernetes/client-node'
 import { k8sStore } from '@/lib/k8s-store'
+import { getKubeConfig } from '@/lib/k8s-client'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const namespace = searchParams.get('namespace') || undefined
+  const { kc, isAvailable } = getKubeConfig(request)
 
-  if (DEMO_MODE) {
+  if (DEMO_MODE || !isAvailable) {
     return NextResponse.json(k8sStore.getDeployments(namespace))
   }
 
   try {
-    const kc = new k8s.KubeConfig()
-    kc.loadFromDefault()
     const appsApi = kc.makeApiClient(k8s.AppsV1Api)
 
     const res = namespace && namespace !== 'all'
