@@ -27,7 +27,8 @@ import {
   RotateCcw,
   Sliders,
   FileCode2,
-  Layers
+  Layers,
+  GitBranch
 } from "lucide-react"
 
 export default function DeploymentsPage() {
@@ -415,6 +416,21 @@ export default function DeploymentsPage() {
                           <Database className="size-4 text-muted-foreground" />
                           <span className="font-mono text-xs">{d.name}</span>
                         </div>
+                        {d.gitops && (
+                          <div className="mt-1 flex items-center gap-1">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-[10px] px-1 py-0 h-4 border font-mono ${
+                                d.gitops.manager === 'argocd' 
+                                  ? 'border-orange-500/40 text-orange-400 bg-orange-500/10' 
+                                  : 'border-sky-500/40 text-sky-400 bg-sky-500/10'
+                              }`}
+                            >
+                              <GitBranch className="size-2.5 mr-1" />
+                              {d.gitops.manager === 'argocd' ? 'ArgoCD' : 'Flux'}: {d.gitops.applicationName}
+                            </Badge>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs font-mono">{d.namespace}</Badge>
@@ -487,6 +503,20 @@ export default function DeploymentsPage() {
             </DialogHeader>
 
             <div className="space-y-4 py-2">
+              {scaleDialog.deployment?.gitops && (
+                <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-500">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    <span>
+                      Tracked by {scaleDialog.deployment.gitops.manager === 'argocd' ? 'ArgoCD' : 'FluxCD'} ({scaleDialog.deployment.gitops.applicationName})
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    ⚠️ Imperative manual scaling will be overwritten on the next GitOps automated synchronization loop. Commit your changes to the Git repository for permanent changes.
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-muted/30">
                 <span className="text-xs font-semibold text-muted-foreground uppercase">Target Replicas</span>
                 <span className="text-2xl font-bold text-primary font-mono">{scaleDialog.replicas}</span>

@@ -43,6 +43,11 @@ export interface Deployment {
   images: string[]
   labels?: Record<string, string>
   strategy?: string
+  gitops?: {
+    manager: 'argocd' | 'flux' | null
+    applicationName?: string
+    syncStatus?: 'Synced' | 'OutOfSync' | 'Reconciling'
+  }
 }
 
 export interface StatefulSet {
@@ -433,8 +438,13 @@ class K8sStore {
         unavailableReplicas: 0,
         age: '14d',
         images: ['node:20-alpine', 'redis:7-alpine'],
-        labels: { app: 'user-service', tier: 'backend' },
-        strategy: 'RollingUpdate'
+        labels: { app: 'user-service', tier: 'backend', 'app.kubernetes.io/instance': 'user-service-prod' },
+        strategy: 'RollingUpdate',
+        gitops: {
+          manager: 'argocd',
+          applicationName: 'user-service-prod',
+          syncStatus: 'Synced'
+        }
       },
       {
         name: 'payment-processor',
@@ -445,8 +455,13 @@ class K8sStore {
         unavailableReplicas: 0,
         age: '12d',
         images: ['golang:1.21-alpine'],
-        labels: { app: 'payment-processor', tier: 'backend' },
-        strategy: 'RollingUpdate'
+        labels: { app: 'payment-processor', tier: 'backend', 'kustomize.toolkit.fluxcd.io/name': 'payment-kustomization' },
+        strategy: 'RollingUpdate',
+        gitops: {
+          manager: 'flux',
+          applicationName: 'payment-kustomization',
+          syncStatus: 'Synced'
+        }
       },
       {
         name: 'frontend-web',

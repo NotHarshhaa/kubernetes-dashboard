@@ -123,6 +123,9 @@ export interface ContextItem {
   isCurrent: boolean
 }
 
+export type { HorizontalPodAutoscalerItem, HpaMetricTarget } from '@/app/api/autoscaling/route'
+export type { AiClusterData, GpuCardInfo, AiWorkloadItem } from '@/app/api/ai-workloads/route'
+
 class ApiClient {
   private baseUrl: string
 
@@ -401,6 +404,15 @@ class ApiClient {
   async getHTTPRoutes(namespace?: string): Promise<HTTPRouteItem[]> {
     const query = namespace && namespace !== 'all' ? `?type=routes&namespace=${encodeURIComponent(namespace)}` : '?type=routes'
     return this.fetchJson<HTTPRouteItem[]>(`/api/gateways${query}`)
+  }
+
+  async getHPAs(namespace?: string): Promise<import('@/app/api/autoscaling/route').HorizontalPodAutoscalerItem[]> {
+    const query = namespace && namespace !== 'all' ? `?namespace=${encodeURIComponent(namespace)}` : ''
+    return this.fetchJson<import('@/app/api/autoscaling/route').HorizontalPodAutoscalerItem[]>(`/api/autoscaling${query}`)
+  }
+
+  async getAIWorkloads(): Promise<import('@/app/api/ai-workloads/route').AiClusterData> {
+    return this.fetchJson<import('@/app/api/ai-workloads/route').AiClusterData>('/api/ai-workloads')
   }
 }
 

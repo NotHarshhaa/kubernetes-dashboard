@@ -21,17 +21,37 @@ export async function GET(request: Request) {
       ? await appsApi.listNamespacedDeployment({ namespace })
       : await appsApi.listDeploymentForAllNamespaces()
 
-    const deployments = res.items.map((deployment: k8s.V1Deployment) => ({
-      name: deployment.metadata?.name || '',
-      namespace: deployment.metadata?.namespace || '',
-      replicas: deployment.spec?.replicas || 0,
-      readyReplicas: deployment.status?.readyReplicas || 0,
-      availableReplicas: deployment.status?.availableReplicas || 0,
-      unavailableReplicas: deployment.status?.unavailableReplicas || 0,
-      age: deployment.metadata?.creationTimestamp ? new Date(deployment.metadata.creationTimestamp).toISOString() : 'Active',
-      images: deployment.spec?.template?.spec?.containers?.map((c: k8s.V1Container) => c.image || '') || [],
-      labels: deployment.metadata?.labels || {}
-    }))
+    const deployments = res.items.map((deployment: k8s.V1Deployment) => {
+      const labels = deployment.metadata?.labels || {}
+      let gitops: { manager: 'argocd' | 'flux'; applicationName: string; syncStatus: 'Synced' | 'OutOfSync' | 'Reconciling' } | undefined = undefined
+
+      if (labels['argocd.argoproj.io/instance'] || labels['app.kubernetes.io/instance']) {
+        gitops = {
+          manager: 'argocd',
+          applicationName: labels['argocd.argoproj.io/instance'] || labels['app.kubernetes.io/instance'],
+          syncStatus: 'Synced'
+        }
+      } else if (labels['kustomize.toolkit.fluxcd.io/name'] || labels['helm.toolkit.fluxcd.io/name']) {
+        gitops = {
+          manager: 'flux',
+          applicationName: labels['kustomize.toolkit.fluxcd.io/name'] || labels['helm.toolkit.fluxcd.io/name'],
+          syncStatus: 'Synced'
+        }
+      }
+
+      return {
+        name: deployment.metadata?.name || '',
+        namespace: deployment.metadata?.namespace || '',
+        replicas: deployment.spec?.replicas || 0,
+        readyReplicas: deployment.status?.readyReplicas || 0,
+        availableReplicas: deployment.status?.availableReplicas || 0,
+        unavailableReplicas: deployment.status?.unavailableReplicas || 0,
+        age: deployment.metadata?.creationTimestamp ? new Date(deployment.metadata.creationTimestamp).toISOString() : 'Active',
+        images: deployment.spec?.template?.spec?.containers?.map((c: k8s.V1Container) => c.image || '') || [],
+        labels,
+        gitops
+      }
+    })
 
     return NextResponse.json(deployments)
   } catch (error) {

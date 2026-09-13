@@ -13,6 +13,9 @@ A modern, production-grade Kubernetes dashboard built with **Next.js 16 (App Rou
 ## 🌟 Key Features
 
 - **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the top navigation bar with dynamic header state.
+- **AI Workloads & GPU Observability**: Full GPU accelerator hardware monitoring (`nvidia.com/gpu`, AMD, MIG slices, VRAM footprints) and real-time tracking of AI serving runtimes (**vLLM**, **Ollama**, **KubeRay**, **HuggingFace TGI**).
+- **Workload Autoscaling (HPA / VPA)**: Dedicated autoscaling control plane monitoring `HorizontalPodAutoscaler` v2 targets, utilization vs. thresholds, min/max replica ceilings, and conditions.
+- **GitOps Awareness & Mutation Guards**: Automated detection of **ArgoCD** and **FluxCD** application tags, sync status badges, and imperative mutation safeguard warnings before scaling or deleting GitOps-tracked workloads.
 - **Real Metrics & Resource Monitoring**: Direct integration with Kubernetes Metrics Server (`metrics.k8s.io/v1beta1`) for real CPU/memory allocation, pod density tracking, and trend analysis.
 - **Interactive xterm.js Web Terminal**: Full ANSI PTY terminal powered by `@xterm/xterm` with `@kubernetes/client-node` container `Exec` streaming, command history, auto-resizing, and quick diagnostic shortcuts.
 - **Dynamic CRD Explorer**: Auto-discover, search, and inspect `apiextensions.k8s.io/v1` Custom Resource Definitions (Cert-Manager, Istio, Prometheus, Karpenter, Kyverno) with live YAML viewing.
@@ -73,8 +76,9 @@ npm run dev
 | :--- | :--- |
 | **`/`** | Cluster Overview, health status, node resource gauges, and live event feed |
 | **`/workloads`** | Workload control plane (Deployments, StatefulSets, DaemonSets, Jobs, CronJobs) |
+| **`/autoscaling`** | HorizontalPodAutoscalers (HPA v2), target utilization metrics, and replica bounds |
 | **`/pods`** | Pod management, container status, live logs dialog, and interactive exec |
-| **`/deployments`** | Deployment replicas, rollout status, image tracking, and scale actions |
+| **`/deployments`** | Deployment replicas, GitOps tracking badges (ArgoCD/Flux), and rollout controls |
 | **`/services`** | Service endpoints, port forwarding mapping, and Ingress routing rules |
 | **`/gateways`** | Next-gen Gateway API management (`Gateway`, `HTTPRoute`, `GatewayClass`) |
 | **`/crds`** | Dynamic Custom Resource Definitions explorer, API group filtering, and YAML export |
@@ -85,6 +89,7 @@ npm run dev
 | **`/namespaces`** | Namespace listing, resource quotas, and multi-tenant isolation |
 | **`/topology`** | Interactive visual map of cluster traffic flow and resource relationships |
 | **`/terminal`** | Standalone xterm.js container shell with ANSI terminal diagnostics |
+| **`/ai-workloads`** | GPU hardware monitoring (NVIDIA H100/A100) and live LLM runtime metrics (vLLM, Ollama) |
 | **`/security`** | Cluster security audit, CIS benchmark findings, and vulnerability scores |
 | **`/monitoring`** | High-resolution CPU, memory, and network utilization charts |
 | **`/settings`** | Cluster connection settings, appearance, and dashboard preferences |

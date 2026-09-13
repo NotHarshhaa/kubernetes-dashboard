@@ -23,6 +23,8 @@ import {
   ShieldCheck,
   GitFork,
   Terminal,
+  Scale,
+  BrainCircuit,
   LucideIcon 
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
@@ -53,6 +55,7 @@ import {
 const mainNavItems = [
   { name: "Overview", href: "/", icon: Home },
   { name: "Workloads", href: "/workloads", icon: Boxes },
+  { name: "Autoscaling (HPA)", href: "/autoscaling", icon: Scale },
   { name: "Pods", href: "/pods", icon: Container },
   { name: "Deployments", href: "/deployments", icon: Database },
   { name: "Services & Ingress", href: "/services", icon: Network },
@@ -66,6 +69,7 @@ const mainNavItems = [
 ]
 
 const secondaryNavItems = [
+  { name: "AI & GPU Workloads", href: "/ai-workloads", icon: BrainCircuit },
   { name: "Security & CIS", href: "/security", icon: ShieldCheck },
   { name: "Topology Map", href: "/topology", icon: GitFork },
   { name: "Web Terminal", href: "/terminal", icon: Terminal },
