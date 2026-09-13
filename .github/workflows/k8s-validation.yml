@@ -1,0 +1,40 @@
+name: Kubernetes Manifest Validation
+
+on:
+  push:
+    paths:
+      - 'k8s/**'
+      - '.github/workflows/k8s-validation.yml'
+    branches: [ master ]
+  pull_request:
+    paths:
+      - 'k8s/**'
+      - '.github/workflows/k8s-validation.yml'
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  validate-k8s:
+    name: Validate Manifests with Kubeconform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Kubeconform
+        run: |
+          KUBECONFORM_VERSION="v0.6.7"
+          curl -sL https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz | tar -xz
+          sudo mv kubeconform /usr/local/bin/
+          kubeconform -v
+
+      - name: Validate Kubernetes Manifests (OpenAPI Schemas)
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -kubernetes-version 1.30.0 \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            k8s/
