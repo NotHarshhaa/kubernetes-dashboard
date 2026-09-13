@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { KubeConfig, CoreV1Api, AppsV1Api, BatchV1Api } from '@kubernetes/client-node'
+import { KubeConfig, CoreV1Api, AppsV1Api } from '@kubernetes/client-node'
 import { k8sStore } from '@/lib/k8s-store'
 
 interface ActionRequest {
@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
       kc.loadFromDefault()
       const coreApi = kc.makeApiClient(CoreV1Api)
       const appsApi = kc.makeApiClient(AppsV1Api)
-      const batchApi = kc.makeApiClient(BatchV1Api)
 
       switch (action) {
         case 'scale-deployment': {

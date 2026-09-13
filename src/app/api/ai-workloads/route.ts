@@ -157,7 +157,6 @@ export async function GET(request: NextRequest) {
 
     for (const node of nodesRes.items) {
       const cap = node.status?.capacity || {}
-      const alloc = node.status?.allocatable || {}
       const gpuCap = parseInt(cap['nvidia.com/gpu'] || cap['amd.com/gpu'] || '0', 10)
       const gpuModel = node.metadata?.labels?.['nvidia.com/gpu.product'] ||
                        node.metadata?.labels?.['node.kubernetes.io/instance-type'] ||

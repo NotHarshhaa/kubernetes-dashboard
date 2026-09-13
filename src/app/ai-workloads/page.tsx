@@ -19,10 +19,7 @@ import {
   Thermometer, 
   HardDrive,
   BrainCircuit,
-  Bot,
-  Flame,
-  Layers,
-  ArrowUpRight
+  Bot
 } from "lucide-react"
 
 export default function AiWorkloadsPage() {

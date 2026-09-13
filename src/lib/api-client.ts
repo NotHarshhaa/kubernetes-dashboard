@@ -42,8 +42,7 @@ import type {
   StorageClass,
   HelmRelease,
   HelmChart,
-  SecurityReport,
-  ResourceEvent
+  SecurityReport
 } from './k8s-store'
 
 export interface StorageData {
@@ -159,7 +158,7 @@ class ApiClient {
         if (errorJson.message || errorJson.error) {
           errorMessage = errorJson.message || errorJson.error
         }
-      } catch (_) {}
+      } catch {}
       throw new Error(errorMessage)
     }
 

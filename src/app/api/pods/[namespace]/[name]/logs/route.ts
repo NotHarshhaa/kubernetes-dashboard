@@ -15,7 +15,6 @@ export async function GET(
   const tailLinesParam = searchParams.get('tailLines')
   const tailLines = tailLinesParam ? parseInt(tailLinesParam, 10) : 250
   const timestamps = searchParams.get('timestamps') !== 'false'
-  const follow = searchParams.get('follow') === 'true'
 
   const { kc, isAvailable } = getKubeConfig(request)
 

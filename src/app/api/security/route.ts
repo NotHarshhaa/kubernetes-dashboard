@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { k8sStore } from "@/lib/k8s-store"
 
 export async function GET() {

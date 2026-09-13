@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { 
@@ -128,7 +129,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent/70 transition-colors">
-                <a href="/">
+                <Link href="/">
                   <div className="flex aspect-square size-8.5 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-primary/80 text-primary-foreground shadow-sm">
                     <Shield className="size-4.5" />
                   </div>
@@ -136,7 +137,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <span className="truncate font-bold tracking-tight text-foreground text-sm">K8s Dashboard</span>
                     <span className="truncate text-[11px] text-muted-foreground">Cluster Management</span>
                   </div>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

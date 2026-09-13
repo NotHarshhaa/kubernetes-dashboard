@@ -99,9 +99,7 @@ export async function GET(request: NextRequest) {
       const allocatable = node.status?.allocatable || {}
       
       const cpuCapacity = parseCpuResource(capacity.cpu || '0')
-      const cpuAllocatable = parseCpuResource(allocatable.cpu || '0')
       const memoryCapacity = parseMemoryResource(capacity.memory || '0Ki')
-      const memoryAllocatable = parseMemoryResource(allocatable.memory || '0Ki')
       const storageCapacity = parseMemoryResource(capacity['ephemeral-storage'] || '0Ki')
       const maxPods = parseInt(capacity.pods || '110', 10)
       

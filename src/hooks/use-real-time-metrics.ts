@@ -52,7 +52,7 @@ export function useRealTimeMetrics() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
-  const subscribersRef = useRef<Map<string, Function>>(new Map())
+  const subscribersRef = useRef<Map<string, (...args: any[]) => void>>(new Map())
 
   // Initialize real-time connection
   useEffect(() => {
@@ -170,7 +170,7 @@ export function useRealTimeMetrics() {
     }
   }, [])
 
-  const subscribe = useCallback((eventType: string, callback: Function) => {
+  const subscribe = useCallback((eventType: string, callback: (...args: any[]) => void) => {
     const id = Date.now().toString()
     subscribersRef.current.set(id, callback)
     
