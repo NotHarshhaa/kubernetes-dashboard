@@ -20,5 +20,5 @@ data:
   # Base64 encoded values
   # echo -n "admin" | base64
   KUBERNETES_DASHBOARD_USERNAME: YWRtaW4=
-  # echo -n "password123" | base64  
+  # echo -n "password123" | base64
   KUBERNETES_DASHBOARD_PASSWORD: cGFzc3dvcmQxMjM=

@@ -50,3 +50,7 @@ Thumbs.db
 .agents/
 brain/
 scratch/
+
+# Local agent workspace & git hooks
+.zcode/
+.husky/

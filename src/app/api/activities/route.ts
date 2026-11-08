@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { k8sStore } from '@/lib/k8s-store'
+import { type NextRequest, NextResponse } from "next/server";
+
+import { k8sStore } from "@/lib/k8s-store";
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const namespace = searchParams.get('namespace') || undefined
-  const events = k8sStore.getEvents(namespace)
-  return NextResponse.json(events)
+  const { searchParams } = new URL(request.url);
+  const namespace = searchParams.get("namespace") || undefined;
+  const events = k8sStore.getEvents(namespace);
+  return NextResponse.json(events);
 }

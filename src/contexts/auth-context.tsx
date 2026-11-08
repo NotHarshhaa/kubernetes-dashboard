@@ -1,126 +1,139 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 
-interface User {
-  email: string
-  name: string
-  role: string
+import { toast } from "sonner";
+
+export interface User {
+  email: string;
+  name: string;
+  role: string;
 }
 
 interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  signIn: (email: string, password: string) => Promise<boolean>
-  signOut: () => void
-  loading: boolean
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  signUp: (name: string, email: string, password: string) => Promise<boolean>;
+  signOut: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode
+const AUTH_TOKEN_KEY = "k8s-auth-token";
+const AUTH_USER_KEY = "k8s-user";
+const AUTH_ACCOUNTS_KEY = "k8s-accounts";
+
+interface StoredAccount extends User {
+  password: string;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+// Demo credentials always available so the dashboard can be explored without signing up first.
+const DEMO_ACCOUNT: StoredAccount = {
+  email: "admin@k8s.local",
+  name: "Cluster Administrator",
+  role: "admin",
+  password: "admin123",
+};
+
+function getAccounts(): StoredAccount[] {
+  if (typeof window === "undefined") return [DEMO_ACCOUNT];
+  try {
+    const raw = window.localStorage.getItem(AUTH_ACCOUNTS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    const accounts = Array.isArray(parsed) ? (parsed as StoredAccount[]) : [];
+    return accounts.some((a) => a.email === DEMO_ACCOUNT.email) ? accounts : [DEMO_ACCOUNT, ...accounts];
+  } catch {
+    return [DEMO_ACCOUNT];
+  }
+}
+
+function saveAccounts(accounts: StoredAccount[]) {
+  window.localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for demo mode first
-    const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
-    
-    if (isDemoMode) {
-      // Auto-login in demo mode
-      const demoUser: User = {
-        email: 'admin@k8s.local',
-        name: 'Cluster Administrator',
-        role: 'admin'
-      }
-      
-      // Set demo user immediately
-      setUser(demoUser)
-      setLoading(false)
-      return
-    }
+    const token = window.localStorage.getItem(AUTH_TOKEN_KEY);
+    const userData = window.localStorage.getItem(AUTH_USER_KEY);
 
-    // Check for existing auth token on mount (non-demo mode)
-    const token = localStorage.getItem('k8s-auth-token')
-    const userData = localStorage.getItem('k8s-user')
-    
-    console.log('Auth check - Token:', token)
-    console.log('Auth check - User data:', userData)
-    
     if (token && userData) {
       try {
-        const parsedUser = JSON.parse(userData)
-        console.log('Setting user:', parsedUser)
-        setUser(parsedUser)
-      } catch (error) {
-        console.error('Error parsing user data:', error)
-        // Invalid user data, clear it
-        localStorage.removeItem('k8s-auth-token')
-        localStorage.removeItem('k8s-user')
+        setUser(JSON.parse(userData) as User);
+      } catch {
+        window.localStorage.removeItem(AUTH_TOKEN_KEY);
+        window.localStorage.removeItem(AUTH_USER_KEY);
       }
     }
-    
-    setLoading(false)
-  }, [])
+
+    setLoading(false);
+  }, []);
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
-    console.log('Sign in attempt:', email, password)
-    
-    try {
-      // Simulate API call - in real app, this would be an actual authentication request
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      console.log('Checking credentials...')
-      
-      if (email === "admin@k8s.local" && password === "admin123") {
-        console.log('Credentials valid, creating user data...')
-        
-        const userData: User = {
-          email: 'admin@k8s.local',
-          name: 'Cluster Administrator',
-          role: 'admin'
-        }
-        
-        // Store auth data
-        localStorage.setItem('k8s-auth-token', 'demo-token-' + Date.now())
-        localStorage.setItem('k8s-user', JSON.stringify(userData))
-        
-        console.log('User data stored:', userData)
-        setUser(userData)
-        console.log('Sign in successful!')
-        return true
-      } else {
-        console.log('Invalid credentials')
-        return false
-      }
-    } catch (error) {
-      console.error('Sign in error:', error)
-      return false
+    // Simulated authentication — swap for a real identity provider when available.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const account = getAccounts().find((a) => a.email.toLowerCase() === email.trim().toLowerCase());
+
+    if (!account || account.password !== password) {
+      return false;
     }
-  }
+
+    const { password: _password, ...userWithoutPassword } = account;
+    window.localStorage.setItem(AUTH_TOKEN_KEY, `demo-token-${Date.now()}`);
+    window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(userWithoutPassword));
+    setUser(userWithoutPassword);
+    return true;
+  };
+
+  const signUp = async (name: string, email: string, password: string): Promise<boolean> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const accounts = getAccounts();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (accounts.some((a) => a.email.toLowerCase() === normalizedEmail)) {
+      toast.error("An account with this email already exists");
+      return false;
+    }
+
+    const account: StoredAccount = {
+      email: normalizedEmail,
+      name: name.trim() || normalizedEmail.split("@")[0],
+      role: "operator",
+      password,
+    };
+
+    saveAccounts([...accounts, account]);
+
+    const { password: _password, ...userWithoutPassword } = account;
+    window.localStorage.setItem(AUTH_TOKEN_KEY, `demo-token-${Date.now()}`);
+    window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(userWithoutPassword));
+    setUser(userWithoutPassword);
+    return true;
+  };
 
   const signOut = () => {
-    // Allow sign out even in demo mode
-    setUser(null)
-    localStorage.removeItem('k8s-auth-token')
-    localStorage.removeItem('k8s-user')
-  }
+    window.localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.localStorage.removeItem(AUTH_USER_KEY);
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

@@ -3,31 +3,31 @@
 ![GitHub stars](https://img.shields.io/github/stars/NotHarshhaa/kubernetes-dashboard?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/NotHarshhaa/kubernetes-dashboard?style=social)
 ![Docker Pulls](https://img.shields.io/docker/pulls/harshhaareddy/kubernetes-dashboard)
-![Docker Stars](https://img.shields.io/docker/stars/harshhaareddy/kubernetes-dashboard)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 > **An enterprise-ready, developer-first Kubernetes command center engineered for Platform Engineers, SREs, and DevOps teams.**
 >
-> This dashboard unifies multi-cluster fleet operations, real-time Metrics Server telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution. Eliminate tool sprawl, prevent configuration drift, and manage mission-critical cloud-native workloads with velocity and confidence.
+> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
 
 ---
 
 ## 🌟 Key Features
 
-- **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the top navigation bar with dynamic header state.
-- **AI Workloads & GPU Observability**: Full GPU accelerator hardware monitoring (`nvidia.com/gpu`, AMD, MIG slices, VRAM footprints) and real-time tracking of AI serving runtimes (**vLLM**, **Ollama**, **KubeRay**, **HuggingFace TGI**).
-- **Workload Autoscaling (HPA / VPA)**: Dedicated autoscaling control plane monitoring `HorizontalPodAutoscaler` v2 targets, utilization vs. thresholds, min/max replica ceilings, and conditions.
-- **GitOps Awareness & Mutation Guards**: Automated detection of **ArgoCD** and **FluxCD** application tags, sync status badges, and imperative mutation safeguard warnings before scaling or deleting GitOps-tracked workloads.
-- **Real Metrics & Resource Monitoring**: Direct integration with Kubernetes Metrics Server (`metrics.k8s.io/v1beta1`) for real CPU/memory allocation, pod density tracking, and trend analysis.
-- **Interactive xterm.js Web Terminal**: Full ANSI PTY terminal powered by `@xterm/xterm` with `@kubernetes/client-node` container `Exec` streaming, command history, auto-resizing, and quick diagnostic shortcuts.
-- **Dynamic CRD Explorer**: Auto-discover, search, and inspect `apiextensions.k8s.io/v1` Custom Resource Definitions (Cert-Manager, Istio, Prometheus, Karpenter, Kyverno) with live YAML viewing.
-- **Gateway API Dashboard**: First-class support for `gateway.networking.k8s.io` (`GatewayClass`, `Gateway`, `HTTPRoute`) including listener protocols, ports, and weighted backend canary routing.
-- **Live Pod Log Streaming**: Real-time log inspection with configurable tail lines, container selectors, auto-refresh, and clipboard export.
-- **Interactive Topology Map**: End-to-end visual dependency graph tracing traffic from Ingress/Gateway $\to$ Service $\to$ Deployment $\to$ Pod $\to$ Node.
-- **Comprehensive Workload Management**: Inspect and manage Pods, Deployments, StatefulSets, DaemonSets, Jobs, and CronJobs with instant scaling, restart, and cordon/drain actions.
-- **Security & CIS Audits**: Integrated cluster vulnerability assessments, RBAC visibility, and CIS compliance benchmarks.
-- **Helm Hub**: Overview of deployed Helm releases, chart revisions, and quick rollback/uninstall management.
-- **Dual-Mode Operation**: Connects directly to real Kubernetes clusters via your local KubeConfig, with a built-in interactive demo engine when no cluster is reachable.
+- **Modern UI Shell**: shadcn/ui design system with 60+ primitives, dark/light themes, theme presets, layout controls, and a ⌘J command palette for instant navigation.
+- **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the header.
+- **AI Workloads & GPU Observability**: GPU fleet monitoring (models, VRAM, thermals, power draw) and real-time tracking of AI serving runtimes (**vLLM**, **Ollama**, **KubeRay**, **HuggingFace TGI**).
+- **Workload Autoscaling (HPA)**: Dedicated autoscaling view with replica ranges, utilization vs. thresholds, and scaling conditions.
+- **GitOps Awareness**: Automated detection of **ArgoCD** and **FluxCD** tags with sync status badges on deployments.
+- **Interactive xterm.js Web Terminal**: Full ANSI PTY terminal powered by `@xterm/xterm` with `@kubernetes/client-node` container `Exec` streaming, command history, and quick diagnostic shortcuts.
+- **Dynamic CRD Explorer**: Auto-discover, search, and inspect Custom Resource Definitions (Cert-Manager, Istio, Prometheus, Karpenter, Kyverno) with live YAML viewing.
+- **Gateway API Dashboard**: First-class support for `gateway.networking.k8s.io` (`Gateway`, `HTTPRoute`) with listener protocols, ports, and backends.
+- **Live Pod Log Streaming**: Real-time log inspection with container selectors, auto-refresh follow mode, filtering, and clipboard/download export.
+- **Interactive Topology Map**: End-to-end visual dependency graph tracing traffic from Ingress → Service → Deployment → Pod → Node.
+- **Comprehensive Workload Management**: Pods, Deployments, StatefulSets, DaemonSets, Jobs, and CronJobs with instant scale, restart, trigger, and delete actions.
+- **Storage, Config & Secrets**: PersistentVolumes, claims, storage classes, ConfigMaps, and Secrets with YAML inspection.
+- **Security & CIS Audits**: Cluster vulnerability assessments with category scoring and remediation guidance.
+- **Helm Hub**: Deployed Helm releases, curated charts, quick install, rollback and uninstall.
+- **Dual-Mode Operation**: Connects directly to real clusters via your local KubeConfig, with a built-in interactive demo engine (`NEXT_PUBLIC_DEMO_MODE=true`) when no cluster is reachable.
 
 ---
 
@@ -59,86 +59,73 @@ kubectl apply -f k8s/
 # Access via NodePort: http://<node-ip>:30007
 ```
 
-### Option 3: Local Development
+---
+
+## 🛠️ Local Development
+
 ```bash
-# Install dependencies
+# Install dependencies (npm)
 npm install
 
-# Start development server
+# Run the development server
 npm run dev
+```
 
-# Access at http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000) — you are redirected to the Cluster Overview at `/dashboard/overview`.
+
+With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec), so you can explore every screen without a cluster.
+
+### Available Commands
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Serve the production build |
+| `npm run type-check` | TypeScript project check (`tsc --noEmit`) |
+| `npm run lint` | Biome lint |
+| `npm run check` | Biome lint + format check |
+| `npm run check:fix` | Auto-fix lint/format issues |
+| `npm run docker:build` / `docker:run` | Build / run the Docker image |
+| `npm run k8s:deploy` / `k8s:delete` | Apply / remove in-cluster manifests |
+
+---
+
+## 🧱 Tech Stack
+
+- **Framework**: Next.js 16 (App Router, React Compiler), React 19
+- **UI**: shadcn/ui (radix-nova style), Tailwind CSS v4, lucide-react icons, recharts visualizations
+- **Kubernetes**: `@kubernetes/client-node` with automatic KubeConfig discovery and per-request context switching via cookies
+- **Terminal**: `@xterm/xterm` + `@xterm/addon-fit`
+- **Toasts**: sonner
+- **Tooling**: Biome (lint + format), Husky + lint-staged, GitHub Actions CI
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── app/
+│   ├── api/                  # 27 Kubernetes API routes (pods, nodes, exec, helm, ...)
+│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, ...)
+│   │   └── _components/      # Shared shell: sidebar, header, dialogs, charts
+│   ├── layout.tsx            # Root layout with theme + preferences boot
+│   └── page.tsx              # Redirects to /dashboard/overview
+├── components/ui/            # shadcn/ui primitives (do not edit directly)
+├── lib/                      # k8s-client, k8s-store (demo engine), api-client
+├── navigation/sidebar/       # Sidebar navigation config
+└── config/app-config.ts      # App name, repository, metadata
 ```
 
 ---
 
-## 📄 Dashboard Pages & Routes
+## 🔐 Security Notes
 
-| Route | Description |
-| :--- | :--- |
-| **`/`** | Cluster Overview, health status, node resource gauges, and live event feed |
-| **`/workloads`** | Workload control plane (Deployments, StatefulSets, DaemonSets, Jobs, CronJobs) |
-| **`/autoscaling`** | HorizontalPodAutoscalers (HPA v2), target utilization metrics, and replica bounds |
-| **`/pods`** | Pod management, container status, live logs dialog, and interactive exec |
-| **`/deployments`** | Deployment replicas, GitOps tracking badges (ArgoCD/Flux), and rollout controls |
-| **`/services`** | Service endpoints, port forwarding mapping, and Ingress routing rules |
-| **`/gateways`** | Next-gen Gateway API management (`Gateway`, `HTTPRoute`, `GatewayClass`) |
-| **`/crds`** | Dynamic Custom Resource Definitions explorer, API group filtering, and YAML export |
-| **`/config`** | ConfigMaps and Secrets inspector with decoded value viewing |
-| **`/storage`** | PersistentVolumes (PV), PersistentVolumeClaims (PVC), and StorageClasses |
-| **`/helm`** | Helm release management, chart revisions, and application lifecycle |
-| **`/nodes`** | Node health, conditions, capacity vs allocatable, cordon and drain controls |
-| **`/namespaces`** | Namespace listing, resource quotas, and multi-tenant isolation |
-| **`/topology`** | Interactive visual map of cluster traffic flow and resource relationships |
-| **`/terminal`** | Standalone xterm.js container shell with ANSI terminal diagnostics |
-| **`/ai-workloads`** | GPU hardware monitoring (NVIDIA H100/A100) and live LLM runtime metrics (vLLM, Ollama) |
-| **`/security`** | Cluster security audit, CIS benchmark findings, and vulnerability scores |
-| **`/monitoring`** | High-resolution CPU, memory, and network utilization charts |
-| **`/settings`** | Cluster connection settings, appearance, and dashboard preferences |
-
----
-
-## 📸 Gallery
-
-Check out our [**Dashboard Gallery**](./GALLERY.md) to preview screenshots of the dashboard interface, topology map, and terminal!
-
----
-
-## 📚 Modern Tech Stack
-
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components & Route Handlers)
-- **UI Library**: [React 19](https://react.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
-- **Terminal**: [@xterm/xterm](https://xtermjs.org/) & [@xterm/addon-fit](https://www.npmjs.com/package/@xterm/addon-fit)
-- **Charts & Graphs**: [Recharts](https://recharts.org/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Kubernetes Client**: [@kubernetes/client-node](https://github.com/kubernetes-client/javascript) (v1.4.0)
-
----
-
-## 🔒 Security & RBAC
-
-- The dashboard authenticates using your active `~/.kube/config` context or in-cluster ServiceAccount token.
-- Role-Based Access Control (RBAC) manifests are provided in [k8s/rbac.yaml](k8s/rbac.yaml).
-- For production multi-tenant environments, mount a restricted ServiceAccount token to enforce cluster policies.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Verify code correctness:
-   ```bash
-   npm run type-check
-   npm run lint
-   ```
-5. Push to the branch and open a Pull Request
-
----
+- The dashboard uses your **local KubeConfig** (`loadFromDefault`) — it never stores credentials.
+- In-cluster deployments read the ServiceAccount token with the RBAC rules in `k8s/rbac.yaml`.
+- Demo mode never touches a real cluster.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](./LICENSE).

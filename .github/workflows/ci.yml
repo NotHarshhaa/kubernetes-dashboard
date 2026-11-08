@@ -35,8 +35,8 @@ jobs:
       - name: Run TypeScript type check
         run: npm run type-check
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run Biome checks (lint + format)
+        run: npm run check
 
   build-validation:
     name: Production Build Verification

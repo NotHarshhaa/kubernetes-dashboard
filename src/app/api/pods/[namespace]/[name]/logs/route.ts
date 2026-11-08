@@ -1,30 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server'
-import * as k8s from '@kubernetes/client-node'
-import { k8sStore } from '@/lib/k8s-store'
-import { getKubeConfig } from '@/lib/k8s-client'
+import { type NextRequest, NextResponse } from "next/server";
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+import * as k8s from "@kubernetes/client-node";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ namespace: string; name: string }> }
-) {
-  const { namespace, name } = await params
-  const { searchParams } = new URL(request.url)
-  const container = searchParams.get('container') || undefined
-  const tailLinesParam = searchParams.get('tailLines')
-  const tailLines = tailLinesParam ? parseInt(tailLinesParam, 10) : 250
-  const timestamps = searchParams.get('timestamps') !== 'false'
+import { getKubeConfig } from "@/lib/k8s-client";
+import { k8sStore } from "@/lib/k8s-store";
 
-  const { kc, isAvailable } = getKubeConfig(request)
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ namespace: string; name: string }> }) {
+  const { namespace, name } = await params;
+  const { searchParams } = new URL(request.url);
+  const container = searchParams.get("container") || undefined;
+  const tailLinesParam = searchParams.get("tailLines");
+  const tailLines = tailLinesParam ? parseInt(tailLinesParam, 10) : 250;
+  const timestamps = searchParams.get("timestamps") !== "false";
+
+  const { kc, isAvailable } = getKubeConfig(request);
 
   if (DEMO_MODE || !isAvailable) {
-    const logs = k8sStore.getPodLogs(name, namespace, container)
-    return NextResponse.json({ logs, isLive: false })
+    const logs = k8sStore.getPodLogs(name, namespace, container);
+    return NextResponse.json({ logs, isLive: false });
   }
 
   try {
-    const coreApi = kc.makeApiClient(k8s.CoreV1Api)
+    const coreApi = kc.makeApiClient(k8s.CoreV1Api);
 
     const logRes = await coreApi.readNamespacedPodLog({
       name,
@@ -32,18 +31,18 @@ export async function GET(
       container,
       tailLines,
       timestamps,
-      follow: false // Serverless request handles tailing via poll or streaming
-    })
+      follow: false, // Serverless request handles tailing via poll or streaming
+    });
 
-    const logs = typeof logRes === 'string' ? logRes : String(logRes || '')
+    const logs = typeof logRes === "string" ? logRes : String(logRes || "");
     return NextResponse.json({
       logs: logs || k8sStore.getPodLogs(name, namespace, container),
       isLive: true,
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
-    console.warn(`Error fetching real pod logs for ${namespace}/${name}, using fallback:`, error)
-    const logs = k8sStore.getPodLogs(name, namespace, container)
-    return NextResponse.json({ logs, isLive: false, fallback: true })
+    console.warn(`Error fetching real pod logs for ${namespace}/${name}, using fallback:`, error);
+    const logs = k8sStore.getPodLogs(name, namespace, container);
+    return NextResponse.json({ logs, isLive: false, fallback: true });
   }
 }

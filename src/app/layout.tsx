@@ -1,28 +1,28 @@
+import type { ReactNode } from "react";
+
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Sans } from "next/font/google";
-import "./globals.css";
-import { LanguageProvider } from "@/contexts/language-context";
+
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { APP_CONFIG } from "@/config/app-config";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ToastProvider } from "@/contexts/toast-context";
-import { Toaster } from "react-hot-toast";
-import { cn } from "@/lib/utils";
+import { fontVars } from "@/lib/fonts/registry";
+import { PREFERENCE_DEFAULTS } from "@/lib/preferences/preferences-config";
+import { ThemeBootScript } from "@/scripts/theme-boot";
+import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
 
-const instrumentSans = Instrument_Sans({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kubernetes Dashboard",
-  description: "Modern Kubernetes cluster management and monitoring dashboard",
+  metadataBase: new URL(APP_CONFIG.url),
+  applicationName: APP_CONFIG.name,
+  title: APP_CONFIG.meta.title,
+  description: APP_CONFIG.meta.description,
   keywords: ["kubernetes", "dashboard", "monitoring", "cluster", "containers"],
-  authors: [{ name: "Kubernetes Dashboard Team" }],
-  icons: {
-    icon: "/kubernetes-icon.svg",
-    shortcut: "/kubernetes-icon.svg",
-    apple: "/kubernetes-icon.svg",
+  openGraph: {
+    type: "website",
+    siteName: APP_CONFIG.name,
+    locale: "en_US",
   },
 };
 
@@ -32,25 +32,33 @@ export const viewport: Viewport = {
   themeColor: "#326ce5",
 };
 
-import { TooltipProvider } from "@/components/ui/tooltip";
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const { theme_mode, theme_preset, content_layout, navbar_style, sidebar_variant, sidebar_collapsible, font } =
+    PREFERENCE_DEFAULTS;
   return (
-    <html lang="en" className={cn("font-sans", instrumentSans.variable)}>
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html
+      lang="en"
+      data-theme-mode={theme_mode}
+      data-theme-preset={theme_preset}
+      data-content-layout={content_layout}
+      data-navbar-style={navbar_style}
+      data-sidebar-variant={sidebar_variant}
+      data-sidebar-collapsible={sidebar_collapsible}
+      data-font={font}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Applies theme and layout preferences on load to avoid flicker and unnecessary server rerenders. */}
+        <ThemeBootScript />
+      </head>
+      <body className={`${fontVars} min-h-screen antialiased`}>
         <TooltipProvider>
-          <ToastProvider>
-            <AuthProvider>
-              <LanguageProvider>
-                {children}
-              </LanguageProvider>
-            </AuthProvider>
-          </ToastProvider>
-          <Toaster position="top-right" />
+          <AuthProvider>
+            <PreferencesStoreProvider initialValues={PREFERENCE_DEFAULTS}>
+              {children}
+              <Toaster />
+            </PreferencesStoreProvider>
+          </AuthProvider>
         </TooltipProvider>
       </body>
     </html>
