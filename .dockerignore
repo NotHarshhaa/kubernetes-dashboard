@@ -29,8 +29,8 @@ next-env.d.ts
 .github
 
 # Kubernetes & Local Scripts
-k8s/
-scripts/
+/k8s/
+/scripts/
 
 # Documentation & Readmes
 *.md
