@@ -1781,6 +1781,14 @@ class K8sStore {
     ].join("\n");
   }
 
+  addDeployment(deployment: Deployment) {
+    this.deployments.unshift(deployment);
+  }
+
+  addPod(pod: Pod) {
+    this.pods.unshift(pod);
+  }
+
   getYaml(kind: string, name: string, namespace: string): string {
     const k = kind.toLowerCase();
     return `apiVersion: ${(k.includes("deployment") ?? k.includes("stateful") ?? k.includes("daemon")) ? "apps/v1" : k.includes("job") ? "batch/v1" : "v1"}

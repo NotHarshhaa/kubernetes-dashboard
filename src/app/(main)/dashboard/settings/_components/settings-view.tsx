@@ -6,6 +6,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  HardDriveDownload,
   Info,
   Key,
   RefreshCw,
@@ -14,9 +15,10 @@ import {
   Settings2,
   Sparkles,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
+import { DockerAccountDialog } from "@/app/(main)/dashboard/registry/_components/docker-account-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +34,7 @@ import {
   saveClientAiSettings,
 } from "@/lib/ai-diagnostics";
 import { apiClient, type ClusterInfo, type ContextItem } from "@/lib/api-client";
+import { type DockerAccount, getStoredDockerAccount } from "@/lib/docker-registry";
 
 type SaveStatus = "idle" | "saving" | "saved";
 
@@ -55,10 +58,15 @@ export function SettingsView() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [testingAi, setTestingAi] = useState(false);
 
+  // Docker Registry Account
+  const [dockerAccount, setDockerAccount] = useState<DockerAccount | null>(null);
+  const [dockerDialogOpen, setDockerDialogOpen] = useState(false);
+
   useEffect(() => {
     setClusterName(localStorage.getItem("k8s-cluster-name") || "production-cluster");
     setRefreshInterval(localStorage.getItem("k8s-refresh-interval") || "10");
     setAiSettings(getClientAiSettings());
+    setDockerAccount(getStoredDockerAccount());
 
     apiClient
       .getClusterInfo()
@@ -392,6 +400,62 @@ export function SettingsView() {
 
           <Separator />
 
+          {/* Docker & Container Registry Section */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Docker & Container Registries
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDockerDialogOpen(true)}
+                className="h-7 text-xs gap-1.5"
+              >
+                <HardDriveDownload className="size-3.5" />
+                {dockerAccount?.isConnected ? "Manage Account" : "Connect Docker Account"}
+              </Button>
+            </div>
+
+            <div className="bg-muted/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border p-4">
+              <div className="flex items-start gap-3">
+                <div className="border-blue-500/20 bg-blue-500/10 text-blue-600 rounded-lg border p-2">
+                  <HardDriveDownload className="size-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold">
+                      {dockerAccount?.isConnected ? `@${dockerAccount.username}` : "Public Docker Hub (Guest)"}
+                    </p>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${
+                        dockerAccount?.isConnected
+                          ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-600"
+                          : "border-muted-foreground/30 text-muted-foreground"
+                      }`}
+                    >
+                      {dockerAccount?.isConnected ? "Authenticated" : "Public Only"}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground text-[11px] mt-0.5">
+                    {dockerAccount?.isConnected
+                      ? "Private images can be pulled via automated Kubernetes ImagePullSecrets."
+                      : "Connect a Personal Access Token to search private repos and bypass Docker Hub pull rate limits."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 shrink-0">
+                <Button variant="secondary" size="sm" asChild className="h-8 text-xs">
+                  <Link href="/dashboard/registry">Open Registry Hub</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Cluster Connection Section */}
           <div className="flex flex-col gap-4">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
@@ -436,6 +500,13 @@ export function SettingsView() {
           </div>
         </CardContent>
       </Card>
+
+      <DockerAccountDialog
+        open={dockerDialogOpen}
+        onOpenChange={setDockerDialogOpen}
+        account={dockerAccount}
+        onAccountChange={setDockerAccount}
+      />
     </div>
   );
 }

@@ -479,6 +479,84 @@ class ApiClient {
       body: JSON.stringify({ action: "toggle-suspend", appId }),
     });
   }
+
+  async searchRegistry(
+    query?: string,
+    filter?: string,
+    category?: string,
+    dockerAccount?: import("@/lib/docker-registry").DockerAccount | null,
+  ): Promise<{
+    results: import("@/lib/docker-registry").DockerHubRepository[];
+    total: number;
+    source: string;
+    matchedNamespace?: string;
+  }> {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (filter) params.set("filter", filter);
+    if (category) params.set("category", category);
+
+    const headers: Record<string, string> = {};
+    if (dockerAccount?.token) {
+      headers["x-docker-token"] = dockerAccount.token;
+    }
+    if (dockerAccount?.username) {
+      headers["x-docker-username"] = dockerAccount.username;
+    }
+
+    return this.fetchJson<{
+      results: import("@/lib/docker-registry").DockerHubRepository[];
+      total: number;
+      source: string;
+      matchedNamespace?: string;
+    }>(`/api/registry/search?${params.toString()}`, { headers });
+  }
+
+  async getRegistryTags(image: string): Promise<{
+    image: string;
+    tags: import("@/lib/docker-registry").DockerImageTag[];
+    total: number;
+  }> {
+    return this.fetchJson<{
+      image: string;
+      tags: import("@/lib/docker-registry").DockerImageTag[];
+      total: number;
+    }>(`/api/registry/tags?image=${encodeURIComponent(image)}`);
+  }
+
+  async deployRegistryImage(
+    request: import("@/lib/docker-registry").DeployImageRequest,
+  ): Promise<import("@/lib/docker-registry").DeployImageResponse> {
+    return this.fetchJson<import("@/lib/docker-registry").DeployImageResponse>("/api/registry/deploy", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
+  async authenticateDockerRegistry(
+    username: string,
+    tokenOrPassword: string,
+    registryUrl?: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    token?: string;
+    username?: string;
+    registryUrl?: string;
+    connectedAt?: string;
+  }> {
+    return this.fetchJson<{
+      success: boolean;
+      message: string;
+      token?: string;
+      username?: string;
+      registryUrl?: string;
+      connectedAt?: string;
+    }>("/api/registry/auth", {
+      method: "POST",
+      body: JSON.stringify({ username, tokenOrPassword, registryUrl }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

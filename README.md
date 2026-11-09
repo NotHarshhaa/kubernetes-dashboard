@@ -16,6 +16,7 @@
 - **🤖 AI Error Diagnostics Copilot**: Built-in intelligent SRE incident diagnostic engine. Performs instant root cause analysis (RCA), workload impact assessments, and generates copyable `kubectl` remediation commands for crashing pods (`CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, `ExitCode 137/127`). Supports **OpenAI**, **Google Gemini**, **Anthropic Claude**, and **Local LLMs (Ollama / vLLM)**, with an expert zero-key heuristics fallback engine.
 - **💰 FinOps & Cost Optimizer**: Full cloud cost monitoring, namespace attribution, waste identification, and automated right-sizing. Supports **AWS (EKS)**, **Google Cloud (GKE)**, **Azure (AKS)**, and Bare-Metal pricing models with 1-click remediation actions and exportable FinOps audits.
 - **🔄 GitOps ArgoCD & Flux Hub**: Unified continuous deployment command center for **ArgoCD** (`Application`, `ApplicationSet`) and **Flux v2** (`Kustomization`, `GitRepository`, `HelmRelease`). Features real-time sync status, health checks, target Git repo/branch tracking, live cluster drift diff inspection, and one-click manual reconcile.
+- **📦 Container Registry & Docker Hub Explorer**: Connect your Docker Hub account or search the public Docker Registry directly inside the dashboard. Inspect multi-arch image tags, architectures, compressed sizes, and pull counts. One-click deploy images as Kubernetes Deployments or standalone Pods with automated `ImagePullSecrets` injection and live cluster synchronization.
 - **Modern UI Shell**: shadcn/ui design system with 60+ primitives, dark/light themes, theme presets, layout controls, and a ⌘J command palette for instant navigation.
 - **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the header.
 - **📊 Real-Time Monitoring & Telemetry**: Dedicated live monitoring screen (`/dashboard/monitoring`) tracking cluster saturation, node resource pressure, workload distribution, and active warning alerts.
@@ -137,6 +138,41 @@ Kubernetes Dashboard provides a multi-engine **GitOps Command Center** (`/dashbo
 - **One-Click Reconciliation**: Trigger immediate manual synchronizations (`argocd app sync` or `flux reconcile kustomization`) with live toast feedback.
 - **Reconciliation Suspension**: Pause auto-sync or suspend reconciler loops for maintenance windows without editing Git repositories.
 - **Git Commit & Audit Trail**: Full timeline of reconciled Git commit hashes, commit messages, authors, and execution statuses.
+
+---
+
+## 📦 Container Registry & Docker Hub Explorer
+
+The dashboard includes a dedicated **Container Registry & Docker Hub Explorer** (`/dashboard/registry`) that lets you search, inspect, and deploy any container image directly to your Kubernetes cluster without opening a terminal.
+
+```
++-------------------------------------------------------------------------------------------+
+|  Image Registry & Docker Hub                                  [@johndoe (Connected)] [⟳]   |
++-------------------------------------------------------------------------------------------+
+|  [ Registry Status ]      [ Target Cluster ]      [ Deploy Pipeline ]    [ Indexed Images ]|
+|    @johndoe (Docker Hub)    docker-desktop (Live)   Native K8s API         52,633 Available|
++-------------------------------------------------------------------------------------------+
+|  [🔍 Search images on Docker Hub (e.g. nginx, redis, postgres)...]   [Filter: All Sources ▾] |
+|  [All] [Official Images] [Databases] [Web Servers] [Languages & Runtimes] [My Repositories] |
++-------------------------------------------------------------------------------------------+
+|  +------------------------+  +------------------------+  +------------------------+        |
+|  | nginx                  |  | redis                  |  | postgres               |        |
+|  | [Official] Docker Inc  |  | [Official] Docker Inc  |  | [Official] PostgreSQL  |        |
+|  | High-performance HTTP  |  | In-memory key-value    |  | Object-relational DB   |        |
+|  | ⬇ 13.5B+  ⭐ 21.4K     |  | ⬇ 11.6B+  ⭐ 13.6K     |  | ⬇ 5.4B+   ⭐ 15.4K     |        |
+|  | [🚀 Deploy to Cluster] |  | [🚀 Deploy to Cluster] |  | [🚀 Deploy to Cluster] |        |
+|  +------------------------+  +------------------------+  +------------------------+        |
++-------------------------------------------------------------------------------------------+
+```
+
+### Core Registry Capabilities
+
+- **Docker Hub Account Connection**: Connect your Docker Hub username and Personal Access Token (PAT) via Dashboard Settings or the Registry header.
+- **Search Public & Private Repositories**: Instant live search querying Docker Hub v2 API with debounce, category quick filters (Databases, Web Servers, Runtimes, Tools), and personal private repository tabs.
+- **Multi-Arch Tag Inspector**: Inspect live image tags (`latest`, `alpine`, `slim`, versioned releases) with compressed download sizes, operating systems, and target architectures (`amd64`, `arm64`, `riscv64`).
+- **1-Click Kubernetes Deployment**: Deploy any image directly onto your cluster as a scalable `Deployment` (with replica control) or standalone `Pod`.
+- **Automated ImagePullSecrets**: Automatically creates and injects `kubernetes.io/dockerconfigjson` secrets so your Kubernetes nodes can pull private images from your Docker account seamlessly.
+- **CLI & Manifest Generator**: Instant copyable `kubectl create deployment...` and `docker pull...` command generators with live preview.
 
 ---
 
