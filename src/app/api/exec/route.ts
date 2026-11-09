@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (clusterExecErr) {
-        console.warn(`Real K8s Exec on pod ${podName} failed, using store fallback:`, clusterExecErr);
+        console.warn("Real K8s Exec on pod failed, using store fallback:", { podName, error: clusterExecErr });
       }
     }
 
