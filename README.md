@@ -7,7 +7,7 @@
 
 > **An enterprise-ready, developer-first Kubernetes command center engineered for Platform Engineers, SREs, and DevOps teams.**
 >
-> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, **AI Error Diagnostics Copilot**, **FinOps & Cloud Cost Optimization**, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
+> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, **AI Error Diagnostics Copilot**, **FinOps & Cloud Cost Optimization**, **GitOps ArgoCD & Flux Hub**, real-time telemetry, AI/GPU accelerator observability, next-gen Gateway API routing, and browser-native ANSI container terminal execution.
 
 ---
 
@@ -15,12 +15,12 @@
 
 - **🤖 AI Error Diagnostics Copilot**: Built-in intelligent SRE incident diagnostic engine. Performs instant root cause analysis (RCA), workload impact assessments, and generates copyable `kubectl` remediation commands for crashing pods (`CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, `ExitCode 137/127`). Supports **OpenAI**, **Google Gemini**, **Anthropic Claude**, and **Local LLMs (Ollama / vLLM)**, with an expert zero-key heuristics fallback engine.
 - **💰 FinOps & Cost Optimizer**: Full cloud cost monitoring, namespace attribution, waste identification, and automated right-sizing. Supports **AWS (EKS)**, **Google Cloud (GKE)**, **Azure (AKS)**, and Bare-Metal pricing models with 1-click remediation actions and exportable FinOps audits.
+- **🔄 GitOps ArgoCD & Flux Hub**: Unified continuous deployment command center for **ArgoCD** (`Application`, `ApplicationSet`) and **Flux v2** (`Kustomization`, `GitRepository`, `HelmRelease`). Features real-time sync status, health checks, target Git repo/branch tracking, live cluster drift diff inspection, and one-click manual reconcile.
 - **Modern UI Shell**: shadcn/ui design system with 60+ primitives, dark/light themes, theme presets, layout controls, and a ⌘J command palette for instant navigation.
 - **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the header.
 - **📊 Real-Time Monitoring & Telemetry**: Dedicated live monitoring screen (`/dashboard/monitoring`) tracking cluster saturation, node resource pressure, workload distribution, and active warning alerts.
 - **AI Workloads & GPU Observability**: GPU fleet monitoring (models, VRAM, thermals, power draw) and real-time tracking of AI serving runtimes (**vLLM**, **Ollama**, **KubeRay**, **HuggingFace TGI**).
 - **Workload Autoscaling (HPA)**: Dedicated autoscaling view with replica ranges, utilization vs. thresholds, and scaling conditions.
-- **GitOps Awareness**: Automated detection of **ArgoCD** and **FluxCD** tags with sync status badges on deployments.
 - **Interactive xterm.js Web Terminal**: Full ANSI PTY terminal powered by `@xterm/xterm` with `@kubernetes/client-node` container `Exec` streaming, command history, and quick diagnostic shortcuts.
 - **Dynamic CRD Explorer**: Auto-discover, search, and inspect Custom Resource Definitions (Cert-Manager, Istio, Prometheus, Karpenter, Kyverno) with live YAML viewing.
 - **Gateway API Dashboard**: First-class support for `gateway.networking.k8s.io` (`Gateway`, `HTTPRoute`) with listener protocols, ports, and backends.
@@ -114,6 +114,32 @@ Kubernetes Dashboard includes a complete **FinOps & Cloud Cost Optimization Suit
 
 ---
 
+## 🔄 GitOps ArgoCD & Flux Hub
+
+Kubernetes Dashboard provides a multi-engine **GitOps Command Center** (`/dashboard/gitops`) unifying continuous deployment fleets managed by **ArgoCD** and **Flux v2**.
+
+```
++-------------------------------------------------------------------------------------------+
+|  GitOps ArgoCD & Flux Hub                                                                 |
+|  Engines: [All Engines] [ArgoCD] [Flux v2]                                                |
++-------------------------------------------------------------------------------------------+
+|  [ Managed Apps ]         [ Sync Status ]          [ Health Status ]      [ Cluster Drift ]|
+|      6 apps                 4 / 6 Synced              4 Healthy           3 drifted fields|
+|  4 Argo • 2 Flux          2 Out of Sync            1 Degraded              Live vs Git diff|
++-------------------------------------------------------------------------------------------+
+```
+
+### Core GitOps Capabilities
+
+- **Unified Multi-Engine Support**: Seamlessly observes and manages **ArgoCD** (`Application`, `ApplicationSet`) alongside **Flux v2** (`Kustomization`, `GitRepository`, `HelmRelease`).
+- **Live Configuration Drift Detection**: Instantly compares declared Git manifests against live Kubernetes API states. Detects out-of-band manual changes (e.g., manual replica scaling or memory adjustments).
+- **Interactive Drift Diff Inspector**: Shows field-level side-by-side diffs between Git targets and live cluster resources.
+- **One-Click Reconciliation**: Trigger immediate manual synchronizations (`argocd app sync` or `flux reconcile kustomization`) with live toast feedback.
+- **Reconciliation Suspension**: Pause auto-sync or suspend reconciler loops for maintenance windows without editing Git repositories.
+- **Git Commit & Audit Trail**: Full timeline of reconciled Git commit hashes, commit messages, authors, and execution statuses.
+
+---
+
 ## 🐳 Docker Hub Quick Start
 
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-harshhaareddy%2Fkubernetes--dashboard-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/harshhaareddy/kubernetes-dashboard)
@@ -156,7 +182,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — you are redirected to the Cluster Overview at `/dashboard/overview`.
 
-With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec, FinOps analytics, mock AI diagnostics), so you can explore every screen without a real cluster.
+With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec, FinOps analytics, GitOps reconciliations, mock AI diagnostics), so you can explore every screen without a real cluster.
 
 ### Available Commands
 
@@ -182,7 +208,7 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 
 - **Framework**: Next.js 16 (App Router, Turbopack, React Compiler), React 19
 - **UI & Design**: shadcn/ui (radix-nova style), Tailwind CSS v4, Lucide React icons, Recharts visualizations
-- **Diagnostics & FinOps**: Custom SRE AI Diagnostics Engine + Cloud Cost Attribution & Right-Sizing Engine
+- **Diagnostics & GitOps**: AI Diagnostics Engine + FinOps Cost Attribution + ArgoCD/Flux Reconciler Hub
 - **Kubernetes**: `@kubernetes/client-node` with automatic KubeConfig discovery and per-request context switching via cookies
 - **Terminal**: `@xterm/xterm` + `@xterm/addon-fit`
 - **Security**: Web Crypto SHA-256 password hashing, Least-Privilege container execution, 0-CVE container profiles
@@ -196,11 +222,13 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 ```
 src/
 ├── app/
-│   ├── api/                  # 29 Kubernetes API routes (pods, nodes, exec, helm, finops, ai/diagnose, ...)
+│   ├── api/                  # 30 Kubernetes API routes (pods, nodes, exec, helm, finops, gitops, ai/diagnose, ...)
 │   │   ├── ai/diagnose/      # AI Error Diagnostics Copilot endpoint
-│   │   └── finops/           # FinOps cost attribution & optimization actions endpoint
-│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, monitoring, finops, settings, ...)
+│   │   ├── finops/           # FinOps cost attribution & optimization actions endpoint
+│   │   └── gitops/           # GitOps ArgoCD & Flux reconciliation endpoint
+│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, monitoring, finops, gitops, ...)
 │   │   ├── finops/           # FinOps & Cost Optimizer screen and attribution tabs
+│   │   ├── gitops/           # GitOps ArgoCD & Flux Hub with drift inspector
 │   │   ├── monitoring/       # Real-time telemetry and cluster saturation metrics
 │   │   ├── pods/             # Pod fleet view with "Diagnose with AI" action
 │   │   ├── settings/         # Dashboard & AI Copilot API Key configuration
@@ -208,7 +236,7 @@ src/
 │   ├── layout.tsx            # Root layout with theme + preferences boot
 │   └── page.tsx              # Redirects to /dashboard/overview
 ├── components/ui/            # shadcn/ui primitives (do not edit directly)
-├── lib/                      # finops, ai-diagnostics, k8s-client, k8s-store (demo engine), api-client
+├── lib/                      # gitops, finops, ai-diagnostics, k8s-client, k8s-store (demo engine), api-client
 ├── navigation/sidebar/       # Sidebar navigation config
 └── config/app-config.ts      # App name, repository, metadata
 ```

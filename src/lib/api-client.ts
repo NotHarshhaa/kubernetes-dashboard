@@ -460,6 +460,25 @@ class ApiClient {
       body: JSON.stringify({ action: "apply-recommendation", recommendationId }),
     });
   }
+
+  async getGitOpsData(engine?: string): Promise<import("@/lib/gitops").GitOpsData> {
+    const query = engine && engine !== "all" ? `?engine=${encodeURIComponent(engine)}` : "";
+    return this.fetchJson<import("@/lib/gitops").GitOpsData>(`/api/gitops${query}`);
+  }
+
+  async syncGitOpsApp(appId: string): Promise<{ success: boolean; message: string }> {
+    return this.fetchJson<{ success: boolean; message: string }>("/api/gitops", {
+      method: "POST",
+      body: JSON.stringify({ action: "sync", appId }),
+    });
+  }
+
+  async toggleSuspendGitOpsApp(appId: string): Promise<{ success: boolean; message: string }> {
+    return this.fetchJson<{ success: boolean; message: string }>("/api/gitops", {
+      method: "POST",
+      body: JSON.stringify({ action: "toggle-suspend", appId }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
