@@ -47,6 +47,11 @@ function getSafeAiEndpoint(customBaseUrl?: string): string {
   const defaultEndpoint = "https://api.openai.com/v1/chat/completions";
   if (!customBaseUrl) return defaultEndpoint;
 
+  const allowedOrigins = (process.env.ALLOWED_AI_ENDPOINT_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
   let cleanUrl = customBaseUrl.trim();
   while (cleanUrl.endsWith("/")) {
     cleanUrl = cleanUrl.slice(0, -1);
@@ -54,21 +59,13 @@ function getSafeAiEndpoint(customBaseUrl?: string): string {
 
   try {
     const parsed = new URL(cleanUrl);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    if (parsed.protocol !== "https:") {
       return defaultEndpoint;
     }
 
-    const host = parsed.hostname.toLowerCase();
-    // Block cloud instance metadata services (AWS, GCP, Azure, OpenStack)
-    if (
-      host === "169.254.169.254" ||
-      host === "169.254.170.2" ||
-      host === "metadata.google.internal" ||
-      host === "metadata" ||
-      host === "instance-data" ||
-      host.startsWith("169.254.")
-    ) {
-      throw new Error("Prohibited AI endpoint: Cloud metadata access is disallowed.");
+    const normalizedOrigin = parsed.origin.toLowerCase();
+    if (allowedOrigins.length === 0 || !allowedOrigins.includes(normalizedOrigin)) {
+      return defaultEndpoint;
     }
 
     const basePath = parsed.pathname === "/" ? "" : parsed.pathname;
