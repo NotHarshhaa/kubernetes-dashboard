@@ -7,13 +7,14 @@
 
 > **An enterprise-ready, developer-first Kubernetes command center engineered for Platform Engineers, SREs, and DevOps teams.**
 >
-> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, **AI Error Diagnostics Copilot**, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
+> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, **AI Error Diagnostics Copilot**, **FinOps & Cloud Cost Optimization**, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
 
 ---
 
 ## 🌟 Key Features
 
 - **🤖 AI Error Diagnostics Copilot**: Built-in intelligent SRE incident diagnostic engine. Performs instant root cause analysis (RCA), workload impact assessments, and generates copyable `kubectl` remediation commands for crashing pods (`CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, `ExitCode 137/127`). Supports **OpenAI**, **Google Gemini**, **Anthropic Claude**, and **Local LLMs (Ollama / vLLM)**, with an expert zero-key heuristics fallback engine.
+- **💰 FinOps & Cost Optimizer**: Full cloud cost monitoring, namespace attribution, waste identification, and automated right-sizing. Supports **AWS (EKS)**, **Google Cloud (GKE)**, **Azure (AKS)**, and Bare-Metal pricing models with 1-click remediation actions and exportable FinOps audits.
 - **Modern UI Shell**: shadcn/ui design system with 60+ primitives, dark/light themes, theme presets, layout controls, and a ⌘J command palette for instant navigation.
 - **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the header.
 - **📊 Real-Time Monitoring & Telemetry**: Dedicated live monitoring screen (`/dashboard/monitoring`) tracking cluster saturation, node resource pressure, workload distribution, and active warning alerts.
@@ -86,6 +87,33 @@ The dashboard features an integrated **Site Reliability Engineering (SRE) AI Dia
 
 ---
 
+## 💰 FinOps & Cost Optimizer
+
+Kubernetes Dashboard includes a complete **FinOps & Cloud Cost Optimization Suite** (`/dashboard/finops`) engineered to eradicate idle cluster spend, right-size overprovisioned workloads, and provide granular financial attribution.
+
+```
++-------------------------------------------------------------------------------------------+
+|  FinOps & Cost Optimizer                                                                  |
+|  Pricing Profile: AWS (EKS / gp3) • Live Attribution                                      |
++-------------------------------------------------------------------------------------------+
+|  [ Monthly Run Rate ]    [ Potential Savings ]    [ Idle / Wasted ]    [ Efficiency Score ]|
+|      $4,342 / mo             -$1,055 / mo             $890 / mo             69% (Grade B)  |
+|   ~$145/day (32 vCPU)      24.3% reducible         Over-requested RAM    Target: >80%     |
++-------------------------------------------------------------------------------------------+
+```
+
+### Core FinOps Capabilities
+
+- **Multi-Cloud Pricing Profiles**: Switch seamlessly between **AWS EKS**, **Google Cloud GKE**, **Azure AKS**, or **Bare-Metal / Custom** pricing rates ($/vCPU-hr, $/GB-hr, $/Storage-GB, $/GPU-hr).
+- **Automated Workload Right-Sizing**: Detects containers with excessive CPU/memory allocations compared to actual usage, providing 1-click `kubectl set resources` commands and immediate remediation.
+- **Orphaned Storage Detection**: Identifies unattached PersistentVolumes and claims (e.g. orphaned gp3/pd-standard volumes) accumulating unnecessary monthly cloud charges.
+- **Node Consolidation & Bin-Packing**: Spots underutilized worker nodes (<20% allocation) and provides safe `cordon` and `drain` workflows to downscale node groups.
+- **Namespace Cost Attribution**: Granular percentage and monetary breakdown showing exact CPU, Memory, Storage, and GPU costs per namespace with efficiency scoring.
+- **14-Day Trajectory Forecasting**: Compares current spending trajectories against optimized potential run rates.
+- **FinOps Audit Export**: One-click JSON export for financial stakeholders, finance teams, and platform engineering audits.
+
+---
+
 ## 🐳 Docker Hub Quick Start
 
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-harshhaareddy%2Fkubernetes--dashboard-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/harshhaareddy/kubernetes-dashboard)
@@ -128,7 +156,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — you are redirected to the Cluster Overview at `/dashboard/overview`.
 
-With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec, mock AI diagnostics), so you can explore every screen without a real cluster.
+With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec, FinOps analytics, mock AI diagnostics), so you can explore every screen without a real cluster.
 
 ### Available Commands
 
@@ -154,7 +182,7 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 
 - **Framework**: Next.js 16 (App Router, Turbopack, React Compiler), React 19
 - **UI & Design**: shadcn/ui (radix-nova style), Tailwind CSS v4, Lucide React icons, Recharts visualizations
-- **Diagnostics**: Custom AI Diagnostics Engine + Multi-LLM provider integration (OpenAI, Gemini, Anthropic, Ollama)
+- **Diagnostics & FinOps**: Custom SRE AI Diagnostics Engine + Cloud Cost Attribution & Right-Sizing Engine
 - **Kubernetes**: `@kubernetes/client-node` with automatic KubeConfig discovery and per-request context switching via cookies
 - **Terminal**: `@xterm/xterm` + `@xterm/addon-fit`
 - **Security**: Web Crypto SHA-256 password hashing, Least-Privilege container execution, 0-CVE container profiles
@@ -168,9 +196,11 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 ```
 src/
 ├── app/
-│   ├── api/                  # 28 Kubernetes API routes (pods, nodes, exec, helm, ai/diagnose, ...)
-│   │   └── ai/diagnose/      # AI Error Diagnostics Copilot endpoint
-│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, monitoring, settings, ...)
+│   ├── api/                  # 29 Kubernetes API routes (pods, nodes, exec, helm, finops, ai/diagnose, ...)
+│   │   ├── ai/diagnose/      # AI Error Diagnostics Copilot endpoint
+│   │   └── finops/           # FinOps cost attribution & optimization actions endpoint
+│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, monitoring, finops, settings, ...)
+│   │   ├── finops/           # FinOps & Cost Optimizer screen and attribution tabs
 │   │   ├── monitoring/       # Real-time telemetry and cluster saturation metrics
 │   │   ├── pods/             # Pod fleet view with "Diagnose with AI" action
 │   │   ├── settings/         # Dashboard & AI Copilot API Key configuration
@@ -178,7 +208,7 @@ src/
 │   ├── layout.tsx            # Root layout with theme + preferences boot
 │   └── page.tsx              # Redirects to /dashboard/overview
 ├── components/ui/            # shadcn/ui primitives (do not edit directly)
-├── lib/                      # ai-diagnostics, k8s-client, k8s-store (demo engine), api-client
+├── lib/                      # finops, ai-diagnostics, k8s-client, k8s-store (demo engine), api-client
 ├── navigation/sidebar/       # Sidebar navigation config
 └── config/app-config.ts      # App name, repository, metadata
 ```

@@ -448,6 +448,18 @@ class ApiClient {
       body: JSON.stringify({ request, settings }),
     });
   }
+
+  async getFinOpsData(provider?: string): Promise<import("@/lib/finops").FinOpsData> {
+    const query = provider ? `?provider=${encodeURIComponent(provider)}` : "";
+    return this.fetchJson<import("@/lib/finops").FinOpsData>(`/api/finops${query}`);
+  }
+
+  async applyFinOpsRecommendation(recommendationId: string): Promise<{ success: boolean; message: string }> {
+    return this.fetchJson<{ success: boolean; message: string }>("/api/finops", {
+      method: "POST",
+      body: JSON.stringify({ action: "apply-recommendation", recommendationId }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
