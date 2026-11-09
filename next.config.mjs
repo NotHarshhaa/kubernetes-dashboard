@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Emits a minimal self-contained server bundle to .next/standalone for small Docker images.
-  output: "standalone",
+  // Use standalone output for Docker containers, but allow default serverless output on Vercel
+  ...(process.env.VERCEL ? {} : { output: "standalone" }),
+  // Treat @kubernetes/client-node as external on the server to prevent bundler/serverless trace issues
+  serverExternalPackages: ["@kubernetes/client-node"],
   reactCompiler: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",

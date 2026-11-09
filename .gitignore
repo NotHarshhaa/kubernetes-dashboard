@@ -37,7 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 # development scripts (not needed for production)
-scripts/
+/scripts/
 
 # zcode workspace
 .zcode/
