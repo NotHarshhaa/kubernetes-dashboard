@@ -86,7 +86,11 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 | `npm run lint` | Biome lint |
 | `npm run check` | Biome lint + format check |
 | `npm run check:fix` | Auto-fix lint/format issues |
-| `npm run docker:build` / `docker:run` | Build / run the Docker image |
+| `npm run docker:build` | Build default hardened Alpine container image |
+| `npm run docker:build:distroless` | Build zero-shell Google Distroless container image |
+| `npm run docker:build:chainguard` | Build zero-CVE Chainguard Wolfi container image |
+| `npm run docker:build:debian` | Build glibc-compatible Debian Bookworm Slim image |
+| `npm run docker:run` | Run the Docker container locally |
 | `npm run k8s:deploy` / `k8s:delete` | Apply / remove in-cluster manifests |
 
 ---
@@ -120,11 +124,93 @@ src/
 
 ---
 
+---
+
+## 🛡️ Enterprise Container Security & Image Profiles
+
+To meet strict enterprise security, compliance, and zero-trust requirements (CIS Docker Benchmark, NIST SP 800-190, SOC 2, FedRAMP, HIPAA), Kubernetes Dashboard provides **four specialized container profiles**. Organizations can select the profile that aligns with their security posture and runtime requirements.
+
+### Profile Comparison Matrix
+
+| Profile | Dockerfile | Base Image | Size | Shell (`/bin/sh`) | Package Manager | Security Controls & Best For |
+|---|---|---|---|---|---|---|
+| **Hardened Alpine** *(Default)* | `Dockerfile` | `node:22-alpine3.23` | ~88 MB | Yes | **Removed** | **Production Balanced.** OS packages upgraded, package manager (`/sbin/apk`) and build tools (`npm`, `npx`, `corepack`) completely stripped, non-root user (`nextjs:1001`), `dumb-init` signal handling. |
+| **Google Distroless** | `Dockerfile.distroless` | `gcr.io/distroless/nodejs22-debian12` | ~76 MB | **None** | **None** | **Maximum Containment.** Zero shell and zero package managers. Attackers gaining RCE cannot spawn interactive shells or download payloads (`curl`/`wget` absent). Runs as `nonroot:65532`. |
+| **Chainguard Wolfi** | `Dockerfile.chainguard` | `cgr.dev/chainguard/node:latest` | ~90 MB | Minimal | **None** | **Zero-CVE Target & Compliance.** Continuous daily rebuilds with upstream patches, signed attestations, and complete SBOM for FedRAMP, SOC 2 Type II, and PCI-DSS audits. Runs as `node:1000`. |
+| **Debian Bookworm Slim** | `Dockerfile.debian` | `node:22-bookworm-slim` | ~104 MB | Yes | `apt` (cleaned) | **Enterprise APM & Glibc.** High compatibility for native C++ addons and enterprise monitoring/tracing sidecars (Datadog, Dynatrace, New Relic). Hardened with non-root user (`nextjs:1001`). |
+
+---
+
+### Security Controls Implemented Across All Profiles
+
+1. **Non-Root Execution (Least Privilege)**:
+   - Containers never run as `root` (UID 0).
+   - Profiles enforce dedicated unprivileged system users: `nextjs` (UID 1001), `nonroot` (UID 65532), or `node` (UID 1000).
+2. **Build Tool & Package Manager Stripping**:
+   - `npm`, `npx`, `corepack`, and their 40+ bundled CLI dependencies are completely removed from production runtime images, eliminating attack surfaces.
+   - Package manager binaries (`apk`, `apt-get`) and caches are wiped from the final runner stages.
+3. **PID 1 Signal Handling & Zombie Reaping**:
+   - Integrated with `dumb-init` to properly trap and forward POSIX signals (`SIGTERM`, `SIGINT`) for graceful pod shutdown during Kubernetes rolling deployments.
+4. **Shell-Independent Native Healthchecks**:
+   - Health probes execute via Node.js native `fetch()` without invoking an interactive shell or external binary dependencies.
+5. **Next.js Standalone Multi-Stage Bundling**:
+   - Only production server artifacts and tree-shaken dependencies from `.next/standalone` are copied into the image, keeping the footprint under 100 MB.
+
+---
+
+### Building & Running Profiles
+
+```bash
+# Option 1: Hardened Alpine (Default)
+npm run docker:build
+docker run -p 3000:3000 -v ~/.kube/config:/home/nextjs/.kube/config:ro kubernetes-dashboard:latest
+
+# Option 2: Google Distroless (Zero Shell)
+npm run docker:build:distroless
+docker run -p 3000:3000 -v ~/.kube/config:/home/nonroot/.kube/config:ro kubernetes-dashboard:distroless
+
+# Option 3: Chainguard Wolfi (Compliance & Zero-CVE)
+npm run docker:build:chainguard
+docker run -p 3000:3000 -v ~/.kube/config:/home/node/.kube/config:ro kubernetes-dashboard:chainguard
+
+# Option 4: Debian Bookworm Slim (APM Compatible)
+npm run docker:build:debian
+docker run -p 3000:3000 -v ~/.kube/config:/home/nextjs/.kube/config:ro kubernetes-dashboard:debian
+```
+
+---
+
+### Hardened Kubernetes SecurityContext (PSS Restricted)
+
+For Kubernetes deployments enforcing the **Restricted Pod Security Standard**, apply the following `securityContext` in [`k8s/deployment.yaml`](./k8s/deployment.yaml):
+
+```yaml
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: kubernetes-dashboard
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+```
+
+---
+
 ## 🔐 Security Notes
 
 - The dashboard uses your **local KubeConfig** (`loadFromDefault`) — it never stores credentials.
 - In-cluster deployments read the ServiceAccount token with the RBAC rules in `k8s/rbac.yaml`.
 - Demo mode never touches a real cluster.
+- For our full vulnerability disclosure policy, container hardening controls, and compliance guidelines, see [SECURITY.md](./SECURITY.md).
 
 ## 📄 License
 

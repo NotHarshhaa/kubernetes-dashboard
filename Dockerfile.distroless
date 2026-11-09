@@ -1,0 +1,60 @@
+# syntax=docker/dockerfile:1.7
+
+# ============================================================
+# Enterprise Production Dockerfile: Google Distroless Profile
+# Security Controls:
+# - Zero shell (/bin/sh, /bin/bash are completely absent)
+# - Zero package managers (no apt, no apk)
+# - Minimal attack surface (only node binary and required shared libs)
+# - Cannot spawn shells or download tools via RCE
+# - Runs as built-in non-root user (UID 65532: nonroot)
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. Install Dependencies
+# ------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --ignore-scripts
+
+# ------------------------------------------------------------
+# 2. Build Application
+# ------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/app/.next/cache \
+    npm run build
+
+# ------------------------------------------------------------
+# 3. Production Runner (Google Distroless Node.js 22)
+# ------------------------------------------------------------
+FROM gcr.io/distroless/nodejs22-debian12:latest AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy static assets and standalone bundle
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nonroot:nonroot /app/.next/standalone ./
+COPY --from=builder --chown=nonroot:nonroot /app/.next/static ./.next/static
+
+# Switch to Distroless built-in non-root user (UID 65532)
+USER nonroot
+
+EXPOSE 3000
+
+CMD ["server.js"]

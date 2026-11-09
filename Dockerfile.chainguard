@@ -1,0 +1,60 @@
+# syntax=docker/dockerfile:1.7
+
+# ============================================================
+# Enterprise Production Dockerfile: Chainguard Wolfi Profile
+# Security Controls:
+# - Minimalist Wolfi Linux OS with continuous daily CVE patching
+# - Signed container attestations & complete SBOM support
+# - Built-in non-root user (UID 1000: node)
+# - Zero package managers in production runner
+# - Ideal for SOC 2, FedRAMP, HIPAA, and strict compliance regimes
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. Install Dependencies
+# ------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --ignore-scripts
+
+# ------------------------------------------------------------
+# 2. Build Application
+# ------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/app/.next/cache \
+    npm run build
+
+# ------------------------------------------------------------
+# 3. Production Runner (Chainguard Node.js Enterprise)
+# ------------------------------------------------------------
+FROM cgr.dev/chainguard/node:latest AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy static assets and standalone bundle
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+# Chainguard runs as non-root user 'node' (UID 1000)
+USER node
+
+EXPOSE 3000
+
+CMD ["server.js"]

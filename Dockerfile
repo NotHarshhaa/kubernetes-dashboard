@@ -1,16 +1,22 @@
 # syntax=docker/dockerfile:1.7
 
+# ============================================================
+# Enterprise Production Dockerfile
+# Standard: Hardened Alpine Linux (Minimal CVEs, Non-Root, Zero Package Manager)
+# ============================================================
+
 # ------------------------------------------------------------
 # 1. Base Image with Security & Runtime Dependencies
 # ------------------------------------------------------------
-FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat dumb-init
+FROM node:22-alpine3.23 AS base
+RUN apk update && apk upgrade --no-cache && \
+    apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
 # ------------------------------------------------------------
 # 2. Install Dependencies (Fast Native Cross-Build with npm cache)
 # ------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM node:20-alpine AS deps
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -20,7 +26,7 @@ RUN --mount=type=cache,target=/root/.npm \
 # ------------------------------------------------------------
 # 3. Build Application (Fast Native Cross-Build with Next.js cache)
 # ------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:22-alpine3.23 AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -48,6 +54,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+# Strip package managers, npm CLI, and cached build tools from production runner
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /usr/local/bin/corepack \
+           /var/cache/apk/* \
+           /etc/apk \
+           /sbin/apk \
+           /usr/share/apk
+
 # Copy static assets and standalone bundle
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -57,9 +73,9 @@ USER nextjs
 
 EXPOSE 3000
 
-# Native healthcheck using Node.js
+# Native healthcheck using Node.js without spawning a shell
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e 'fetch("http://127.0.0.1:3000/api/cluster").then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))'
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/api/cluster').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
 
 # Use dumb-init to properly handle PID 1 signal forwarding (SIGTERM / SIGINT)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
