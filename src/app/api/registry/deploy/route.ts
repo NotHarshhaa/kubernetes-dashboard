@@ -27,10 +27,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Image and workload name are required" }, { status: 400 });
     }
 
-    const sanitizedName = name
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/^-+|-+$/g, "");
+    let sanitizedName = name.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    while (sanitizedName.startsWith("-")) {
+      sanitizedName = sanitizedName.slice(1);
+    }
+    while (sanitizedName.endsWith("-")) {
+      sanitizedName = sanitizedName.slice(0, -1);
+    }
+    if (!sanitizedName) {
+      sanitizedName = "app";
+    }
     const fullImage = tag ? `${image}:${tag}` : image;
 
     const { kc, isAvailable } = getKubeConfig(request);

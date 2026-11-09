@@ -12,8 +12,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If Docker Hub, test against Docker Hub login endpoint
-    if (registryUrl.includes("docker.io") || registryUrl.includes("docker.com")) {
+    // Validate whether target registry is Docker Hub using proper URL parsing
+    let isDockerHub = false;
+    try {
+      const parsedUrl = new URL(registryUrl);
+      const host = parsedUrl.hostname.toLowerCase();
+      isDockerHub =
+        host === "docker.io" ||
+        host === "index.docker.io" ||
+        host === "registry-1.docker.io" ||
+        host === "docker.com" ||
+        host === "hub.docker.com" ||
+        host.endsWith(".docker.io") ||
+        host.endsWith(".docker.com");
+    } catch {
+      isDockerHub = false;
+    }
+
+    if (isDockerHub) {
       try {
         const response = await fetch("https://hub.docker.com/v2/users/login/", {
           method: "POST",

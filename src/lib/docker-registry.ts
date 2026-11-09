@@ -202,9 +202,21 @@ const DOCKER_ACCOUNT_STORAGE_KEY = "k8s_docker_account";
 export function getStoredDockerAccount(): DockerAccount | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(DOCKER_ACCOUNT_STORAGE_KEY);
+    const raw =
+      window.sessionStorage.getItem(DOCKER_ACCOUNT_STORAGE_KEY) ||
+      window.localStorage.getItem(DOCKER_ACCOUNT_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as DockerAccount;
+    const account = JSON.parse(raw) as DockerAccount;
+    // Retrieve ephemeral token if present
+    const cred = window.sessionStorage.getItem(`${DOCKER_ACCOUNT_STORAGE_KEY}_sec`);
+    if (cred) {
+      try {
+        account.token = decodeURIComponent(atob(cred));
+      } catch {
+        // Ignore decode errors
+      }
+    }
+    return account;
   } catch {
     return null;
   }
@@ -213,7 +225,21 @@ export function getStoredDockerAccount(): DockerAccount | null {
 export function saveStoredDockerAccount(account: DockerAccount): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(DOCKER_ACCOUNT_STORAGE_KEY, JSON.stringify(account));
+    // Separate non-sensitive metadata from sensitive tokens
+    const publicProfile: DockerAccount = {
+      username: account.username,
+      isConnected: account.isConnected,
+      registryUrl: account.registryUrl,
+      connectedAt: account.connectedAt,
+    };
+    // Store non-sensitive profile in sessionStorage (with fallback)
+    window.sessionStorage.setItem(DOCKER_ACCOUNT_STORAGE_KEY, JSON.stringify(publicProfile));
+    window.localStorage.setItem(DOCKER_ACCOUNT_STORAGE_KEY, JSON.stringify(publicProfile));
+
+    // Store credentials only in ephemeral sessionStorage with obfuscation
+    if (account.token) {
+      window.sessionStorage.setItem(`${DOCKER_ACCOUNT_STORAGE_KEY}_sec`, btoa(encodeURIComponent(account.token)));
+    }
   } catch {
     // Ignore storage quota or security errors
   }
@@ -222,7 +248,9 @@ export function saveStoredDockerAccount(account: DockerAccount): void {
 export function clearStoredDockerAccount(): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.removeItem(DOCKER_ACCOUNT_STORAGE_KEY);
+    window.sessionStorage.removeItem(DOCKER_ACCOUNT_STORAGE_KEY);
+    window.sessionStorage.removeItem(`${DOCKER_ACCOUNT_STORAGE_KEY}_sec`);
+    window.localStorage.removeItem(DOCKER_ACCOUNT_STORAGE_KEY);
   } catch {
     // Ignore
   }

@@ -43,15 +43,49 @@ Kubernetes Events:
 ${req.events || "No events recorded."}`;
 }
 
+function getSafeAiEndpoint(customBaseUrl?: string): string {
+  const defaultEndpoint = "https://api.openai.com/v1/chat/completions";
+  if (!customBaseUrl) return defaultEndpoint;
+
+  let cleanUrl = customBaseUrl.trim();
+  while (cleanUrl.endsWith("/")) {
+    cleanUrl = cleanUrl.slice(0, -1);
+  }
+
+  try {
+    const parsed = new URL(cleanUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return defaultEndpoint;
+    }
+
+    const host = parsed.hostname.toLowerCase();
+    // Block cloud instance metadata services (AWS, GCP, Azure, OpenStack)
+    if (
+      host === "169.254.169.254" ||
+      host === "169.254.170.2" ||
+      host === "metadata.google.internal" ||
+      host === "metadata" ||
+      host === "instance-data" ||
+      host.startsWith("169.254.")
+    ) {
+      throw new Error("Prohibited AI endpoint: Cloud metadata access is disallowed.");
+    }
+
+    const basePath = parsed.pathname === "/" ? "" : parsed.pathname;
+    parsed.pathname = `${basePath}/chat/completions`;
+    return parsed.toString();
+  } catch {
+    return defaultEndpoint;
+  }
+}
+
 async function callOpenAi(
   apiKey: string,
   model: string,
   userPrompt: string,
   customBaseUrl?: string,
 ): Promise<Partial<DiagnosticResult>> {
-  const endpoint = customBaseUrl
-    ? `${customBaseUrl.replace(/\/+$/, "")}/chat/completions`
-    : "https://api.openai.com/v1/chat/completions";
+  const endpoint = getSafeAiEndpoint(customBaseUrl);
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
