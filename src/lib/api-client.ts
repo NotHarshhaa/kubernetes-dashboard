@@ -438,6 +438,16 @@ class ApiClient {
   async getAIWorkloads(): Promise<import("@/app/api/ai-workloads/route").AiClusterData> {
     return this.fetchJson<import("@/app/api/ai-workloads/route").AiClusterData>("/api/ai-workloads");
   }
+
+  async diagnoseWithAi(
+    request: import("@/lib/ai-diagnostics").DiagnosticRequest,
+    settings?: Partial<import("@/lib/ai-diagnostics").AiSettings>,
+  ): Promise<import("@/lib/ai-diagnostics").DiagnosticResult> {
+    return this.fetchJson<import("@/lib/ai-diagnostics").DiagnosticResult>("/api/ai/diagnose", {
+      method: "POST",
+      body: JSON.stringify({ request, settings }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

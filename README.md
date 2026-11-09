@@ -7,27 +7,82 @@
 
 > **An enterprise-ready, developer-first Kubernetes command center engineered for Platform Engineers, SREs, and DevOps teams.**
 >
-> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
+> Built on a modern Next.js 16 + shadcn/ui + Tailwind CSS v4 admin shell, this dashboard unifies multi-cluster fleet operations, **AI Error Diagnostics Copilot**, real-time telemetry, AI/GPU accelerator observability, GitOps workflow safeguards (ArgoCD & Flux), next-gen Gateway API routing, and browser-native ANSI container terminal execution.
 
 ---
 
 ## 🌟 Key Features
 
+- **🤖 AI Error Diagnostics Copilot**: Built-in intelligent SRE incident diagnostic engine. Performs instant root cause analysis (RCA), workload impact assessments, and generates copyable `kubectl` remediation commands for crashing pods (`CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, `ExitCode 137/127`). Supports **OpenAI**, **Google Gemini**, **Anthropic Claude**, and **Local LLMs (Ollama / vLLM)**, with an expert zero-key heuristics fallback engine.
 - **Modern UI Shell**: shadcn/ui design system with 60+ primitives, dark/light themes, theme presets, layout controls, and a ⌘J command palette for instant navigation.
 - **Multi-Cluster Context Switcher**: Seamlessly switch between KubeConfig contexts (minikube, EKS, GKE, AKS, Talos, local) from the header.
+- **📊 Real-Time Monitoring & Telemetry**: Dedicated live monitoring screen (`/dashboard/monitoring`) tracking cluster saturation, node resource pressure, workload distribution, and active warning alerts.
 - **AI Workloads & GPU Observability**: GPU fleet monitoring (models, VRAM, thermals, power draw) and real-time tracking of AI serving runtimes (**vLLM**, **Ollama**, **KubeRay**, **HuggingFace TGI**).
 - **Workload Autoscaling (HPA)**: Dedicated autoscaling view with replica ranges, utilization vs. thresholds, and scaling conditions.
 - **GitOps Awareness**: Automated detection of **ArgoCD** and **FluxCD** tags with sync status badges on deployments.
 - **Interactive xterm.js Web Terminal**: Full ANSI PTY terminal powered by `@xterm/xterm` with `@kubernetes/client-node` container `Exec` streaming, command history, and quick diagnostic shortcuts.
 - **Dynamic CRD Explorer**: Auto-discover, search, and inspect Custom Resource Definitions (Cert-Manager, Istio, Prometheus, Karpenter, Kyverno) with live YAML viewing.
 - **Gateway API Dashboard**: First-class support for `gateway.networking.k8s.io` (`Gateway`, `HTTPRoute`) with listener protocols, ports, and backends.
-- **Live Pod Log Streaming**: Real-time log inspection with container selectors, auto-refresh follow mode, filtering, and clipboard/download export.
+- **Live Pod Log Streaming**: Real-time log inspection with container selectors, auto-refresh follow mode, filtering, one-click AI log diagnosis, and clipboard/download export.
 - **Interactive Topology Map**: End-to-end visual dependency graph tracing traffic from Ingress → Service → Deployment → Pod → Node.
 - **Comprehensive Workload Management**: Pods, Deployments, StatefulSets, DaemonSets, Jobs, and CronJobs with instant scale, restart, trigger, and delete actions.
 - **Storage, Config & Secrets**: PersistentVolumes, claims, storage classes, ConfigMaps, and Secrets with YAML inspection.
 - **Security & CIS Audits**: Cluster vulnerability assessments with category scoring and remediation guidance.
 - **Helm Hub**: Deployed Helm releases, curated charts, quick install, rollback and uninstall.
 - **Dual-Mode Operation**: Connects directly to real clusters via your local KubeConfig, with a built-in interactive demo engine (`NEXT_PUBLIC_DEMO_MODE=true`) when no cluster is reachable.
+
+---
+
+## 🤖 AI Error Diagnostics Copilot
+
+The dashboard features an integrated **Site Reliability Engineering (SRE) AI Diagnostics Copilot** that automatically diagnoses unhealthy workloads, container crash loops, and failed deployment rollouts.
+
+```
++-----------------------------------------------------------------------------------+
+|  Sparkles AI Error Diagnostics Copilot                                            |
+|  Target Pod: payment-service-5c4d6f789-qx7k2 • production • [CRITICAL]            |
++-----------------------------------------------------------------------------------+
+|  Provider: Google Gemini (gemini-1.5-flash)                                       |
+|                                                                                   |
+|  Summary:                                                                         |
+|  Container 'payment-gateway' was terminated by Linux OOM Killer (Exit Code 137). |
+|                                                                                   |
+|  Root Cause Analysis:                                                             |
+|  The container exceeded its configured memory limit (resources.limits.memory).    |
+|  The Linux kernel terminated process PID 14 to protect host stability.            |
+|                                                                                   |
+|  Recommended Action Plan:                                                         |
+|  > Inspect Pod memory limits and increase resources.limits.memory in Deployment   |
+|  > Profile heap allocations (Node.js --max-old-space-size or JVM -XX:MaxRAM)     |
+|                                                                                   |
+|  Remediation CLI Commands:                                                        |
+|  $ kubectl set resources deployment -n production --limits=memory=1Gi [Copy]      |
+|  $ kubectl describe pod payment-service-5c4d6f789-qx7k2 -n production [Terminal] |
++-----------------------------------------------------------------------------------+
+```
+
+### Supported Providers & Models
+
+| Provider | Supported Models | Authentication | Endpoint |
+|---|---|---|---|
+| **OpenAI** | `gpt-4o-mini`, `gpt-4o`, `gpt-4-turbo`, `o1-mini` | Bearer API Key | `https://api.openai.com/v1` |
+| **Google Gemini** | `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash` | Gemini API Key | Google AI Studio REST API |
+| **Anthropic Claude** | `claude-3-5-sonnet`, `claude-3-5-haiku`, `claude-3-opus` | `x-api-key` | `https://api.anthropic.com/v1` |
+| **Local / Custom LLM** | `llama3`, `mistral`, `deepseek-r1`, `qwen2.5`, any custom | Optional API Key | `http://localhost:11434/v1` (Ollama/vLLM) |
+
+### Setting Up Your API Key in Dashboard Settings
+
+1. Navigate to **Dashboard Settings** (`/dashboard/settings`).
+2. Locate the **AI Error Diagnostics Copilot** section.
+3. Toggle the switch to **Enabled**.
+4. Select your preferred **AI Provider** and **Model**.
+5. Enter your **API Key** (masked with an eye toggle for security). Keys are saved securely in browser storage (`localStorage`) and never committed to version control.
+6. If using **Ollama** or **vLLM**, select **Custom / Local** and configure your local endpoint (e.g. `http://localhost:11434/v1`).
+7. Click **Test Connection** to immediately verify API connectivity.
+8. Click **Save Changes**.
+
+> [!TIP]
+> **Zero-Key Out-of-the-Box Heuristics**: If you do not have an API key configured, the dashboard automatically routes diagnostic queries through its built-in expert Kubernetes heuristic engine. It instantly identifies `OOMKilled` (137), `ImagePullBackOff`, binary missing (`127`/`126`), permission errors, and network timeouts with exact `kubectl` remediation commands.
 
 ---
 
@@ -73,19 +128,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — you are redirected to the Cluster Overview at `/dashboard/overview`.
 
-With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec), so you can explore every screen without a cluster.
+With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the built-in demo engine (sample cluster data, simulated exec, mock AI diagnostics), so you can explore every screen without a real cluster.
 
 ### Available Commands
 
 | Command | Description |
 |---|---|
 | `npm run dev` | Start the development server |
-| `npm run build` | Create a production build |
+| `npm run build` | Create an optimized Next.js 16 production build |
 | `npm run start` | Serve the production build |
-| `npm run type-check` | TypeScript project check (`tsc --noEmit`) |
-| `npm run lint` | Biome lint |
-| `npm run check` | Biome lint + format check |
-| `npm run check:fix` | Auto-fix lint/format issues |
+| `npm run type-check` | TypeScript strict project check (`tsc --noEmit`) |
+| `npm run lint` | Biome linter check |
+| `npm run check` | Biome lint + format validation |
+| `npm run check:fix` | Auto-fix Biome lint/format issues |
 | `npm run docker:build` | Build default hardened Alpine container image |
 | `npm run docker:build:distroless` | Build zero-shell Google Distroless container image |
 | `npm run docker:build:chainguard` | Build zero-CVE Chainguard Wolfi container image |
@@ -97,10 +152,12 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 
 ## 🧱 Tech Stack
 
-- **Framework**: Next.js 16 (App Router, React Compiler), React 19
-- **UI**: shadcn/ui (radix-nova style), Tailwind CSS v4, lucide-react icons, recharts visualizations
+- **Framework**: Next.js 16 (App Router, Turbopack, React Compiler), React 19
+- **UI & Design**: shadcn/ui (radix-nova style), Tailwind CSS v4, Lucide React icons, Recharts visualizations
+- **Diagnostics**: Custom AI Diagnostics Engine + Multi-LLM provider integration (OpenAI, Gemini, Anthropic, Ollama)
 - **Kubernetes**: `@kubernetes/client-node` with automatic KubeConfig discovery and per-request context switching via cookies
 - **Terminal**: `@xterm/xterm` + `@xterm/addon-fit`
+- **Security**: Web Crypto SHA-256 password hashing, Least-Privilege container execution, 0-CVE container profiles
 - **Toasts**: sonner
 - **Tooling**: Biome (lint + format), Husky + lint-staged, GitHub Actions CI
 
@@ -111,18 +168,20 @@ With `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` the dashboard runs against the
 ```
 src/
 ├── app/
-│   ├── api/                  # 27 Kubernetes API routes (pods, nodes, exec, helm, ...)
-│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, ...)
-│   │   └── _components/      # Shared shell: sidebar, header, dialogs, charts
+│   ├── api/                  # 28 Kubernetes API routes (pods, nodes, exec, helm, ai/diagnose, ...)
+│   │   └── ai/diagnose/      # AI Error Diagnostics Copilot endpoint
+│   ├── (main)/dashboard/     # Dashboard screens (overview, pods, nodes, terminal, monitoring, settings, ...)
+│   │   ├── monitoring/       # Real-time telemetry and cluster saturation metrics
+│   │   ├── pods/             # Pod fleet view with "Diagnose with AI" action
+│   │   ├── settings/         # Dashboard & AI Copilot API Key configuration
+│   │   └── _components/      # Shared shell: ai-diagnostics-dialog, pod-logs-dialog, sidebar, header
 │   ├── layout.tsx            # Root layout with theme + preferences boot
 │   └── page.tsx              # Redirects to /dashboard/overview
 ├── components/ui/            # shadcn/ui primitives (do not edit directly)
-├── lib/                      # k8s-client, k8s-store (demo engine), api-client
+├── lib/                      # ai-diagnostics, k8s-client, k8s-store (demo engine), api-client
 ├── navigation/sidebar/       # Sidebar navigation config
 └── config/app-config.ts      # App name, repository, metadata
 ```
-
----
 
 ---
 
@@ -208,6 +267,7 @@ spec:
 ## 🔐 Security Notes
 
 - The dashboard uses your **local KubeConfig** (`loadFromDefault`) — it never stores credentials.
+- AI Copilot API keys are stored in client session storage and never sent to external servers except directly to the configured inference provider.
 - In-cluster deployments read the ServiceAccount token with the RBAC rules in `k8s/rbac.yaml`.
 - Demo mode never touches a real cluster.
 - For our full vulnerability disclosure policy, container hardening controls, and compliance guidelines, see [SECURITY.md](./SECURITY.md).

@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Scale,
   Search,
+  Sparkles,
   SquareTerminal,
   Terminal,
   Trash2,
@@ -16,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { AiDiagnosticsDialog } from "@/app/(main)/dashboard/_components/ai-diagnostics-dialog";
 import { PodExecDialog } from "@/app/(main)/dashboard/_components/pod-exec-dialog";
 import { PodLogsDialog } from "@/app/(main)/dashboard/_components/pod-logs-dialog";
 import { ResourceStatusBadge } from "@/app/(main)/dashboard/_components/resource-status-badge";
@@ -37,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { DiagnosticRequest } from "@/lib/ai-diagnostics";
 import { apiClient, type Pod } from "@/lib/api-client";
 
 export function PodsView() {
@@ -76,6 +79,27 @@ export function PodsView() {
     namespace: "",
   });
   const [detailsPod, setDetailsPod] = useState<Pod | null>(null);
+  const [aiDiagDialog, setAiDiagDialog] = useState<{
+    open: boolean;
+    request: DiagnosticRequest | null;
+  }>({
+    open: false,
+    request: null,
+  });
+
+  const handleAiDiagnose = (pod: Pod) => {
+    setAiDiagDialog({
+      open: true,
+      request: {
+        podName: pod.name,
+        namespace: pod.namespace,
+        container: pod.containers?.[0]?.name,
+        status: pod.status,
+        phase: pod.phase,
+        exitCode: pod.restarts > 0 ? 137 : undefined,
+      },
+    });
+  };
 
   const fetchPods = useCallback(async () => {
     try {
@@ -267,10 +291,16 @@ export function PodsView() {
                             <EllipsisVertical className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuLabel className="text-[10px] font-bold tracking-wider uppercase">
                             Pod Actions
                           </DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => handleAiDiagnose(pod)}
+                            className="text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer"
+                          >
+                            <Sparkles className="text-indigo-500" /> Diagnose with AI
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() =>
@@ -344,6 +374,11 @@ export function PodsView() {
         resourceName={yamlDialog.name}
         namespace={yamlDialog.namespace}
       />
+      <AiDiagnosticsDialog
+        open={aiDiagDialog.open}
+        onOpenChange={(open) => setAiDiagDialog((prev) => ({ ...prev, open }))}
+        request={aiDiagDialog.request}
+      />
 
       {/* Details dialog */}
       <Dialog open={!!detailsPod} onOpenChange={(open) => !open && setDetailsPod(null)}>
@@ -362,6 +397,19 @@ export function PodsView() {
           </DialogHeader>
           {detailsPod && (
             <div className="flex flex-col gap-3 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const targetPod = detailsPod;
+                  setDetailsPod(null);
+                  handleAiDiagnose(targetPod);
+                }}
+                className="w-full gap-2 text-xs text-indigo-600 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10"
+              >
+                <Sparkles className="size-3.5 text-indigo-500" />
+                Diagnose with AI Copilot
+              </Button>
               <div className="bg-muted/20 grid grid-cols-2 gap-2 rounded-xl border p-3">
                 {[
                   ["Node", detailsPod.node],

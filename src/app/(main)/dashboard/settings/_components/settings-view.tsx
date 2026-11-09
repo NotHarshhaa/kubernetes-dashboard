@@ -1,6 +1,19 @@
 "use client";
 
-import { Check, Download, Info, RefreshCw, Save, Server, Settings2 } from "lucide-react";
+import {
+  Bot,
+  Check,
+  Download,
+  Eye,
+  EyeOff,
+  Info,
+  Key,
+  RefreshCw,
+  Save,
+  Server,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,9 +23,24 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  type AiProvider,
+  type AiSettings,
+  DEFAULT_AI_SETTINGS,
+  getClientAiSettings,
+  saveClientAiSettings,
+} from "@/lib/ai-diagnostics";
 import { apiClient, type ClusterInfo, type ContextItem } from "@/lib/api-client";
 
 type SaveStatus = "idle" | "saving" | "saved";
+
+const MODEL_PRESETS: Record<AiProvider, string[]> = {
+  openai: ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "o1-mini"],
+  gemini: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
+  anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+  custom: ["llama3", "mistral", "deepseek-r1", "qwen2.5"],
+};
 
 export function SettingsView() {
   const [clusterName, setClusterName] = useState("production-cluster");
@@ -22,9 +50,15 @@ export function SettingsView() {
   const [contexts, setContexts] = useState<ContextItem[]>([]);
   const [currentContext, setCurrentContext] = useState("");
 
+  // AI Copilot Settings
+  const [aiSettings, setAiSettings] = useState<AiSettings>(DEFAULT_AI_SETTINGS);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testingAi, setTestingAi] = useState(false);
+
   useEffect(() => {
     setClusterName(localStorage.getItem("k8s-cluster-name") || "production-cluster");
     setRefreshInterval(localStorage.getItem("k8s-refresh-interval") || "10");
+    setAiSettings(getClientAiSettings());
 
     apiClient
       .getClusterInfo()
@@ -44,15 +78,56 @@ export function SettingsView() {
       });
   }, []);
 
+  const handleProviderChange = (newProvider: AiProvider) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      provider: newProvider,
+      model: MODEL_PRESETS[newProvider][0],
+      customEndpoint:
+        newProvider === "custom" && !prev.customEndpoint ? "http://localhost:11434/v1" : prev.customEndpoint,
+    }));
+  };
+
+  const handleTestAiConnection = async () => {
+    if (!aiSettings.apiKey && aiSettings.provider !== "custom") {
+      toast.error("Please enter an API key before testing");
+      return;
+    }
+    setTestingAi(true);
+    try {
+      const res = await apiClient.diagnoseWithAi(
+        {
+          podName: "connection-test-pod",
+          namespace: "default",
+          container: "test",
+          status: "Running",
+          userQuery: "Confirm diagnostic copilot connectivity and configuration.",
+        },
+        aiSettings,
+      );
+      if (res.isAiGenerated) {
+        toast.success(`Connected successfully to ${res.providerUsed}!`);
+      } else {
+        toast.info(`Engine active: ${res.providerUsed}`);
+      }
+    } catch (err) {
+      toast.error(`Connection failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setTestingAi(false);
+    }
+  };
+
   const handleSave = () => {
     setSaveStatus("saving");
     localStorage.setItem("k8s-cluster-name", clusterName);
     localStorage.setItem("k8s-refresh-interval", refreshInterval);
+    saveClientAiSettings(aiSettings);
+
     setTimeout(() => {
       setSaveStatus("saved");
-      toast.success("Dashboard settings saved");
+      toast.success("Settings & AI Configuration saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
-    }, 600);
+    }, 500);
   };
 
   const handleExport = () => {
@@ -60,6 +135,11 @@ export function SettingsView() {
       clusterName,
       refreshInterval: Number.parseInt(refreshInterval, 10),
       activeContext: currentContext,
+      aiSettings: {
+        ...aiSettings,
+        // Mask API key for export security
+        apiKey: aiSettings.apiKey ? "********" : "",
+      },
       exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
@@ -82,7 +162,7 @@ export function SettingsView() {
               Dashboard Settings
             </CardTitle>
             <CardDescription className="mt-1 max-w-xl leading-snug">
-              General dashboard behavior and cluster connection details.
+              General dashboard behavior, AI Error Copilot keys, and cluster connection details.
             </CardDescription>
           </div>
           <CardAction className="flex items-center gap-2">
@@ -103,6 +183,7 @@ export function SettingsView() {
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-6 py-6">
+          {/* General Section */}
           <div className="flex flex-col gap-4">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               General
@@ -145,6 +226,173 @@ export function SettingsView() {
 
           <Separator />
 
+          {/* AI Copilot & Diagnostics Section */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+                  <Sparkles className="size-3.5 text-indigo-500" />
+                  AI Error Diagnostics Copilot
+                </CardTitle>
+                <p className="text-muted-foreground mt-0.5 text-[11px]">
+                  Real-time root cause analysis and remediation suggestions for failed pods, crash loops, and error
+                  logs.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">{aiSettings.enabled ? "Enabled" : "Disabled"}</span>
+                <Switch
+                  checked={aiSettings.enabled}
+                  onCheckedChange={(checked) => setAiSettings((prev) => ({ ...prev, enabled: checked }))}
+                  aria-label="Toggle AI Diagnostics"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-muted/20 p-4 space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Provider selection */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="ai-provider" className="text-xs font-medium flex items-center gap-1.5">
+                    <Bot className="size-3.5 text-primary" />
+                    AI Provider
+                  </label>
+                  <Select value={aiSettings.provider} onValueChange={(val) => handleProviderChange(val as AiProvider)}>
+                    <SelectTrigger id="ai-provider" className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
+                      <SelectItem value="gemini">Google Gemini</SelectItem>
+                      <SelectItem value="anthropic">Anthropic Claude</SelectItem>
+                      <SelectItem value="custom">Custom / Local (Ollama, vLLM)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground text-[10px]">
+                    Select the LLM provider for pod failure analysis.
+                  </span>
+                </div>
+
+                {/* Model selection */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="ai-model" className="text-xs font-medium">
+                    Model
+                  </label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={aiSettings.model}
+                      onValueChange={(val) => setAiSettings((prev) => ({ ...prev, model: val }))}
+                    >
+                      <SelectTrigger id="ai-model" className="h-8 text-xs flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MODEL_PRESETS[aiSettings.provider]?.map((m) => (
+                          <SelectItem key={m} value={m} className="font-mono text-xs">
+                            {m}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {aiSettings.provider === "custom" && (
+                      <Input
+                        placeholder="Custom model"
+                        value={aiSettings.model}
+                        onChange={(e) => setAiSettings((prev) => ({ ...prev, model: e.target.value }))}
+                        className="h-8 text-xs w-36 font-mono"
+                      />
+                    )}
+                  </div>
+                  <span className="text-muted-foreground text-[10px]">
+                    Preset models optimized for structured diagnostic analysis.
+                  </span>
+                </div>
+              </div>
+
+              {/* API Key input */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="ai-api-key" className="text-xs font-medium flex items-center gap-1.5">
+                  <Key className="size-3.5 text-primary" />
+                  API Key
+                </label>
+                <div className="relative">
+                  <Input
+                    id="ai-api-key"
+                    type={showApiKey ? "text" : "password"}
+                    placeholder={
+                      aiSettings.provider === "openai"
+                        ? "sk-proj-..."
+                        : aiSettings.provider === "gemini"
+                          ? "AIzaSy..."
+                          : aiSettings.provider === "anthropic"
+                            ? "sk-ant-..."
+                            : "Optional for local endpoints"
+                    }
+                    value={aiSettings.apiKey}
+                    onChange={(e) => setAiSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
+                    className="h-8 pr-10 font-mono text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer p-0.5"
+                    tabIndex={-1}
+                    aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                  >
+                    {showApiKey ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                  </button>
+                </div>
+                <span className="text-muted-foreground text-[10px]">
+                  Securely stored in your browser session. If no key is configured, the dashboard automatically utilizes
+                  its built-in Kubernetes heuristics.
+                </span>
+              </div>
+
+              {/* Custom endpoint if provider is custom */}
+              {aiSettings.provider === "custom" && (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="ai-endpoint" className="text-xs font-medium">
+                    Endpoint URL (OpenAI-compatible)
+                  </label>
+                  <Input
+                    id="ai-endpoint"
+                    placeholder="http://localhost:11434/v1"
+                    value={aiSettings.customEndpoint || ""}
+                    onChange={(e) => setAiSettings((prev) => ({ ...prev, customEndpoint: e.target.value }))}
+                    className="h-8 font-mono text-xs"
+                  />
+                  <span className="text-muted-foreground text-[10px]">
+                    Local or on-premise inference server (Ollama, vLLM, LocalAI, LM Studio).
+                  </span>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex items-center justify-between pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestAiConnection}
+                  disabled={testingAi}
+                  className="h-7.5 gap-1.5 text-xs"
+                >
+                  <RefreshCw className={`size-3.5 ${testingAi ? "animate-spin" : ""}`} />
+                  {testingAi ? "Testing..." : "Test Connection"}
+                </Button>
+
+                <Badge variant="outline" className="text-[10px] gap-1 text-muted-foreground">
+                  <span
+                    className={`size-1.5 rounded-full ${aiSettings.apiKey || aiSettings.provider === "custom" ? "bg-emerald-500" : "bg-amber-500"}`}
+                  />
+                  {aiSettings.apiKey || aiSettings.provider === "custom" ? "Key Configured" : "Heuristics Mode Active"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Cluster Connection Section */}
           <div className="flex flex-col gap-4">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Cluster Connection
