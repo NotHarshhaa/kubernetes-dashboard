@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-
 import * as k8s from "@kubernetes/client-node";
+import { NextResponse } from "next/server";
 
 import { getKubeConfig } from "@/lib/k8s-client";
 import { k8sStore } from "@/lib/k8s-store";

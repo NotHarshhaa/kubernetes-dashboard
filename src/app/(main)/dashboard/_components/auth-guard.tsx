@@ -1,10 +1,9 @@
 "use client";
 
-import { type ReactNode, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 import { usePathname, useRouter } from "next/navigation";
-
-import { Loader2 } from "lucide-react";
+import { type ReactNode, useEffect } from "react";
 
 import { useAuth } from "@/contexts/auth-context";
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import { BrainCircuit, Cpu, RefreshCw, Server, Thermometer, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ResourceStatusBadge } from "@/app/(main)/dashboard/_components/resource-status-badge";

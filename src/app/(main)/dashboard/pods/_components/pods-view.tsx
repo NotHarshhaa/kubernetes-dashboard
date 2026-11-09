@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import {
   Boxes,
   Container,
@@ -15,6 +13,7 @@ import {
   Terminal,
   Trash2,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PodExecDialog } from "@/app/(main)/dashboard/_components/pod-exec-dialog";

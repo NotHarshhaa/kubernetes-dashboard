@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Eye, EyeOff, KeyRound, Loader2, Mail, Sparkles } from "lucide-react";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-
-import { Eye, EyeOff, KeyRound, Loader2, Mail, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

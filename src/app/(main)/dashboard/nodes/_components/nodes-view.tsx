@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import {
   Cpu,
   EllipsisVertical,
@@ -14,6 +12,7 @@ import {
   Server,
   ShieldAlert,
 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ResourceStatusBadge } from "@/app/(main)/dashboard/_components/resource-status-badge";

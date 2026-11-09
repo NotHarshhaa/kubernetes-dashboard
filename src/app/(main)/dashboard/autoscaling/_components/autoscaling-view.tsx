@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import { RefreshCw, Scale, Search, TrendingDown, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { ResourceStatusBadge } from "@/app/(main)/dashboard/_components/resource-status-badge";

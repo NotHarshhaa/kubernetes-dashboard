@@ -1,6 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
-
 import { AppsV1Api, CoreV1Api, KubeConfig } from "@kubernetes/client-node";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { k8sStore } from "@/lib/k8s-store";
 

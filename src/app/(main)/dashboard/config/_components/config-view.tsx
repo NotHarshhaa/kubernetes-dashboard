@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import { EllipsisVertical, Eye, EyeOff, FileCode2, FolderKey, KeyRound, RefreshCw, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useNamespaces } from "@/app/(main)/dashboard/_components/use-namespaces";

@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { EllipsisVertical, FileCode2, Globe, Network, RefreshCw, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useNamespaces } from "@/app/(main)/dashboard/_components/use-namespaces";

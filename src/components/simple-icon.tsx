@@ -1,8 +1,7 @@
 "use client";
 
-import type * as React from "react";
-
 import { cn } from "cn";
+import type * as React from "react";
 import type { SimpleIcon as SimpleIconType } from "simple-icons";
 
 type SimpleIconProps = {

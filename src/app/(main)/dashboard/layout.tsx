@@ -1,8 +1,7 @@
-import type { ReactNode } from "react";
+import { cn } from "cn";
 
 import { cookies } from "next/headers";
-
-import { cn } from "cn";
+import type { ReactNode } from "react";
 
 import { AuthGuard } from "@/app/(main)/dashboard/_components/auth-guard";
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";

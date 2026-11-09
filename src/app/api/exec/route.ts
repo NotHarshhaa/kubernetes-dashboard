@@ -1,11 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { PassThrough } from "node:stream";
 
 import * as k8s from "@kubernetes/client-node";
-
+import { type NextRequest, NextResponse } from "next/server";
 import { getKubeConfig } from "@/lib/k8s-client";
 import { k8sStore } from "@/lib/k8s-store";
-
-import { PassThrough } from "node:stream";
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 

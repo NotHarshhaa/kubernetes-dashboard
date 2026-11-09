@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Container, RefreshCw, Terminal } from "lucide-react";
 
 import dynamic from "next/dynamic";
-
-import { Container, RefreshCw, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const XtermTerminal = dynamic(() => import("./xterm-terminal").then((m) => m.XtermTerminal), {
   ssr: false,

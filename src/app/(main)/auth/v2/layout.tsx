@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
-
 import { Activity, ShieldCheck, SquareTerminal } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { AppLogo } from "@/components/app-logo";
 import { APP_CONFIG } from "@/config/app-config";

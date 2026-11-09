@@ -1,6 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
-
 import { CoreV1Api, Metrics, type NodeMetric } from "@kubernetes/client-node";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { getKubeConfig } from "@/lib/k8s-client";
 

@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, SquareTerminal } from "lucide-react";
 
 import dynamic from "next/dynamic";
-
-import { RefreshCw, SquareTerminal } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { XtermTerminal } from "@/app/(main)/dashboard/_components/xterm-terminal";

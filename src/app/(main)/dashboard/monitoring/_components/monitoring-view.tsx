@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { Activity, Cpu, Download, MemoryStick, Network, PauseCircle, PlayCircle, Server } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { toast } from "sonner";
 

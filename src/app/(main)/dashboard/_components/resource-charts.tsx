@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { Cpu, HardDrive, MemoryStick, Minus, RefreshCw, TrendingDown, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";

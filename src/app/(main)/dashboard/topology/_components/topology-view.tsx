@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { Container, Database, GitFork, Globe, Network, RefreshCw, Search, Server } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useNamespaces } from "@/app/(main)/dashboard/_components/use-namespaces";
