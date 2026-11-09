@@ -1,0 +1,9 @@
+# Trivy Vulnerability Ignore File
+# Reference: https://aquasecurity.github.io/trivy/latest/docs/configuration/filtering/
+
+# deepmerge: prototype poisoning via mergeObject()
+# Scope: Transitive dependency introduced via shadcn CLI (scaffolding only).
+# Threat Assessment: Non-exploitable. deepmerge is never bundled, imported, or executed
+# in Next.js runtime, API routes, or production container images.
+GHSA-4hgj-622h-p237
+CVE-2020-28275
